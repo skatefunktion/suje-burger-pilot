@@ -21,11 +21,10 @@ export function draw(t, ctx, kit) {
   label('가변: 뒷부분', 680, 140);
 
   const change = easeIO(seg(t, .35, .47));
+  const leaving = change < .5;
   ctx.save();
-  ctx.globalAlpha = 1 - change;
-  label('요약해 줘', 680, 175 - 8 * change, TYPE.caption);
-  ctx.globalAlpha = change;
-  label('번역해 줘', 680, 175 + 8 * (1 - change), TYPE.caption);
+  ctx.globalAlpha = Math.abs(1 - 2 * change);
+  label(leaving ? '요약해 줘' : '번역해 줘', 680, 175, TYPE.caption);
   ctx.restore();
 
   ctx.strokeStyle = INK;
