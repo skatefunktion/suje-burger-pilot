@@ -55,6 +55,7 @@ export function createHumanReviewVerifier({
       cache.set(path, request(`https://api.github.com/repos/${path}`, {
         headers, signal: AbortSignal.timeout(15_000),
       }).then(async response => {
+        if (raw && response.status === 404) return null;
         if (!response.ok) throw new Error(`GitHub visual approval lookup failed (HTTP ${response.status})`);
         return raw ? Buffer.from(await response.arrayBuffer()) : response.json();
       }));
@@ -62,49 +63,51 @@ export function createHumanReviewVerifier({
     return cache.get(path);
   }
 
-  return async function assertHumanReviewed(review, fingerprint, reviewURL, fingerprintFrom) {
-    assertChecklist(review, fingerprint);
-    const login = review.reviewer.toLowerCase();
-    if (!/^[a-z0-9][a-z0-9-]{0,38}$/.test(login) || automationLogin.test(login) || !allowed.has(login)) {
-      throw new Error('Visual reviewer must be an allowlisted human GitHub account (VIDEO_PIPELINE_HUMAN_REVIEWERS)');
+  async function matches(ref, fingerprint, fingerprintFrom) {
+    if (!/^[a-f0-9]{40}$/.test(ref ?? '')) return false;
+    const missing = new Error('Scene source is missing at the requested commit');
+    try {
+      return await fingerprintFrom(async url => {
+        const path = relative(repoRoot, fileURLToPath(url)).split(sep).map(encodeURIComponent).join('/');
+        const bytes = await get(`${repo}/contents/${path}?ref=${ref}`, true);
+        if (!bytes) throw missing;
+        return bytes;
+      }) === fingerprint;
+    } catch (error) {
+      if (error !== missing) throw error;
+      return false;
     }
-    if (!Number.isSafeInteger(review.approvalPR) || review.approvalPR < 1) {
-      throw new Error('Visual checklist must name its GitHub approval PR (approvalPR)');
-    }
+  }
 
-    const pullPath = `${repo}/pulls/${review.approvalPR}`;
+  return async function assertHumanReviewed({ number, expectedHead, base }, fingerprint, fingerprintFrom) {
+    if (!Number.isSafeInteger(number) || number < 1) throw new Error('Missing GitHub visual approval PR number');
+    const pullPath = `${repo}/pulls/${number}`;
     const pull = await get(pullPath);
     const head = pull.head?.sha;
-    if (pull.user?.login?.toLowerCase() === login) {
-      throw new Error('A scene PR author cannot approve their own visual checklist');
-    }
     if (!/^[a-f0-9]{40}$/.test(head ?? '')) {
       throw new Error('GitHub approval PR does not have an accessible head commit');
     }
+    if (expectedHead !== undefined && expectedHead !== head) {
+      throw new Error(`PR #${number}'s head changed since this check was triggered`);
+    }
+    if (base && await matches(base, fingerprint, fingerprintFrom)) return;
 
-    let latest;
+    const author = pull.user?.login?.toLowerCase();
+    const latest = new Map();
     for (let page = 1; ; page++) {
       const reviews = await get(`${pullPath}/reviews?per_page=100&page=${page}`);
       for (const entry of reviews) {
-        if (entry.user?.login?.toLowerCase() === login &&
-            ['APPROVED', 'CHANGES_REQUESTED', 'DISMISSED'].includes(entry.state)) latest = entry;
+        const login = entry.user?.login?.toLowerCase();
+        if (author && allowed.has(login) && login !== author && !automationLogin.test(login) &&
+            ['APPROVED', 'CHANGES_REQUESTED', 'DISMISSED'].includes(entry.state)) latest.set(login, entry);
       }
       if (reviews.length < 100) break;
     }
-    if (latest?.user?.type !== 'User' || latest.state !== 'APPROVED' || latest.commit_id !== head) {
-      throw new Error(`Visual checklist needs an active GitHub approval by ${login} on PR #${review.approvalPR}'s head commit`);
+    if (![...latest.values()].some(entry =>
+      entry.user.type === 'User' && entry.state === 'APPROVED' && entry.commit_id === head)) {
+      throw new Error(`Visual checklist needs an active GitHub approval from an allowlisted human other than the author on PR #${number}'s head commit`);
     }
-
-    const readApproved = url => {
-      const path = relative(repoRoot, fileURLToPath(url)).split(sep).map(encodeURIComponent).join('/');
-      return get(`${repo}/contents/${path}?ref=${head}`, true);
-    };
-    const pinned = JSON.parse(await readApproved(reviewURL));
-    assertChecklist(pinned, fingerprint);
-    if (pinned.reviewer.toLowerCase() !== login || pinned.approvalPR !== review.approvalPR) {
-      throw new Error('Visual checklist does not match the file on the human-approved PR commit');
-    }
-    if (await fingerprintFrom(readApproved) !== fingerprint) {
+    if (!await matches(head, fingerprint, fingerprintFrom)) {
       throw new Error('Scene source on the human-approved PR commit does not match the current fingerprint');
     }
   };

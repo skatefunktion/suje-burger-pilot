@@ -23,6 +23,16 @@ const episodeURL = Object.hasOwn(episodes, id) && episodes[id];
 const chosen = selection === undefined ? null : Number(selection);
 const cwd = resolve(process.env.VIDEO_PIPELINE_OUT ?? 'out');
 
+async function approvalPulls() {
+  if (gate && process.env.GITHUB_EVENT_PATH &&
+      ['pull_request', 'pull_request_review'].includes(process.env.GITHUB_EVENT_NAME)) {
+    const { pull_request: pull } = JSON.parse(await readFile(process.env.GITHUB_EVENT_PATH, 'utf8'));
+    return [{ number: pull.number, expectedHead: pull.head.sha, base: pull.base.sha }];
+  }
+  return (process.env.VIDEO_PIPELINE_APPROVAL_PRS ?? '').split(/[\s,]+/).filter(Boolean)
+    .map(number => ({ number: Number(number) }));
+}
+
 async function main() {
   if (!episodeURL || (flag !== undefined && !reviewing && !smoke && !gate) ||
       (chosen !== null && (!reviewing || !Number.isSafeInteger(chosen) || chosen < 1)) ||
@@ -30,6 +40,7 @@ async function main() {
     throw new Error('Usage: npm run render -- {burger|ep02} [--review [scene] | --smoke | --scene-gate]');
   }
   const assertHumanReviewed = createHumanReviewVerifier();
+  const pulls = await approvalPulls();
   const { episode } = await import(episodeURL.href);
   const ctx = createCanvas(1, 1).getContext('2d');
   const scenes = episode.createScenes(ctx, createCanvasKit(ctx));
@@ -53,13 +64,22 @@ async function main() {
       const fingerprintFrom = readSource => reviewFingerprint(episode, index, scene, readSource);
       const fingerprint = await fingerprintFrom();
       const review = async () => {
-        const url = new URL(`review-${number}.json`, episode.sources[index]);
-        const approval = await readFile(url, 'utf8').then(JSON.parse, error => {
-          if (error.code !== 'ENOENT') throw error;
-          return null;
-        });
-        if (smoke && id === 'burger') return assertPilotSmokeReviewed(approval, fingerprint);
-        await assertHumanReviewed(approval, fingerprint, url, fingerprintFrom);
+        if (smoke && id === 'burger') {
+          const url = new URL(`review-${number}.json`, episode.sources[index]);
+          const approval = JSON.parse(await readFile(url, 'utf8'));
+          return assertPilotSmokeReviewed(approval, fingerprint);
+        }
+        if (!pulls.length) throw new Error('Visual checklist needs a GitHub PR (VIDEO_PIPELINE_APPROVAL_PRS outside PR CI)');
+        const errors = [];
+        for (const pull of pulls) {
+          try {
+            await assertHumanReviewed(pull, fingerprint, fingerprintFrom);
+            return;
+          } catch (error) {
+            errors.push(error.message);
+          }
+        }
+        throw new Error(errors.join('; '));
       };
       if (gate && await isPending(episode.sources[index], number)) {
         result.status = 'pending';

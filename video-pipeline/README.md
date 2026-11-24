@@ -15,7 +15,7 @@ cd video-pipeline
 npm ci
 npm test
 npm run smoke
-npm run render -- ep02 --scene-gate
+VIDEO_PIPELINE_APPROVAL_PRS=123 npm run render -- ep02 --scene-gate
 ```
 
 Each run writes its own directory in `out/` (or `VIDEO_PIPELINE_OUT`) and a
@@ -28,7 +28,9 @@ Known readability issues in the existing pilot can be recorded as pilot
 smoke-only exceptions; they do not satisfy production visual QC.
 
 For production, set `FISH_AUDIO_API_KEY` and `FISH_AUDIO_REFERENCE_ID` (a Korean
-voice authorized for the project) and use `npm run render -- ep02`. The Fish Audio
+voice authorized for the project) and use `npm run render -- ep02` with
+`VIDEO_PIPELINE_APPROVAL_PRS` set to the original scene PR numbers (comma-separated).
+The Fish Audio
 take is rendered per scene, checked for silence, and aligned within a modest speed
 range. Listen to every take for pronunciation and pacing before publishing. If
 the render, audio, visual approvals, or 45–60s/size/frame checks fail, the
@@ -46,37 +48,19 @@ command exits nonzero without promoting a final MP4.
    canvas edges, including the reserved caption area, at seven key frames.
    Human review must also check intended geometry, proportions, readable faces
    and labels, contrast, the intended layer order and the pilot's style.
-3. Commit a checklist in `scenes/ep02/review-01.json` (use the scene number),
-   with the assigned human reviewer's GitHub login, the PR number and the
-   CLI-reported fingerprint. Example:
-   ```json
-   {
-     "reviewer": "human-reviewer-github-login",
-     "approvalPR": 123,
-     "fingerprint": "Paste the reported SHA-256 after looking at the frames",
-     "checks": {
-       "insideCanvas": true,
-       "captionClear": true,
-       "proportions": true,
-       "readable": true,
-       "contrast": true,
-       "layerOrder": true,
-       "pilotStyle": true
-     }
-   }
-   ```
+3. Do not commit a visual review JSON for a scene. GitHub **Approve** from an
+   allowlisted human other than the PR author is the sign-off, and must be on the
+   exact PR head commit. Existing scene review JSON files are ignored.
    If the scene imports additional components, add those sources to the
    corresponding `episode.reviewDependencies` entry so edits invalidate approval.
-   After checking the frames and checklist at the final commit, the human
-   reviewer must submit an **Approve** review in GitHub (not just write their
-   name in JSON). Only current approvals by an allowlisted human account
-   other than the PR author count. CI reruns on review submission or dismissal.
-   Later episodes can reuse an unchanged scene's checklist and approval PR.
-4. CI renders every non-placeholder scene with `--scene-gate`, rejects stale or
-   missing approvals, and separately runs the full burger smoke test. The exact
-   scaffold stubs may stay pending until their scene PR. The production render
-   does not accept stubs or unapproved visuals. Wait for `video-pipeline-qc` and
-   merge one scene PR at a time.
+4. PR CI renders every non-placeholder scene with `--scene-gate` and separately
+   runs the full burger smoke test. Only visuals unchanged from the PR base
+   inherit its sign-off. Changed visuals must match the reviewed PR head, not
+   merely the synthetic merge commit tested by CI. A review submission or
+   dismissal starts a fresh check; rerunning an old Actions job reuses its old
+   merge commit. The exact scaffold stubs may stay pending until their scene PR.
+   Production does not accept stubs or unapproved visuals. Wait for
+   `video-pipeline-qc` and merge one scene PR at a time.
 
 Set the repository Actions variable `VIDEO_PIPELINE_HUMAN_REVIEWERS` to the
 comma-separated GitHub logins of human reviewers. Set the same variable in

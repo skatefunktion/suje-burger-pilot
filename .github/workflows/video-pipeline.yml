@@ -38,6 +38,7 @@ jobs:
       - run: npm test
       - run: npm run smoke
       - run: npm run render -- ep02 --scene-gate
+        if: github.event_name == 'pull_request' || github.event_name == 'pull_request_review'
         env:
           GITHUB_TOKEN: ${{ github.token }}
           VIDEO_PIPELINE_HUMAN_REVIEWERS: ${{ vars.VIDEO_PIPELINE_HUMAN_REVIEWERS }}
