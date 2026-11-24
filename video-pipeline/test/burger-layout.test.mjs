@@ -28,21 +28,31 @@ test('ingredient cards stay inside the standalone canvas throughout their bounce
   for (let frame = 0; frame < count; frame++) visualBounds(standalone, 1, frame, { captionY: HEIGHT });
 });
 
-test('timeline stages end before the zero-axis line and durations fit inside the canvas', () => {
+test('growth vignettes keep all six durations separate from the ingredient and stage labels', () => {
   const ctx = createCanvas(WIDTH, HEIGHT).getContext('2d');
   const text = [];
   const fillText = ctx.fillText.bind(ctx);
   ctx.fillText = (label, x, y, limit = Infinity) => {
-    text.push({ label, x, width: Math.min(ctx.measureText(label).width, limit) });
+    const width = Math.min(ctx.measureText(label).width, limit);
+    const left = ctx.textAlign === 'center' ? x - width / 2 : ctx.textAlign === 'right' ? x - width : x;
+    text.push({ label, x, y, left, right: left + width });
     fillText(label, x, y);
   };
-  episode.createScenes(ctx, createCanvasKit(ctx))[2].draw(1);
-  const stages = text.filter(({ label }) => label.includes('→'));
-  const axis = text.find(({ label }) => label === '지금');
-  assert.equal(stages.length, 6);
-  for (const { label, x, width } of stages) assert.ok(x + width <= axis.x - 12, label);
-  const durations = text.filter(({ label }) => /^(단 며칠!|\d+개월)$/.test(label) && label !== '10개월' && label !== '20개월');
-  for (const { label, x, width } of durations) assert.ok(x + width < WIDTH, label);
+  const scene = episode.createScenes(ctx, createCanvasKit(ctx))[2];
+  for (const progress of [0, .5, 1]) {
+    text.length = 0;
+    scene.draw(progress);
+    const durations = text.filter(({ label }) => /^(단 며칠!|\d+개월)$/.test(label));
+    assert.deepEqual(durations.map(({ label }) => label), ['30개월', '7개월', '3개월', '2개월', '3개월', '단 며칠!']);
+    for (const duration of durations) {
+      assert.ok(duration.left > 48 && duration.right < 912, duration.label);
+      for (const other of text) {
+        if (other === duration || Math.abs(other.y - duration.y) > 20) continue;
+        assert.ok(other.right <= duration.left || other.left >= duration.right,
+          `${other.label} overlaps ${duration.label}`);
+      }
+    }
+  }
 });
 
 test('visible stacking badges remain separate at every animation frame', () => {
