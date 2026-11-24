@@ -1,0 +1,12 @@
+# Setup manifest for the Devin Automation UI; not an installer.
+trigger:
+  type: slack-message
+  channel: '#video-pipeline'
+  condition: Message contains a new approved episode script.
+instructions: |
+  Follow DEVIN_BOT_INSTRUCTIONS.md. Split and time the script, then render
+  and visually review each scene before its own PR. Generate narration,
+  stitch, and run every QC gate before publishing. Reply in the originating
+  Slack thread with the result, per-scene retries and fallbacks, and decisions.
+missed_weekly_deadline:
+  action: Remind the owner in Slack instead of inventing an episode.

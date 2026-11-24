@@ -1,0 +1,44 @@
+name: Video pipeline
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  qc:
+    name: video-pipeline-qc
+    runs-on: ubuntu-24.04
+    timeout-minutes: 12
+    defaults:
+      run:
+        working-directory: video-pipeline
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: video-pipeline/package-lock.json
+      - name: Install rendering tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ffmpeg espeak-ng fonts-noto-cjk fonts-noto-color-emoji
+      - run: npm ci
+      - run: npm test
+      - run: npm run smoke
+      - run: npm run render -- ep02 --scene-gate
+      - name: Keep QC logs and review frames
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: video-pipeline-qc
+          path: |
+            video-pipeline/out/**/job.json
+            video-pipeline/out/**/encoder.log
+            video-pipeline/out/**/*.png
+          if-no-files-found: ignore
+          retention-days: 7

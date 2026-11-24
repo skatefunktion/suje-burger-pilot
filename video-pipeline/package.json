@@ -1,0 +1,13 @@
+{
+  "name": "suje-video-pipeline",
+  "private": true,
+  "type": "module",
+  "engines": { "node": ">=22" },
+  "scripts": {
+    "sync:pilot": "node pilot/burger/sync-preview.mjs --write",
+    "test": "node pilot/burger/sync-preview.mjs && node --test test/*.test.mjs",
+    "render": "node queue/cli.mjs",
+    "smoke": "node queue/cli.mjs burger --smoke"
+  },
+  "dependencies": { "@napi-rs/canvas": "1.2.0" }
+}

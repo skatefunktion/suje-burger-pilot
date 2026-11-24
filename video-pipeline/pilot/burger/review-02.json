@@ -1,0 +1,13 @@
+{
+  "reviewer": "Devin (existing pilot reference)",
+  "fingerprint": "bac0e5c3a170df6bf818d60c51b2a30381764cc6a58114686eaa8576d368557d",
+  "checks": {
+    "insideCanvas": true,
+    "captionClear": true,
+    "proportions": true,
+    "readable": true,
+    "contrast": true,
+    "layerOrder": true,
+    "pilotStyle": true
+  }
+}

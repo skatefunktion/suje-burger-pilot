@@ -37,12 +37,16 @@
 "use strict";
 /* ================= 기본 설정 ================= */
 const cv=document.getElementById('stage'),ctx=cv.getContext('2d');
+/* BEGIN GENERATED PILOT SOURCES */
+function createCanvasKit(ctx){
 const W=960,H=540;
 const INK='#4a3728',PAPER='#FAF5EA';
 const BUN='#F3B75E',BUN_D='#D98F3C',PATTY='#8A5632',PATTY_D='#5F3A1E',
       CHEESE='#F7C948',CHEESE_D='#D9962B',LETTUCE='#8CC084',LETTUCE_D='#5E9B55',
       TOMATO='#E85D4D',TOMATO_D='#C23E30',TOMATO_L='#F4937F',
       SAUCE='#A8542F',SAUCE_L='#C97B4E',GREEN='#6FA85F',GRAY='#8a7a63';
+const STROKE=Object.freeze({ fine: 2, ink: 3, emphasis: 4 });
+const TYPE=Object.freeze({ note: 18, caption: 22, label: 34, title: 44 });
 ctx.lineJoin='round';ctx.lineCap='round';
 
 /* ================= 유틸 ================= */
@@ -83,7 +87,7 @@ function bg(){
   g.addColorStop(0,'rgba(0,0,0,0)');g.addColorStop(1,'rgba(74,55,40,0.08)');
   ctx.fillStyle=g;ctx.fillRect(0,0,W,H);
 }
-function label(txt,x,y,size=34,color=INK,weight=800){
+function label(txt,x,y,size=TYPE.label,color=INK,weight=800){
   ctx.fillStyle=color;
   ctx.font=weight+' '+size+'px "Apple SD Gothic Neo","Noto Sans KR","Malgun Gothic",sans-serif';
   ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(txt,x,y);
@@ -106,14 +110,14 @@ function face(x,y,s){
   ctx.fillStyle='rgba(233,120,105,0.5)';
   ctx.beginPath();ctx.ellipse(x-26*s,y+9*s,6.5*s,4.2*s,0,0,7);ctx.fill();
   ctx.beginPath();ctx.ellipse(x+26*s,y+9*s,6.5*s,4.2*s,0,0,7);ctx.fill();
-  ctx.strokeStyle=INK;ctx.lineWidth=3*s;ctx.beginPath();
+  ctx.strokeStyle=INK;ctx.lineWidth=STROKE.ink*s;ctx.beginPath();
   ctx.arc(x,y+5*s,10*s,Math.PI*0.2,Math.PI*0.8);ctx.stroke();
 }
 function pill(txt,x,y,bgc,fgc,size){
-  bgc=bgc||GREEN;fgc=fgc||'#fff';size=size||22;
+  bgc=bgc||GREEN;fgc=fgc||'#fff';size=size||TYPE.caption;
   ctx.font='700 '+size+'px "Apple SD Gothic Neo","Noto Sans KR","Malgun Gothic",sans-serif';
   const tw=ctx.measureText(txt).width,pad=size*0.75;
-  ctx.fillStyle=bgc;ctx.strokeStyle=INK;ctx.lineWidth=3;
+  ctx.fillStyle=bgc;ctx.strokeStyle=INK;ctx.lineWidth=STROKE.ink;
   rr(x-tw/2-pad/2,y-size*0.78,tw+pad,size*1.56,size*0.78);ctx.fill();ctx.stroke();
   ctx.fillStyle=fgc;ctx.textAlign='center';ctx.textBaseline='middle';
   ctx.fillText(txt,x,y+1);
@@ -125,7 +129,11 @@ function numBadge(n,x,y,a){
   ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(String(n),x,y+1);
   ctx.restore();
 }
+return {W,H,INK,PAPER,BUN,BUN_D,PATTY,PATTY_D,CHEESE,CHEESE_D,LETTUCE,LETTUCE_D,TOMATO,TOMATO_D,TOMATO_L,SAUCE,SAUCE_L,GREEN,GRAY,STROKE,TYPE,clamp01,seg,lerp,rnd,easeIO,easeO,easeOB,jline,jellipse,rr,bg,label,softShadow,sheen,face,pill,numBadge};
+}
 
+function createBurgerScenes(ctx,kit){
+const {W,H,INK,PAPER,BUN,BUN_D,PATTY,PATTY_D,CHEESE,CHEESE_D,LETTUCE,LETTUCE_D,TOMATO,TOMATO_D,TOMATO_L,SAUCE,SAUCE_L,GREEN,GRAY,clamp01,seg,lerp,rnd,easeIO,easeO,easeOB,jline,jellipse,rr,bg,label,softShadow,sheen,face,pill,numBadge}=kit;
 /* ============ 미니 재료 아이콘 (출처 장면용) ============ */
 function iconFlour(x,y,s){
   s=s||1;ctx.lineWidth=3;ctx.strokeStyle=INK;
@@ -775,6 +783,11 @@ const SCENES=[
   {dur:7, cap:'넷, 한국 트위스트. 특제 불고기 소스를 뿌리고 깨를 솔솔', draw:scTwist},
   {dur:5, cap:'완성! 맛있게 드세요 🍔', draw:scDone},
 ];
+return SCENES;
+}
+/* END GENERATED PILOT SOURCES */
+const kit=createCanvasKit(ctx),{bg,clamp01}=kit;
+const SCENES=createBurgerScenes(ctx,kit);
 const TOTAL=SCENES.reduce((a,s)=>a+s.dur,0);
 const starts=[];{let a=0;for(const s of SCENES){starts.push(a);a+=s.dur;}}
 
