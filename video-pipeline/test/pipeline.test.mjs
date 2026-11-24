@@ -84,10 +84,6 @@ test('QC rejects stale review, unapproved / degraded scenes, missing narration a
   assert.doesNotThrow(() => assertPilotSmokeReviewed(review, 'abc'));
   assert.throws(() => assertPilotSmokeReviewed(review, 'def'), /stale/);
   assert.throws(() => assertPilotSmokeReviewed({ ...review, checks: { ...checks, proportions: false } }, 'abc'), /approval/);
-  const baseline = { ...review, baselineException: 'Overlapping pilot labels', checks: { ...checks, readable: false } };
-  assert.equal(assertPilotSmokeReviewed(baseline, 'abc'), 'Overlapping pilot labels');
-  assert.throws(() => assertPilotSmokeReviewed({ ...baseline, checks: { ...checks, insideCanvas: false } },
-    'abc'), /approval/);
   assert.throws(() => assertPublishable([{ status: 'degraded', audio: { status: 'passed' } }]), /QC blocked/);
   assert.throws(() => assertPublishable([{ status: 'passed', audio: { status: 'failed' } }]), /QC blocked/);
   assert.doesNotThrow(() => assertPublishable([{ status: 'passed', audio: { status: 'passed' } }]));

@@ -32,7 +32,7 @@ JavaScript가 프레임을 직접 그린다. 외부 CDN 없음 — 파일 하나
 ## 바로 해보기
 
 1. `index.html`을 더블클릭 (또는 브라우저로 열기)
-2. 화면 탭 = 다음 장면 / ● 녹화 = 처음부터 재생하며 `suje-burger-pilot-v2.webm` 저장
+2. 화면 탭 = 다음 장면 / ● 녹화 = 처음부터 재생하며 `suje-burger-pilot-v3.webm` 저장
 3. 내레이션 음성은 Fish Audio TTS로 장면별 생성 후 영상 편집 앱에서 합성
    (원고는 storyboard.md, 장면 길이는 `SCENES[i].dur` 기준)
 

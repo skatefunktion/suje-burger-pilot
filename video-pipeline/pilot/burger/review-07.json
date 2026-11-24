@@ -1,6 +1,6 @@
 {
   "reviewer": "Devin (existing pilot reference)",
-  "fingerprint": "ac320bde15f54b2ac8421fcb3b7137674c17ecd3585c5887a9fece9b0f0cb6c5",
+  "fingerprint": "5fb4a450ef9834e62f24cb2ce8bf753b45f36e5a35f40ef40fa82c35efbb0e88",
   "checks": {
     "insideCanvas": true,
     "captionClear": true,

@@ -279,7 +279,7 @@ function scOrigin(t){
   const tx=lerp(272,688,easeIO(drive));
   const bob=Math.abs(Math.sin(t*30))*5*drive*(1-seg(t,0.8,0.95));
   truck(tx,fy+22,0.9,bob);
-  label('농장에서 주방까지, 재료의 여정',W/2,284,24,GRAY,400);
+  label('농장에서 주방까지, 재료의 여정',W/2,270,24,GRAY,400);
   // --- 재료 카드 6종
   const chips=[
     ['밀가루','우리밀 농장',iconFlour],
@@ -289,8 +289,8 @@ function scOrigin(t){
     ['깨','국내산',iconSesame],
     ['불고기 양념','한국식 레시피',iconSauce],
   ];
-  const cw2=290,ch=104,gx=20,gy=14;
-  const x0=(W-(cw2*3+gx*2))/2,y0=314;
+  const cw2=290,ch=94,gx=20,gy=12;
+  const x0=(W-(cw2*3+gx*2))/2,y0=302;
   chips.forEach((c,idx)=>{
     const col=idx%3,row=(idx/3)|0;
     const p=easeOB(seg(t,0.1+idx*0.07,0.1+idx*0.07+0.2));
@@ -329,7 +329,8 @@ function scTime(t){
     ['양상추', 2,'파종 → 수확',           iconLettuce,'#8CC084'],
     ['치즈',   0,'착유 → 응고 → 가공',    iconCheese, '#F7C948'],
   ];
-  const x0=290,x1=845,maxW=x1-x0,y0=104,rh=58;
+  const textX=186,x0=438,x1=845,maxW=x1-x0,y0=104,rh=58;
+  const stageWidth=x0-textX-18;
   // 눈금 (배경)
   ctx.save();ctx.globalAlpha=seg(t,0,0.08);
   ctx.strokeStyle='rgba(74,55,40,0.3)';ctx.lineWidth=2;
@@ -349,9 +350,9 @@ function scTime(t){
       r[3](152,y,0.78);
       ctx.fillStyle=INK;ctx.textAlign='left';ctx.textBaseline='middle';
       ctx.font='800 24px "Apple SD Gothic Neo","Noto Sans KR","Malgun Gothic",sans-serif';
-      ctx.fillText(r[0],186,y-11);
+      ctx.fillText(r[0],textX,y-11);
       ctx.fillStyle=GRAY;ctx.font='400 16px "Apple SD Gothic Neo","Noto Sans KR","Malgun Gothic",sans-serif';
-      ctx.fillText(r[2],186,y+17);
+      ctx.fillText(r[2],textX,y+17,stageWidth);
       ctx.restore();
     }
     const bp=easeO(seg(t,0.08+i*0.08,0.08+i*0.08+0.3));
@@ -545,7 +546,7 @@ function scStack(t){
     drawLayer(i,cx,ly,w,i===5);
     ctx.restore();
     const landedI=seg(t,i*0.1+0.24,i*0.1+0.36);
-    if(landedI>0)numBadge(i+1,cx+w/2+46,ly,landedI);
+    if(landedI>0)numBadge(i+1,cx+w/2+46,baseY-i*38,landedI);
   }
   const done=seg(t,0.84,1);
   if(done>0){ctx.save();ctx.globalAlpha=done;label('착착…',cx,120,40,GRAY,400);ctx.restore();}
