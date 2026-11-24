@@ -5,8 +5,8 @@ import { createCanvas } from '@napi-rs/canvas';
 import { createCanvasKit } from '../scenes/canvas-kit.mjs';
 import { FPS, frameCount } from './frames.mjs';
 import { renderScene, renderWithRetry } from './render.mjs';
-import { assertReviewed, reviewFingerprint } from './review.mjs';
-import { narrate } from '../tts/narration.mjs';
+import { assertPilotSmokeReviewed, createHumanReviewVerifier, reviewFingerprint } from './review.mjs';
+import { narrate, narrateApprovedScenes } from '../tts/narration.mjs';
 import { stitch } from '../stitch/stitch.mjs';
 import { assertDuration, assertPublishable, inspectVideo } from '../stitch/qc.mjs';
 
@@ -29,6 +29,7 @@ async function main() {
       (gate && id !== 'ep02') || extra.length) {
     throw new Error('Usage: npm run render -- {burger|ep02} [--review [scene] | --smoke | --scene-gate]');
   }
+  const assertHumanReviewed = createHumanReviewVerifier();
   const { episode } = await import(episodeURL.href);
   const ctx = createCanvas(1, 1).getContext('2d');
   const scenes = episode.createScenes(ctx, createCanvasKit(ctx));
@@ -49,20 +50,17 @@ async function main() {
       if (chosen !== null && chosen !== index + 1) continue;
       job.scenes.push(result);
       const sceneDir = join(dir, number);
-      const fingerprint = await reviewFingerprint(episode, index, scene);
+      const fingerprintFrom = readSource => reviewFingerprint(episode, index, scene, readSource);
+      const fingerprint = await fingerprintFrom();
       const review = async () => {
         const url = new URL(`review-${number}.json`, episode.sources[index]);
-        return assertReviewed(await readFile(url, 'utf8').then(JSON.parse, error => {
+        const approval = await readFile(url, 'utf8').then(JSON.parse, error => {
           if (error.code !== 'ENOENT') throw error;
           return null;
-        }), fingerprint, { pilotSmoke: smoke && id === 'burger' });
+        });
+        if (smoke && id === 'burger') return assertPilotSmokeReviewed(approval, fingerprint);
+        await assertHumanReviewed(approval, fingerprint, url, fingerprintFrom);
       };
-      const log = (outcome, attempt) => {
-        const at = (result.start + (outcome.frame ?? 0) / FPS).toFixed(3);
-        const detail = outcome.ok ? 'ok' : `${outcome.kind}: ${outcome.message}`;
-        console.log(`Scene ${number} @ ${at}s [${attempt}]: ${detail}`);
-      };
-
       if (gate && await isPending(episode.sources[index], number)) {
         result.status = 'pending';
         console.log(`Scene ${number}: pending (unchanged scaffold)`);
@@ -71,7 +69,7 @@ async function main() {
 
       if (reviewing || gate) {
         const outcome = await renderScene(episodeURL, index, sceneDir, { mode: gate ? 'render' : 'review' });
-        log(outcome, gate ? 'scene render' : 'visual samples');
+        logScene(result, outcome, gate ? 'scene render' : 'visual samples');
         result.fingerprint = fingerprint;
         if (!outcome.ok) {
           Object.assign(result, { status: 'failed', error: outcome });
@@ -96,7 +94,7 @@ async function main() {
         segment = join(sceneDir, mode === 'fallback' ? 'fallback' : `attempt-${attempt}`);
         const outcome = await renderScene(episodeURL, index, segment, { mode, timeout: 45_000 + 15_000 * timeouts });
         if (outcome.kind === 'timeout') timeouts++;
-        log(outcome, mode === 'fallback' ? mode : `attempt ${attempt}`);
+        logScene(result, outcome, mode === 'fallback' ? mode : `attempt ${attempt}`);
         return outcome;
       }, { pause: attempt => pause(attempt * 250) }));
       result.segment = segment;
@@ -114,22 +112,6 @@ async function main() {
         Object.assign(result, { status: 'unapproved', visualError: error.message });
         console.error(`Scene ${number}: ${error.message}`);
       }
-      for (let attempt = 1; attempt <= 3; attempt++) {
-        try {
-          await narrate({ text: episode.narration?.[index] ?? scene.cap,
-            duration: scene.dur, path: join(segment, 'voice.wav'), smoke });
-          result.audio.status = 'passed';
-          result.audio.attempts.push({ ok: true });
-          log({ ok: true }, `audio ${attempt}`);
-          break;
-        } catch (error) {
-          result.audio.status = 'failed';
-          result.audio.attempts.push({ ok: false, message: error.message });
-          log({ kind: 'audio', message: error.message }, `audio ${attempt}`);
-          if (error.permanent) break;
-          if (attempt < 3) await pause(attempt * 500);
-        }
-      }
     }
 
     if (reviewing || gate) {
@@ -137,6 +119,24 @@ async function main() {
       job.status = gate ? 'passed' : 'ready-for-review';
       return;
     }
+    await narrateApprovedScenes(job.scenes, async (result, index) => {
+      for (let attempt = 1; attempt <= 3; attempt++) {
+        try {
+          await narrate({ text: episode.narration?.[index] ?? scenes[index].cap,
+            duration: result.duration, path: join(result.segment, 'voice.wav'), smoke });
+          result.audio.status = 'passed';
+          result.audio.attempts.push({ ok: true });
+          logScene(result, { ok: true }, `audio ${attempt}`);
+          break;
+        } catch (error) {
+          result.audio.status = 'failed';
+          result.audio.attempts.push({ ok: false, message: error.message });
+          logScene(result, { kind: 'audio', message: error.message }, `audio ${attempt}`);
+          if (error.permanent) break;
+          if (attempt < 3) await pause(attempt * 500);
+        }
+      }
+    });
     assertPublishable(job.scenes);
     const stage = join(dir, 'staged.mp4');
     try {
@@ -158,6 +158,12 @@ async function main() {
   } finally {
     await writeFile(join(dir, 'job.json'), JSON.stringify(job, null, 2) + '\n');
   }
+}
+
+function logScene(scene, outcome, attempt) {
+  const at = (scene.start + (outcome.frame ?? 0) / FPS).toFixed(3);
+  const detail = outcome.ok ? 'ok' : `${outcome.kind}: ${outcome.message}`;
+  console.log(`Scene ${scene.scene} @ ${at}s [${attempt}]: ${detail}`);
 }
 
 async function isPending(source, number) {

@@ -2,11 +2,18 @@ name: Video pipeline
 
 on:
   pull_request:
+  pull_request_review:
+    types: [submitted, dismissed]
   push:
     branches: [main]
 
 permissions:
   contents: read
+  pull-requests: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
 
 jobs:
   qc:
@@ -31,6 +38,9 @@ jobs:
       - run: npm test
       - run: npm run smoke
       - run: npm run render -- ep02 --scene-gate
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          VIDEO_PIPELINE_HUMAN_REVIEWERS: ${{ vars.VIDEO_PIPELINE_HUMAN_REVIEWERS }}
       - name: Keep QC logs and review frames
         if: always()
         uses: actions/upload-artifact@v4
