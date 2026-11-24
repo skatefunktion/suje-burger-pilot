@@ -1,0 +1,13 @@
+{
+  "reviewer": "Devin",
+  "fingerprint": "cf3630fb23b46cff06dd49dc415ba8c4065cb2badbac0f22382ea8443f05a27e",
+  "checks": {
+    "insideCanvas": true,
+    "captionClear": true,
+    "proportions": true,
+    "readable": true,
+    "contrast": true,
+    "layerOrder": true,
+    "pilotStyle": true
+  }
+}
