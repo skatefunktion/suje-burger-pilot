@@ -5,7 +5,7 @@ import { createCanvas } from '@napi-rs/canvas';
 import { createCanvasKit } from '../scenes/canvas-kit.mjs';
 import { FPS, frameCount } from './frames.mjs';
 import { renderScene, renderWithRetry } from './render.mjs';
-import { assertReviewed, reviewFingerprint } from './review.mjs';
+import { assertPilotSmokeReviewed, createHumanReviewVerifier, reviewFingerprint } from './review.mjs';
 import { narrate, narrateApprovedScenes } from '../tts/narration.mjs';
 import { stitch } from '../stitch/stitch.mjs';
 import { assertDuration, assertPublishable, inspectVideo } from '../stitch/qc.mjs';
@@ -29,6 +29,7 @@ async function main() {
       (gate && id !== 'ep02') || extra.length) {
     throw new Error('Usage: npm run render -- {burger|ep02} [--review [scene] | --smoke | --scene-gate]');
   }
+  const assertHumanReviewed = createHumanReviewVerifier();
   const { episode } = await import(episodeURL.href);
   const ctx = createCanvas(1, 1).getContext('2d');
   const scenes = episode.createScenes(ctx, createCanvasKit(ctx));
@@ -52,10 +53,12 @@ async function main() {
       const fingerprint = await reviewFingerprint(episode, index, scene);
       const review = async () => {
         const url = new URL(`review-${number}.json`, episode.sources[index]);
-        return assertReviewed(await readFile(url, 'utf8').then(JSON.parse, error => {
+        const approval = await readFile(url, 'utf8').then(JSON.parse, error => {
           if (error.code !== 'ENOENT') throw error;
           return null;
-        }), fingerprint, { pilotSmoke: smoke && id === 'burger' });
+        });
+        if (smoke && id === 'burger') return assertPilotSmokeReviewed(approval, fingerprint);
+        await assertHumanReviewed(approval, fingerprint, url);
       };
       if (gate && await isPending(episode.sources[index], number)) {
         result.status = 'pending';

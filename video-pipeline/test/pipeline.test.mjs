@@ -10,7 +10,7 @@ import { createCanvasKit } from '../scenes/canvas-kit.mjs';
 import { CAPTION_Y, WIDTH, HEIGHT, frameCount, paintFrame, assertNotBlank, visualBounds } from '../queue/frames.mjs';
 import { run } from '../queue/process.mjs';
 import { renderScene, renderWithRetry } from '../queue/render.mjs';
-import { assertReviewed } from '../queue/review.mjs';
+import { assertPilotSmokeReviewed } from '../queue/review.mjs';
 import { assertDuration, assertPublishable, inspectAudio } from '../stitch/qc.mjs';
 import { narrateApprovedScenes } from '../tts/narration.mjs';
 
@@ -81,14 +81,13 @@ test('QC rejects stale review, unapproved / degraded scenes, missing narration a
     'insideCanvas', 'captionClear', 'proportions', 'readable', 'contrast', 'layerOrder', 'pilotStyle',
   ].map(check => [check, true]));
   const review = { reviewer: 'Reviewer', fingerprint: 'abc', checks };
-  assert.doesNotThrow(() => assertReviewed(review, 'abc'));
-  assert.throws(() => assertReviewed(review, 'def'), /stale/);
-  assert.throws(() => assertReviewed({ ...review, checks: { ...checks, proportions: false } }, 'abc'), /approval/);
+  assert.doesNotThrow(() => assertPilotSmokeReviewed(review, 'abc'));
+  assert.throws(() => assertPilotSmokeReviewed(review, 'def'), /stale/);
+  assert.throws(() => assertPilotSmokeReviewed({ ...review, checks: { ...checks, proportions: false } }, 'abc'), /approval/);
   const baseline = { ...review, baselineException: 'Overlapping pilot labels', checks: { ...checks, readable: false } };
-  assert.throws(() => assertReviewed(baseline, 'abc'), /approval/);
-  assert.equal(assertReviewed(baseline, 'abc', { pilotSmoke: true }), 'Overlapping pilot labels');
-  assert.throws(() => assertReviewed({ ...baseline, checks: { ...checks, insideCanvas: false } },
-    'abc', { pilotSmoke: true }), /approval/);
+  assert.equal(assertPilotSmokeReviewed(baseline, 'abc'), 'Overlapping pilot labels');
+  assert.throws(() => assertPilotSmokeReviewed({ ...baseline, checks: { ...checks, insideCanvas: false } },
+    'abc'), /approval/);
   assert.throws(() => assertPublishable([{ status: 'degraded', audio: { status: 'passed' } }]), /QC blocked/);
   assert.throws(() => assertPublishable([{ status: 'passed', audio: { status: 'failed' } }]), /QC blocked/);
   assert.doesNotThrow(() => assertPublishable([{ status: 'passed', audio: { status: 'passed' } }]));

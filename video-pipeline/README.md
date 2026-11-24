@@ -46,11 +46,13 @@ command exits nonzero without promoting a final MP4.
    canvas edges, including the reserved caption area, at seven key frames.
    Human review must also check intended geometry, proportions, readable faces
    and labels, contrast, the intended layer order and the pilot's style.
-3. Have the reviewer record their name and CLI-reported fingerprint in
-   `scenes/ep02/review-01.json` (use the scene number). The full shape is:
+3. Commit a checklist in `scenes/ep02/review-01.json` (use the scene number),
+   with the assigned human reviewer's GitHub login, the PR number and the
+   CLI-reported fingerprint. Example:
    ```json
    {
-     "reviewer": "Reviewer name",
+     "reviewer": "human-reviewer-github-login",
+     "approvalPR": 123,
      "fingerprint": "Paste the reported SHA-256 after looking at the frames",
      "checks": {
        "insideCanvas": true,
@@ -65,8 +67,23 @@ command exits nonzero without promoting a final MP4.
    ```
    If the scene imports additional components, add those sources to the
    corresponding `episode.reviewDependencies` entry so edits invalidate approval.
+   After checking the frames and checklist at the final commit, the human
+   reviewer must submit an **Approve** review in GitHub (not just write their
+   name in JSON). Only current approvals by an allowlisted human account
+   other than the PR author count. CI reruns on review submission or dismissal.
+   Later episodes can reuse an unchanged scene's checklist and approval PR.
 4. CI renders every non-placeholder scene with `--scene-gate`, rejects stale or
    missing approvals, and separately runs the full burger smoke test. The exact
    scaffold stubs may stay pending until their scene PR. The production render
    does not accept stubs or unapproved visuals. Wait for `video-pipeline-qc` and
    merge one scene PR at a time.
+
+Set the repository Actions variable `VIDEO_PIPELINE_HUMAN_REVIEWERS` to the
+comma-separated GitHub logins of human reviewers. Set the same variable in
+local production runs; supply a read-only `GITHUB_TOKEN` if GitHub API
+authentication is needed. Only the burger **smoke fixture** uses legacy
+Devin-reviewed references; that exception never approves a new scene or a
+production render.
+
+Keep GitHub's independent PR approval and `video-pipeline-qc` required, and
+protect changes to the workflow and review code with designated reviewers.
