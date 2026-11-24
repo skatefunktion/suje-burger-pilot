@@ -2,6 +2,15 @@ import { writeFile } from 'node:fs/promises';
 import { run } from '../queue/process.mjs';
 import { inspectAudio } from '../stitch/qc.mjs';
 
+export async function narrateApprovedScenes(scenes, narrateScene) {
+  const blocked = scenes.filter(scene => scene.status !== 'passed');
+  if (blocked.length) {
+    const details = blocked.map(scene => `${scene.scene} (${scene.status})`).join(', ');
+    throw new Error(`QC blocked: narration skipped because scenes failed render or visual approval: ${details}`);
+  }
+  for (const [index, scene] of scenes.entries()) await narrateScene(scene, index);
+}
+
 export async function narrate({ text, duration, path, smoke }) {
   if (!text?.trim()) throw new Error('Missing narration text');
   const raw = path + '.source';
