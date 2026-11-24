@@ -247,7 +247,7 @@ function createBurgerScenes(ctx, kit) {
   const ingredients = ['아래 번', '양상추', '토마토', '치즈', '패티', '위 번'];
   const layerColors = [C.bun, C.leaf, C.tomato, C.butter, C.meat, C.bun];
 
-  function layer(index, x, y, scale) {
+  function layer(index, x, y, scale, topped = true) {
     ctx.save();
     ctx.translate(x, y);
     ctx.scale(scale, scale);
@@ -273,7 +273,7 @@ function createBurgerScenes(ctx, kit) {
         break;
       case 5:
         dome(0, 0, 210, 53, color);
-        seeds(0, -24, 1.65);
+        if (topped) seeds(0, -24, 1.65);
         break;
     }
     ctx.restore();
@@ -567,15 +567,60 @@ function createBurgerScenes(ctx, kit) {
     box(48, 104, 520, 333, 18, C.wheat);
     oval(308, 267, 142, 142, '#EFDBB5');
     plate(308, 405, 294, C.panel);
-    burger(308, 382, 1.34);
-    const sauce = easeO(seg(t, .09, .6)), sprinkle = seg(t, .56, .88);
-    if (sauce > 0) {
-      drizzle(308, 382, 1.34, sauce);
-      if (sauce < .91) line([[302, 131], [302, lerp(141, 255, sauce)]], C.sauce, 5);
+    const scale = 1.28, bottom = 382, cx = 308;
+    for (let i = 0; i < 5; i++) layer(i, cx, bottom + offsets[i] * scale, scale);
+    const pour = seg(t, .14, .47), sauce = '#A94E2A', highlight = '#F3AB68';
+    const ribbon = p => [lerp(202, 413, p), 309 + Math.sin(p * Math.PI * 4) * 4];
+    if (pour > 0) {
+      const stroke = Array.from({ length: 33 }, (_, i) => ribbon(pour * i / 32));
+      line(stroke, sauce, 16);
+      line(stroke.map(([x, y]) => [x, y - 3]), highlight, 3.5);
     }
-    if (sprinkle > 0) {
-      seeds(312, lerp(156, 245, easeO(sprinkle)), 1.60, C.panel);
-      accent(422, 196, C.toast);
+    if (t > .06 && t < .53) {
+      const [endX, endY] = ribbon(pour);
+      const lift = 32 * (1 - seg(t, .06, .14) + seg(t, .47, .53));
+      const nozzleX = endX - 36, nozzleY = 196 - lift;
+      if (t >= .12 && t < .48) {
+        line([[nozzleX, nozzleY], [endX - 15, 239], [endX, endY]], sauce, 14);
+        line([[nozzleX - 2, nozzleY], [endX - 18, 239], [endX - 4, endY - 6]], highlight, 3.5);
+      }
+      ctx.save();
+      ctx.translate(nozzleX, nozzleY);
+      ctx.rotate(-.62);
+      box(-39, -77, 54, 62, 12, C.sauce);
+      box(-39, -63, 54, 26, 4, C.rose);
+      box(-24, -19, 25, 14, 4, C.toast);
+      box(-20, -7, 17, 11, 4, C.meat);
+      ctx.restore();
+    }
+    const top = easeIO(seg(t, .50, .64));
+    layer(5, lerp(475, cx, top), lerp(360, bottom + offsets[5] * scale, top) - Math.sin(top * Math.PI) * 42,
+      lerp(.64, scale, top), false);
+    if (t > .64) {
+      const sprinkle = seg(t, .64, .88);
+      const mouthX = lerp(238, 374, sprinkle), mouthY = 173;
+      if (t < .91) {
+        ctx.save();
+        ctx.translate(mouthX, mouthY);
+        ctx.rotate(-.38);
+        box(-21, -50, 43, 44, 8, C.mint);
+        box(-21, -18, 43, 16, 4, C.green);
+        for (const dx of [-12, 0, 12]) oval(dx, -5, 2.5, 2.5, C.panel);
+        ctx.restore();
+      }
+      const landing = [[252, 266], [267, 279], [277, 251], [290, 265], [301, 281], [309, 247],
+        [324, 269], [336, 253], [349, 282], [356, 260], [373, 272]];
+      for (const [i, [x, y]] of landing.entries()) {
+        const start = .646 + i * .017;
+        if (t < start) continue;
+        const drop = seg(t, start, start + .095);
+        const origin = lerp(238, 374, seg(start, .64, .88));
+        const seedX = lerp(origin, x, drop) + Math.sin(drop * Math.PI) * ((i % 3) - 1) * 13;
+        const seedY = lerp(mouthY + 5, y, drop * drop);
+        const angle = (i % 3 - 1) * .62 + (1 - drop) * Math.PI;
+        oval(seedX, seedY, 9, 5, '#A96B38', angle);
+        oval(seedX, seedY - 1, 7, 3.5, C.panel, angle);
+      }
     }
     for (const [i, glyph, title, subtitle, color] of [
       [0, 'sauce', '불고기 소스', '버거 위에 고르게', C.rose],
