@@ -27,10 +27,10 @@ const checklist = {
 const approval = { user: { login: 'human-reviewer', type: 'User' }, state: 'APPROVED', commit_id: head };
 
 function setup({ author = 'scene-author', reviews = [approval], pinned = checklist,
-  fileStatus = 200, approvedSources = contents } = {}) {
+  fileStatus = 200, approvedSources = contents, fork = { full_name: 'contributor/suje-burger-pilot' } } = {}) {
   const calls = [];
   const results = {
-    [`${root}/pulls/19`]: { user: { login: author }, head: { sha: head, repo: { full_name: 'skatefunktion/suje-burger-pilot' } } },
+    [`${root}/pulls/19`]: { user: { login: author }, head: { sha: head, repo: fork } },
     [`${root}/pulls/19/reviews?per_page=100&page=1`]: reviews,
     [`${root}/contents/${reviewFile}?ref=${head}`]: JSON.stringify(pinned),
     ...Object.fromEntries([...approvedSources].map(([path, bytes]) => [`${root}/contents/${path}?ref=${head}`, bytes])),
@@ -72,6 +72,12 @@ test('self-signed JSON, non-allowlisted accounts and automation accounts do not 
   assert.deepEqual(calls, []);
   await assert.rejects(setup({ author: 'human-reviewer' }).check(), /cannot approve their own/);
   await assert.rejects(setup({ reviews: [{ ...approval, user: { ...approval.user, type: 'Bot' } }] }).check(), /active GitHub approval/);
+});
+
+test('a deleted fork still resolves approved source by SHA through the base repository', async () => {
+  const { check, calls } = setup({ fork: null });
+  await check();
+  assert.ok(calls.includes(`${root}/contents/${source}?ref=${head}`));
 });
 
 test('approval must be current and the pinned checklist must be available', async () => {

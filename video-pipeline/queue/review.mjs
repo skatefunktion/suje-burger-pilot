@@ -75,11 +75,10 @@ export function createHumanReviewVerifier({
     const pullPath = `${repo}/pulls/${review.approvalPR}`;
     const pull = await get(pullPath);
     const head = pull.head?.sha;
-    const headRepo = pull.head?.repo?.full_name;
     if (pull.user?.login?.toLowerCase() === login) {
       throw new Error('A scene PR author cannot approve their own visual checklist');
     }
-    if (!/^[a-f0-9]{40}$/.test(head ?? '') || !/^[\w.-]+\/[\w.-]+$/.test(headRepo ?? '')) {
+    if (!/^[a-f0-9]{40}$/.test(head ?? '')) {
       throw new Error('GitHub approval PR does not have an accessible head commit');
     }
 
@@ -98,7 +97,7 @@ export function createHumanReviewVerifier({
 
     const readApproved = url => {
       const path = relative(repoRoot, fileURLToPath(url)).split(sep).map(encodeURIComponent).join('/');
-      return get(`${headRepo}/contents/${path}?ref=${head}`, true);
+      return get(`${repo}/contents/${path}?ref=${head}`, true);
     };
     const pinned = JSON.parse(await readApproved(reviewURL));
     assertChecklist(pinned, fingerprint);
