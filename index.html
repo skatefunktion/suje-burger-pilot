@@ -809,6 +809,7 @@ function frame(ts){
   const dt=(ts-lastTs)/1000;lastTs=ts;
   if(playing){tG+=dt;if(tG>=TOTAL){tG=TOTAL;playing=false;}}
   render();
+  if(tG===TOTAL&&rec?.state==='recording')rec.stop();
   requestAnimationFrame(frame);
 }
 function nextScene(){
@@ -825,7 +826,7 @@ document.getElementById('bReplay').addEventListener('click',()=>{tG=0;playing=tr
 let rec=null,chunks=[];
 const bRec=document.getElementById('bRec');
 bRec.addEventListener('click',()=>{
-  if(rec){rec.stop();return;}
+  if(rec){if(rec.state==='recording')rec.stop();return;}
   chunks=[];
   try{
     const stream=cv.captureStream(30);
@@ -843,7 +844,7 @@ bRec.addEventListener('click',()=>{
   };
   rec.start();
   bRec.textContent='■ 중지';
-  tG=0;playing=true;curIdx=-1;
+  tG=0;playing=true;lastTs=null;curIdx=-1;
 });
 
 requestAnimationFrame(frame);
