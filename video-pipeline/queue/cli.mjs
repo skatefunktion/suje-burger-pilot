@@ -50,7 +50,8 @@ async function main() {
       if (chosen !== null && chosen !== index + 1) continue;
       job.scenes.push(result);
       const sceneDir = join(dir, number);
-      const fingerprint = await reviewFingerprint(episode, index, scene);
+      const fingerprintFrom = readSource => reviewFingerprint(episode, index, scene, readSource);
+      const fingerprint = await fingerprintFrom();
       const review = async () => {
         const url = new URL(`review-${number}.json`, episode.sources[index]);
         const approval = await readFile(url, 'utf8').then(JSON.parse, error => {
@@ -58,7 +59,7 @@ async function main() {
           return null;
         });
         if (smoke && id === 'burger') return assertPilotSmokeReviewed(approval, fingerprint);
-        await assertHumanReviewed(approval, fingerprint, url);
+        await assertHumanReviewed(approval, fingerprint, url, fingerprintFrom);
       };
       if (gate && await isPending(episode.sources[index], number)) {
         result.status = 'pending';

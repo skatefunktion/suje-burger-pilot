@@ -8,17 +8,18 @@ const repoRoot = fileURLToPath(new URL('../../', import.meta.url));
 const repo = 'skatefunktion/suje-burger-pilot';
 const automationLogin = /devin|automation|(?:^|[-_])bot(?:[-_]|$)|bot$|\[bot\]|^github-actions$/i;
 
-export async function reviewFingerprint(episode, index, scene) {
+export async function reviewFingerprint(episode, index, scene, readSource = readFile) {
   const hash = createHash('sha256');
   hash.update(JSON.stringify([scene.dur, scene.cap, episode.viewport]));
   for (const source of [
     episode.sources[index],
+    ...(episode.reviewSources ?? []),
     ...(episode.reviewDependencies?.[index] ?? []),
     new URL('../scenes/canvas-kit.mjs', import.meta.url),
     new URL('./frames.mjs', import.meta.url),
     new URL('./render-child.mjs', import.meta.url),
   ]) {
-    const sourceHash = createHash('sha256').update(await readFile(source)).digest();
+    const sourceHash = createHash('sha256').update(await readSource(source)).digest();
     hash.update(sourceHash);
   }
   return hash.digest('hex');
@@ -53,15 +54,15 @@ export function createHumanReviewVerifier({
       if (token) headers.Authorization = `Bearer ${token}`;
       cache.set(path, request(`https://api.github.com/repos/${path}`, {
         headers, signal: AbortSignal.timeout(15_000),
-      }).then(response => {
+      }).then(async response => {
         if (!response.ok) throw new Error(`GitHub visual approval lookup failed (HTTP ${response.status})`);
-        return response.json();
+        return raw ? Buffer.from(await response.arrayBuffer()) : response.json();
       }));
     }
     return cache.get(path);
   }
 
-  return async function assertHumanReviewed(review, fingerprint, reviewURL) {
+  return async function assertHumanReviewed(review, fingerprint, reviewURL, fingerprintFrom) {
     assertChecklist(review, fingerprint);
     const login = review.reviewer.toLowerCase();
     if (!/^[a-z0-9][a-z0-9-]{0,38}$/.test(login) || automationLogin.test(login) || !allowed.has(login)) {
@@ -95,11 +96,17 @@ export function createHumanReviewVerifier({
       throw new Error(`Visual checklist needs an active GitHub approval by ${login} on PR #${review.approvalPR}'s head commit`);
     }
 
-    const path = relative(repoRoot, fileURLToPath(reviewURL)).split(sep).map(encodeURIComponent).join('/');
-    const pinned = await get(`${headRepo}/contents/${path}?ref=${head}`, true);
+    const readApproved = url => {
+      const path = relative(repoRoot, fileURLToPath(url)).split(sep).map(encodeURIComponent).join('/');
+      return get(`${headRepo}/contents/${path}?ref=${head}`, true);
+    };
+    const pinned = JSON.parse(await readApproved(reviewURL));
     assertChecklist(pinned, fingerprint);
     if (pinned.reviewer.toLowerCase() !== login || pinned.approvalPR !== review.approvalPR) {
       throw new Error('Visual checklist does not match the file on the human-approved PR commit');
+    }
+    if (await fingerprintFrom(readApproved) !== fingerprint) {
+      throw new Error('Scene source on the human-approved PR commit does not match the current fingerprint');
     }
   };
 }
