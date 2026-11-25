@@ -401,13 +401,23 @@ function createBurgerScenes(ctx, kit) {
     }
   }
 
+  const tomatoBranches = [-14, 13, -11];
+
+  function tomatoY(y, height, index) {
+    return y - height * (.46 + index * .16);
+  }
+
+  function tomatoFruit(x, y, height, ripe) {
+    oval(x, y, 5 + height * .09, 5 + height * .08, ripe ? C.tomato : C.leaf);
+  }
+
   function vine(x, y, height, ripe, fruit = 1) {
     line([[x, y], [x, y - height - 4]], C.toast, 3);
     line([[x - 6, y], [x - 8, y - height * .70], [x + 4, y - height]], C.green, 3);
-    for (const [i, dx] of [-14, 13, -11].entries()) {
-      const dy = y - height * (.46 + i * .16);
+    for (const [i, dx] of tomatoBranches.entries()) {
+      const dy = tomatoY(y, height, i);
       oval(x + dx / 2, dy - 5, 9, 3.8, C.leaf, dx / 22);
-      if (fruit > i / 3) oval(x + dx, dy + 6, 5 + height * .09, 5 + height * .08, ripe ? C.tomato : C.leaf);
+      if (fruit > i / 3) tomatoFruit(x + dx, dy + 6, height, ripe);
     }
   }
 
@@ -522,13 +532,13 @@ function createBurgerScenes(ctx, kit) {
       for (let j = 0; j < 6; j++) {
         const sx = x + 24 + j * 23;
         if (i === 1) {
-          const height = j >= 4 && pick > 0 ? 12 : lerp(13, 58 + j % 3 * 5, p);
-          stalk(sx, y, height, p > .84, Math.sin(t * 13 + j) * 3);
-        }
-        else {
+          if (j >= 3 && pick > 0) line([[sx, y], [sx, y - 8]], C.toast, 2.5);
+          else stalk(sx, y, lerp(13, 58 + j % 3 * 5, p), p > .84, Math.sin(t * 13 + j) * 3);
+        } else {
           const height = lerp(12, 57, p);
           line([[sx, y], [sx + 3, y - height]], C.green, 3);
           for (const [k, sign] of [-1, 1, -1].entries()) {
+            if (j >= 3 && k === 2 && pick > 0) continue;
             oval(sx + sign * 6, y - height * (.45 + k * .19), 6, 3 + p * 2, p > .73 ? C.toast : C.leaf, sign * -.50);
           }
         }
@@ -536,25 +546,34 @@ function createBurgerScenes(ctx, kit) {
       basket(x + 206, y - 4, () => {
         for (const [j, dx] of [-16, 0, 15].entries()) {
           if (pick === 0) continue;
-          const sx = lerp(x + 137 + j * 10, x + 206 + dx, pick), sy = y - 19 - Math.sin(pick * Math.PI) * 40;
-          if (i === 1) stalk(sx, sy + 13, 31, true, dx / 2);
-          else oval(sx, sy + 6, 9, 4, C.toast, dx / 28);
+          const lift = Math.sin(pick * Math.PI) * 34;
+          const stemX = x + 24 + (3 + j) * 23;
+          if (i === 1) {
+            const sx = lerp(stemX, x + 206 + dx, pick), sy = lerp(y, y - 6, pick) - lift;
+            stalk(sx, sy, lerp(58 + j * 5, 31, pick), true, dx / 2);
+          } else {
+            const sx = lerp(stemX - 6, x + 206 + dx, pick), sy = lerp(y - 57 * .83, y - 10, pick) - lift;
+            oval(sx, sy, 6, 5, C.toast, lerp(.50, dx / 28, pick));
+          }
         }
       });
     } else if (i === 2 || i === 3) {
+      const height = lerp(15, 62, p), last = x + 133;
       for (let j = 0; j < 3; j++) {
         const sx = x + 37 + j * 48;
-        if (i === 2) vine(sx, y, lerp(15, 62, p), t > .43, j === 2 && pick > .55 ? .34 : Math.min(1, p * 1.2));
+        if (i === 2) vine(sx, y, height, t > .43, j === 2 && pick > 0 ? 1 / 3 : Math.min(1, p * 1.2));
         else if (j !== 2 || pick === 0) lettuceHead(sx, y - lerp(3, 14, p), lerp(5, 25, p));
       }
       basket(x + 206, y - 4, () => {
         if (pick === 0) return;
-        const sx = lerp(x + 133, x + 206, pick), sy = lerp(y - 15, y - 14, pick) - Math.sin(pick * Math.PI) * 41;
+        const lift = Math.sin(pick * Math.PI) * 38;
         if (i === 2) {
-          oval(sx - 9, sy + 1, 11, 10, C.tomato);
-          oval(sx + 11, sy - 3, 10, 9, C.tomato);
-          line([[sx - 11, sy - 8], [sx - 5, sy - 11]], C.green);
-        } else lettuceHead(sx, sy, 23);
+          for (const [j, dx] of [[1, 12], [2, -12]]) {
+            const sx = lerp(last + tomatoBranches[j], x + 206 + dx, pick);
+            const sy = lerp(tomatoY(y, height, j) + 6, y - 13, pick) - lift;
+            tomatoFruit(sx, sy, height, true);
+          }
+        } else lettuceHead(lerp(last, x + 206, pick), y - 14 - lift, lerp(25, 23, pick));
       });
     } else {
       box(x + 29, y - 36, 42, 43, 9, C.blue);
