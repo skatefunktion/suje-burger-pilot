@@ -34,16 +34,17 @@ export function createClayBurgerScenes(ctx, kit) {
     text(kind === 'bun' ? '번을 만들어요' : '패티를 만들어요', 108, 54, 30);
     text(kind === 'bun' ? '우리밀 100%' : '한우', 915, 54, 16, '#685C4E', 'right', 500);
     // One full-width miniature workbench, not three illustrated UI cards.
-    ctx.drawImage(images[names[step]][pose], 28, 84, 904, 362);
-    // Process labels live outside the miniature, above the original caption band.
-    ctx.fillStyle = '#FFFDF7'; kit.rr(38, 394, 884, 55, 18); ctx.fill();
+    // Trim only empty studio headroom, preserving the miniatures' aspect ratio.
+    // All props end above the separate, two-line process strip.
+    ctx.drawImage(images[names[step]][pose], 0, 40, 1200, 440, 60, 80, 840, 308);
+    ctx.fillStyle = '#FFFDF7'; kit.rr(38, 394, 884, 62, 18); ctx.fill();
     for (const [i, [name]] of stages[kind].entries()) {
       const x = 73 + i * 292, active = i === step;
-      ctx.beginPath(); ctx.arc(x, 421, 15, 0, Math.PI * 2);
+      ctx.beginPath(); ctx.arc(x, 414, 15, 0, Math.PI * 2);
       ctx.fillStyle = active ? '#E7A136' : '#E8E0D4'; ctx.fill();
-      text(String(i + 1), x, 421, 16, active ? '#FFFDF7' : '#685C4E', 'center');
-      text(name, x + 26, 421, 21, active ? '#2E2921' : '#81796E');
-      if (active) text(stages[kind][i][1], 891, 370, 17, '#685C4E', 'right', 500);
+      text(String(i + 1), x, 414, 16, active ? '#FFFDF7' : '#685C4E', 'center');
+      text(name, x + 26, 414, 21, active ? '#2E2921' : '#81796E');
+      if (active) text(stages[kind][i][1], x + 100, 441, 17, '#685C4E', 'center', 500);
     }
     ctx.restore();
   }

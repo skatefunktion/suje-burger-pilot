@@ -30,6 +30,33 @@ test('clay keyframes and process-step boundaries stay clear of captions and canv
   }
 });
 
+test('every clay process label stays outside the miniature artwork', () => {
+  const canvas = createCanvas(960, 540), ctx = canvas.getContext('2d');
+  const scenes = clay.createScenes(ctx, createCanvasKit(ctx));
+  const drawImage = ctx.drawImage.bind(ctx), fillText = ctx.fillText.bind(ctx);
+  let artwork, labels;
+  ctx.drawImage = (...args) => {
+    artwork = args.length === 9 ? args.slice(5) : args.slice(1);
+    return drawImage(...args);
+  };
+  ctx.fillText = (value, x, y, ...rest) => {
+    const metrics = ctx.measureText(value);
+    labels.push({ value, top: y - metrics.actualBoundingBoxAscent, bottom: y + metrics.actualBoundingBoxDescent });
+    return fillText(value, x, y, ...rest);
+  };
+  for (const index of [3, 4]) {
+    for (const t of [.18, .5, .86]) {
+      artwork = null; labels = []; scenes[index].draw(t);
+      assert.ok(artwork, 'miniature must be drawn');
+      assert.ok(labels.length > 0, 'process labels must be drawn');
+      const [, top, , height] = artwork;
+      for (const label of labels) {
+        assert.ok(label.bottom < top || label.top > top + height, `${label.value} overlaps the miniature`);
+      }
+    }
+  }
+});
+
 test('claymation holds poses on a fixed 12-exposure clock and changes between process steps', () => {
   const canvas = createCanvas(960, 540);
   for (const index of [3, 4]) {
