@@ -1,6 +1,6 @@
 """Rebuild the original clay miniature assets. Blender 3.x, Eevee.
 
-blender -b -t 4 --python sculpt.py -- [output-directory] [optional scene filter]
+blender -b -t 4 --python sculpt.py -- [output-directory] [scene filter] [pose]
 No reference image is copied into the artwork. All meshes/materials are procedural.
 """
 import bpy, math, os, sys
@@ -9,6 +9,7 @@ from mathutils import Vector
 args = sys.argv[sys.argv.index('--') + 1:] if '--' in sys.argv else []
 OUT = args[0] if args else os.path.join(os.path.dirname(__file__), 'assets')
 FILTER = args[1] if len(args) > 1 else ''
+POSE = int(args[2]) if len(args) > 2 else None
 os.makedirs(OUT, exist_ok=True)
 
 def rgb(hexcode):
@@ -17,15 +18,15 @@ def rgb(hexcode):
     values = [int(h[i:i+2], 16)/255 for i in (0, 2, 4)]
     return tuple(v/12.92 if v <= .04045 else ((v+.055)/1.055)**2.4 for v in values)
 
-def material(name, color, rough=.78):
+def material(name, color, rough=.94):
     mat = bpy.data.materials.new(name); mat.use_nodes = True
     nodes = mat.node_tree.nodes; links = mat.node_tree.links
     bs = nodes.get('Principled BSDF'); bs.inputs['Base Color'].default_value = (*rgb(color), 1)
-    bs.inputs['Roughness'].default_value = rough; bs.inputs['Specular'].default_value = .24
-    bs.inputs['Subsurface'].default_value = .025
-    noise = nodes.new('ShaderNodeTexNoise'); noise.inputs['Scale'].default_value = 170
-    noise.inputs['Detail'].default_value = 2.2; noise.inputs['Roughness'].default_value = .7
-    bump = nodes.new('ShaderNodeBump'); bump.inputs['Strength'].default_value = .16; bump.inputs['Distance'].default_value = .021
+    bs.inputs['Roughness'].default_value = rough; bs.inputs['Specular'].default_value = .12
+    bs.inputs['Subsurface'].default_value = .015
+    noise = nodes.new('ShaderNodeTexNoise'); noise.inputs['Scale'].default_value = 105
+    noise.inputs['Detail'].default_value = 3; noise.inputs['Roughness'].default_value = .7
+    bump = nodes.new('ShaderNodeBump'); bump.inputs['Strength'].default_value = .24; bump.inputs['Distance'].default_value = .025
     links.new(noise.outputs['Fac'], bump.inputs['Height']); links.new(bump.outputs['Normal'], bs.inputs['Normal'])
     return mat
 
@@ -36,22 +37,38 @@ def finish(obj, mat):
     return obj
 
 def ball(name, pos, scale, mat, seed=1, dents=False):
-    bpy.ops.mesh.primitive_uv_sphere_add(segments=56, ring_count=32, location=pos)
+    # Hero pieces carry real pressed fingerprint grooves, not painted marks.
+    bpy.ops.mesh.primitive_uv_sphere_add(segments=192 if dents else 56, ring_count=112 if dents else 32, location=pos)
     obj = bpy.context.object; obj.name = name
+    patches = []
+    if dents:
+        for center in [(-.35,-.84,.42), (.58,-.42,.70), (-.05,.14,.99)]:
+            normal = Vector(center).normalized()
+            tangent = normal.cross(Vector((0,0,1))).normalized()
+            patches.append((normal, tangent, normal.cross(tangent)))
     for v in obj.data.vertices:
         n = v.co.normalized(); x,y,z = n
-        irregular = 1 + .017*math.sin(x*13+y*7+seed) * math.cos(z*11-x*5) + .009*math.sin(y*23+z*8)
+        irregular = 1 + .040*math.sin(x*6+y*4+seed)*math.cos(z*7-x*3) + .019*math.sin(y*15+z*8+seed)
         if dents:
-            for target in [Vector((-.4,-.75,.55)).normalized(), Vector((.12,-.85,.52)).normalized(), Vector((.58,-.5,.64)).normalized()]:
-                irregular -= .07*math.exp(-(1-n.dot(target))/.014)
+            for normal, tangent, bitangent in patches:
+                if n.dot(normal) < .85: continue
+                u, w = n.dot(tangent), n.dot(bitangent)
+                radius = math.sqrt((u/.40)**2 + (w/.32)**2)
+                if radius < 1:
+                    mask = min(1, (1-radius)*4)
+                    # Concentric, slightly asymmetric fingertip ridges pressed into dough.
+                    whorl = radius + .045*math.sin(math.atan2(w,u)*2)
+                    groove = .5 + .5*math.cos(whorl*math.tau*4)
+                    irregular -= mask*(.018 + .032*groove)
         v.co *= irregular
+    # Refresh normals after sculpting; otherwise grooves keep smooth-sphere shading.
+    obj.data.update()
     obj.scale = scale; return finish(obj, mat)
 
 def block(name, pos, scale, mat, bevel=.15):
     bpy.ops.mesh.primitive_cube_add(size=1, location=pos); obj=bpy.context.object; obj.name=name
     obj.dimensions = scale; bpy.ops.object.transform_apply(location=False, rotation=False, scale=True)
     mod=obj.modifiers.new('Soft hand-shaped corners', 'BEVEL'); mod.width=bevel; mod.segments=5
-    obj.modifiers.new('Weighted surface normals', 'WEIGHTED_NORMAL')
     return finish(obj, mat)
 
 def rope(name, points, radius, mat):
@@ -205,6 +222,7 @@ def grill(M,pose):
 for label,build in [('bun-mix',mixing),('bun-proof',proof),('bun-bake',oven),('patty-mince',mince),('patty-shape',shaping),('patty-grill',grill)]:
     if FILTER and FILTER not in label: continue
     for pose in range(4):
+        if POSE is not None and pose != POSE: continue
         M=setup(); build(M,pose)
         scene=bpy.context.scene; scene.render.filepath=os.path.join(OUT,f'{label}-{pose}.png')
         bpy.ops.render.render(write_still=True)

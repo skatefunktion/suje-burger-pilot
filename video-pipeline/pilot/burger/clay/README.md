@@ -11,6 +11,9 @@ workbench sets: code-sculpted, imperfect clay meshes, pressed marks, rolled
 seams, soft studio lighting and real contact shadows. Four posed renders per
 step are held on a 12-exposure-per-second stop-motion clock. The scene clock
 and export cadence remain 30fps. Texture never flickers randomly.
+Fingerprint whorls are physically pressed into the mesh; broader unevenness
+breaks up the silhouette, while a fine surface bump and high roughness keep
+the dough matte rather than smooth plastic.
 
 Visual reference: [The Play-Doh Show — BBQ Burger Bash](https://www.toongoggles.com/shows/play-doh-show/season/1/episode/22).
 The reference informed the tabletop staging, matte physical material and
@@ -53,3 +56,6 @@ DISPLAY=:0 blender -b -t 6 --python video-pipeline/pilot/burger/clay/sculpt.py
 Run from the repository root. Blender 3.0.1 / Eevee was used for the study.
 This requires a working OpenGL display for Eevee; it is an authoring command,
 not a runtime dependency or a mandatory CI step.
+
+For a quick material check, append an output directory, scene-name filter and
+pose number after `--`, e.g. `-- /tmp/clay-check bun-bake 0`.
