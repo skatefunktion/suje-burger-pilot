@@ -22,11 +22,23 @@ test('the opt-in clay study preserves every scene caption, duration and untouche
   }
 });
 
-test('clay keyframes and the patty-flip extrema stay clear of captions and canvas edges', () => {
+test('clay keyframes and process-step boundaries stay clear of captions and canvas edges', () => {
   for (const index of [3, 4]) {
-    for (const position of [...samplePositions, .18, .65, .86, (2 + .49) / 3, (2 + .615) / 3, (2 + .74) / 3]) {
+    for (const position of [...samplePositions, .18, .65, .86, 1 / 3 - .001, 1 / 3, 2 / 3 - .001, 2 / 3]) {
       assert.ok(visualBounds(clay, index, Math.round(position * (frameCount(7) - 1))));
     }
+  }
+});
+
+test('claymation holds poses on a fixed 12-exposure clock and changes between process steps', () => {
+  const canvas = createCanvas(960, 540);
+  for (const index of [3, 4]) {
+    paintFrame(canvas, clay, index, 0); const start = canvas.toBuffer('image/png');
+    paintFrame(canvas, clay, index, 1); assert.deepEqual(canvas.toBuffer('image/png'), start);
+    paintFrame(canvas, clay, index, 3); assert.notDeepEqual(canvas.toBuffer('image/png'), start);
+    paintFrame(canvas, clay, index, 71); const middle = canvas.toBuffer('image/png');
+    assert.notDeepEqual(middle, start);
+    paintFrame(canvas, clay, index, 141); assert.notDeepEqual(canvas.toBuffer('image/png'), middle);
   }
 });
 

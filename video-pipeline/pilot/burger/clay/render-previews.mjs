@@ -18,8 +18,12 @@ const scenes = clay.createScenes(canvas.getContext('2d'), createCanvasKit(canvas
 const sheet = createCanvas(1968, 1232), ctx = sheet.getContext('2d');
 ctx.fillStyle = '#EDE7DD'; ctx.fillRect(0, 0, sheet.width, sheet.height);
 ctx.font = '700 26px "Noto Sans KR", sans-serif'; ctx.fillStyle = '#2E2921';
-ctx.fillText('기존 · 플랫', 16, 42); ctx.fillText('시안 · 플레이도 클레이', 992, 42);
+ctx.fillText('기존 · 플랫', 16, 42); ctx.fillText('시안 · 플레이도우 클레이메이션', 992, 42);
 const manifest = [];
+const processSheet = createCanvas(1968, 832), processCtx = processSheet.getContext('2d');
+processCtx.fillStyle = '#EDE7DD'; processCtx.fillRect(0, 0, 1968, 832);
+processCtx.font = '700 26px "Noto Sans KR", sans-serif'; processCtx.fillStyle = '#2E2921';
+processCtx.fillText('플레이도우 클레이메이션 시안 · 번 / 패티', 16, 38);
 for (const [row, [index, name]] of [[3, 'bun'], [4, 'patty']].entries()) {
   for (const position of [0, .18, .5, .65, .86, 1]) {
     // paintFrame uses fixed 30fps scene-local stepping; t=1 is the final real frame.
@@ -29,6 +33,10 @@ for (const [row, [index, name]] of [[3, 'bun'], [4, 'patty']].entries()) {
       const filename = `${style}-${name}-${String(frame).padStart(3, '0')}.png`;
       await writeFile(join(output, filename), await canvas.encode('png'));
       manifest.push({ scene: index + 1, style, frame, file: filename });
+      if (style === 'clay' && [.18, .5, .86].includes(position)) {
+        const step = [.18, .5, .86].indexOf(position);
+        processCtx.drawImage(canvas, 16 + step * 650, 56 + row * 380, 640, 360);
+      }
       if (position === .86) {
         ctx.drawImage(canvas, 16 + column * 976, 64 + row * 584);
         if (style === 'clay') await writeFile(join(output, `clay-${name}.png`), await canvas.encode('png'));
@@ -39,5 +47,6 @@ for (const [row, [index, name]] of [[3, 'bun'], [4, 'patty']].entries()) {
 ctx.font = '500 20px "Noto Sans KR", sans-serif'; ctx.fillStyle = '#685C4E';
 ctx.fillText('960 × 540 · 번 / 패티 두 장면만 적용 · 57초 타이밍 / 자막 / 내레이션 원고 유지 · 미병합 시안', 16, 1212);
 await writeFile(join(output, 'flat-vs-clay.png'), await sheet.encode('png'));
+await writeFile(join(output, 'claymation-process.png'), await processSheet.encode('png'));
 await writeFile(join(output, 'frames.json'), JSON.stringify(manifest, null, 2) + '\n');
 console.log(output);
