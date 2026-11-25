@@ -8,6 +8,24 @@ import { HEIGHT, WIDTH, frameCount, samplePositions, visualBounds } from '../que
 GlobalFonts.registerFromPath('/usr/share/fonts/opentype/noto/NotoSansCJK-Regular.ttc', 'Noto Sans KR');
 GlobalFonts.registerFromPath('/usr/share/fonts/opentype/noto/NotoSansCJK-Bold.ttc', 'Noto Sans KR');
 
+test('the finishing shot keeps the bulgogi glaze on the patty and sesame on the bun', () => {
+  const ctx = createCanvas(WIDTH, HEIGHT).getContext('2d');
+  episode.createScenes(ctx, createCanvasKit(ctx))[7].draw(1);
+  const { data } = ctx.getImageData(535, 175, 320, 120);
+  let glaze = 0, sesame = 0;
+  for (let i = 0; i < data.length; i += 4) {
+    const y = 175 + Math.floor(i / (320 * 4));
+    const rgb = data.slice(i, i + 3).join(',');
+    if (rgb === '169,78,42') {
+      assert.ok(y >= 265 && y <= 290, `glaze outside patty at y=${y}`);
+      glaze++;
+    }
+    if (y < 250 && rgb === '255,253,247') sesame++;
+    assert.ok(y >= 265 || rgb !== '135,70,47', `sauce above patty at y=${y}`);
+  }
+  assert.ok(glaze > 200 && sesame > 20);
+});
+
 test('the polished illustrations use the same caption-safe geometry in both renders', () => {
   const ctx = createCanvas(1, 1).getContext('2d');
   const scenes = episode.createScenes(ctx, createCanvasKit(ctx));

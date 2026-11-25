@@ -4,7 +4,7 @@ function createBurgerScenes(ctx, kit) {
     panel: '#FFFDF7', cream: '#F4EADD', line: '#E5D8C7', ink: '#2E2921', muted: '#685C4E',
     green: '#315947', leaf: '#74A766', mint: '#DEEBDD', dark: '#254638',
     bun: '#E4A457', toast: '#BE753B', butter: '#F4C853', wheat: '#F6E7C6',
-    tomato: '#CB5944', rose: '#F4DCD2', meat: '#754433', sauce: '#87462F',
+    tomato: '#CB5944', rose: '#F4DCD2', meat: '#754433', sauce: '#87462F', glaze: '#A94E2A',
     sky: '#DDEAE9', blue: '#53797C', white: '#FFFFFF',
   };
 
@@ -420,12 +420,15 @@ function createBurgerScenes(ctx, kit) {
     }
   }
 
-  function drizzle(x, y, scale, coverage = 1) {
-    const stroke = [];
-    for (let j = 0; j <= 30 * coverage; j++) {
-      stroke.push([x + (j - 15) * 4.9 * scale, y + (offsets[5] - 13 + Math.sin(j / 30 * Math.PI * 5) * 3.7) * scale]);
+  function pattyGlaze(x, y, scale) {
+    ctx.save();
+    ctx.translate(x, y + (offsets[4] - 8) * scale);
+    ctx.scale(scale, scale);
+    line([[-82, 0], [-52, 1], [-34, -1], [2, 1], [27, 0], [53, 1], [82, 0]], C.glaze, 5);
+    for (const [dx, drop] of [[-54, 7], [27, 9], [65, 5]]) {
+      line([[dx, 1], [dx + 1, drop]], C.glaze, 5);
     }
-    if (stroke.length > 1) line(stroke, C.sauce, 4.5 * scale);
+    ctx.restore();
   }
 
   function scTwist(t) {
@@ -435,7 +438,7 @@ function createBurgerScenes(ctx, kit) {
     plate(308, 405, 294, C.panel);
     const scale = 1.28, bottom = 382, cx = 308;
     for (let i = 0; i < 5; i++) layer(i, cx, bottom + offsets[i] * scale, scale);
-    const pour = seg(t, .14, .47), sauce = '#A94E2A', highlight = '#F3AB68';
+    const pour = seg(t, .14, .47), sauce = C.glaze, highlight = '#F3AB68';
     const ribbon = p => [lerp(202, 413, p), 309 + Math.sin(p * Math.PI * 4) * 4];
     if (pour > 0) {
       const stroke = Array.from({ length: 33 }, (_, i) => ribbon(pour * i / 32));
@@ -509,7 +512,7 @@ function createBurgerScenes(ctx, kit) {
     plate(695, 376, 341, C.mint);
     const y = 358 - (1 - settle) * 34;
     burger(695, y, 1.48);
-    drizzle(695, y, 1.48);
+    pattyGlaze(695, y, 1.48);
     accent(560, 153, C.butter);
     accent(840, 295, C.mint);
     tag('완성', 78, 87, 67, C.butter, C.ink);
