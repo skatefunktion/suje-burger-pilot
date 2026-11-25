@@ -7,20 +7,28 @@ const checks = ['insideCanvas', 'captionClear', 'proportions', 'readable', 'cont
 const repoRoot = fileURLToPath(new URL('../../', import.meta.url));
 const repo = 'skatefunktion/suje-burger-pilot';
 const automationLogin = /devin|automation|(?:^|[-_])bot(?:[-_]|$)|bot$|\[bot\]|^github-actions$/i;
+const ep02Wiring = new URL('../episodes/ep02/episode.mjs', import.meta.url);
+const ep02Script = new URL('../episodes/ep02/script.mjs', import.meta.url);
+const ep02WiringWithoutReviewMetadata = '468a831e502a96b6488987fd844cb80b8eea264fcf6eeb3bea1a090cde3f23ec';
+const ep02WiringWithLegacyReviewMetadata = new Set([
+  'c4e8282a3f49b6fef98e996e3e24f275edfe5b7fb45d90ce1ade2b6f66d1b8a3',
+  '6867079cbd594da50677fd9787824f6d7a22521ef00ac93d9f27d3d6d35c9034',
+]);
 
-export async function reviewFingerprint(episode, index, scene, readSource = readFile) {
+export async function reviewFingerprint(episode, index, scene, readSource = readFile, episodeId) {
   const hash = createHash('sha256');
   hash.update(JSON.stringify([scene.dur, scene.cap, episode.viewport]));
   for (const source of [
     episode.sources[index],
-    ...(episode.reviewSources ?? []),
+    ...(episodeId === 'ep02' ? [ep02Wiring, ep02Script] : []),
     ...(episode.reviewDependencies?.[index] ?? []),
     new URL('../scenes/canvas-kit.mjs', import.meta.url),
     new URL('./frames.mjs', import.meta.url),
     new URL('./render-child.mjs', import.meta.url),
   ]) {
-    const sourceHash = createHash('sha256').update(await readSource(source)).digest();
-    hash.update(sourceHash);
+    const sourceHash = createHash('sha256').update(await readSource(source)).digest('hex');
+    hash.update(source === ep02Wiring && ep02WiringWithLegacyReviewMetadata.has(sourceHash)
+      ? Buffer.from(ep02WiringWithoutReviewMetadata, 'hex') : Buffer.from(sourceHash, 'hex'));
   }
   return hash.digest('hex');
 }

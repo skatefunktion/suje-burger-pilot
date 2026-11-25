@@ -61,7 +61,7 @@ async function main() {
       if (chosen !== null && chosen !== index + 1) continue;
       job.scenes.push(result);
       const sceneDir = join(dir, number);
-      const fingerprintFrom = readSource => reviewFingerprint(episode, index, scene, readSource);
+      const fingerprintFrom = readSource => reviewFingerprint(episode, index, scene, readSource, id);
       const fingerprint = await fingerprintFrom();
       const review = async () => {
         if (smoke && id === 'burger') {

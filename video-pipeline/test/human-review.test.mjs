@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import { readFile } from 'node:fs/promises';
 import { relative } from 'node:path';
 import test from 'node:test';
 import { fileURLToPath } from 'node:url';
@@ -57,23 +58,36 @@ test('an allowlisted human approval on the exact scene PR head counts without re
   await assert.rejects(setup({ approvedSources }).check(), /Scene source .* does not match/);
 });
 
-test('episode 2 approvals survive wiring metadata changes but not script changes', async () => {
+test('episode 2 approvals survive legacy wiring metadata changes but not script or drawing changes', async () => {
   const script = 'video-pipeline/episodes/ep02/script.mjs';
   const wiring = 'video-pipeline/episodes/ep02/episode.mjs';
+  const wiringSource = await readFile(new URL('../episodes/ep02/episode.mjs', import.meta.url), 'utf8');
   const approvedSources = new Map(contents).set(script, Buffer.from('approved script'))
-    .set(wiring, Buffer.from('episode wiring without reviewSources'));
-  const currentSources = new Map(approvedSources).set(wiring, Buffer.from('episode wiring with reviewSources'));
-  const from = readSource => reviewFingerprint(ep02, 0, ep02.createScenes()[0], readSource);
-  const expected = await from(url => currentSources.get(relative(localRoot, fileURLToPath(url))));
+    .set(wiring, Buffer.from(wiringSource));
+  const from = readSource => reviewFingerprint(ep02, 0, ep02.createScenes()[0], readSource, 'ep02');
+  const fingerprintFor = files => from(url => files.get(relative(localRoot, fileURLToPath(url))));
+  const expected = await fingerprintFor(approvedSources);
 
   const { check, calls } = setup({ approvedSources });
   await check({}, expected, from);
+  assert.ok(calls.includes(`${root}/contents/${wiring}?ref=${head}`));
   assert.ok(calls.includes(`${root}/contents/${script}?ref=${head}`));
-  assert.ok(calls.every(path => !path.includes(wiring)));
+
+  for (const sources of ["new URL(import.meta.url), new URL('./script.mjs', import.meta.url)",
+    "new URL('./script.mjs', import.meta.url)"]) {
+    const legacy = wiringSource.replace("  sources:", `  reviewSources: [${sources}],\n  sources:`);
+    const legacySources = new Map(approvedSources).set(wiring, Buffer.from(legacy));
+    await setup({ approvedSources: legacySources }).check({}, expected, from);
+  }
 
   const staleSources = new Map(approvedSources).set(script, Buffer.from('different narration'));
   await assert.rejects(setup({ approvedSources: staleSources }).check({}, expected, from),
     /Scene source .* does not match/);
+
+  const changedWiring = wiringSource.replace('draws[index](t, ctx, kit)', 'draws[index](1 - t, ctx, kit)');
+  const changed = await fingerprintFor(new Map(approvedSources).set(wiring, Buffer.from(changedWiring)));
+  await assert.rejects(setup({ reviews: [], baseSources: approvedSources }).check({ base }, changed, from),
+    /active GitHub approval/);
 });
 
 test('scene checklist JSON neither grants nor blocks approval', async () => {
