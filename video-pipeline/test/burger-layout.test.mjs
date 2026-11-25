@@ -46,7 +46,7 @@ test('ingredient cards stay inside the standalone canvas throughout their bounce
   for (let frame = 0; frame < count; frame++) visualBounds(standalone, 1, frame, { captionY: HEIGHT });
 });
 
-test('growth vignettes keep all six durations separate from the ingredient and stage labels', () => {
+test('each growth close-up keeps its duration separate from the ingredient and stage labels', () => {
   const ctx = createCanvas(WIDTH, HEIGHT).getContext('2d');
   const text = [];
   const fillText = ctx.fillText.bind(ctx);
@@ -57,11 +57,15 @@ test('growth vignettes keep all six durations separate from the ingredient and s
     fillText(label, x, y);
   };
   const scene = episode.createScenes(ctx, createCanvasKit(ctx))[2];
-  for (const progress of [0, .5, 1]) {
+  for (const [progress, name, duration] of [
+    [.10, '한우', '30개월'], [.30, '밀', '7개월'], [.47, '토마토', '3개월'],
+    [.65, '양상추', '2개월'], [.80, '참깨', '3개월'], [.95, '치즈', '단 며칠!'],
+  ]) {
     text.length = 0;
     scene.draw(progress);
     const durations = text.filter(({ label }) => /^(단 며칠!|\d+개월)$/.test(label));
-    assert.deepEqual(durations.map(({ label }) => label), ['30개월', '7개월', '3개월', '2개월', '3개월', '단 며칠!']);
+    assert.deepEqual(durations.map(({ label }) => label), [duration]);
+    assert.ok(text.some(({ label }) => label === name));
     for (const duration of durations) {
       assert.ok(duration.left > 48 && duration.right < 912, duration.label);
       for (const other of text) {
@@ -69,6 +73,31 @@ test('growth vignettes keep all six durations separate from the ingredient and s
         assert.ok(other.right <= duration.left || other.left >= duration.right,
           `${other.label} overlaps ${duration.label}`);
       }
+    }
+  }
+});
+
+test('harvest moves the same ripe tomatoes, wheat heads, and sesame pods into the basket', () => {
+  const ctx = createCanvas(WIDTH, HEIGHT).getContext('2d');
+  const scene = episode.createScenes(ctx, createCanvasKit(ctx))[2];
+  const ellipse = ctx.ellipse.bind(ctx);
+  const crops = [];
+  let fill;
+  ctx.ellipse = (x, ...args) => {
+    if (ctx.fillStyle.toLowerCase() === fill) crops.push(x);
+    ellipse(x, ...args);
+  };
+  for (const [start, stop, color, count] of [
+    [.20, .39, '#f4c853', 18], [.39, .56, '#cb5944', 9], [.73, .88, '#be753b', 18],
+  ]) {
+    fill = color;
+    let plantEdge;
+    for (const p of [.66, .79, .96]) {
+      crops.length = 0;
+      scene.draw(start + (stop - start) * p);
+      assert.equal(crops.length, count, `crop count for ${color} at ${p}`);
+      if (p === .66) plantEdge = Math.max(...crops);
+      else assert.ok(Math.max(...crops) > plantEdge + 15, `crop should move right at ${p}`);
     }
   }
 });
