@@ -194,27 +194,11 @@ function createBurgerScenes(ctx, kit) {
         box(-8, -19, 16, 12, 3, C.toast);
         box(-9, 0, 18, 13, 3, C.wheat);
         break;
-      case 'tomato':
-        oval(0, 3, 20, 16, C.tomato);
-        line([[-7, -12], [0, -8], [7, -12]], C.green, 3);
-        break;
-      case 'lettuce':
-        oval(-5, 0, 15, 22, C.leaf, -.6);
-        oval(9, -1, 12, 20, C.green, .6);
-        line([[-11, -9], [0, 16], [11, -10]], C.mint);
-        break;
       case 'farm':
         oval(0, 15, 37, 10, C.mint);
         box(-22, -16, 44, 35, 4, C.tomato);
         polygon([[-27, -13], [0, -34], [27, -13]], C.sauce);
         box(-8, 0, 16, 19, 3, C.wheat);
-        break;
-      case 'truck':
-        box(-34, -15, 43, 31, 5, C.green);
-        box(6, -7, 26, 23, 5, C.leaf);
-        box(14, -3, 13, 8, 2, C.mint);
-        oval(-20, 16, 6, 6, C.ink);
-        oval(21, 16, 6, 6, C.ink);
         break;
       case 'shop':
         box(-24, -15, 48, 34, 4, C.wheat);
@@ -244,69 +228,253 @@ function createBurgerScenes(ctx, kit) {
     text('농장에서 식탁까지', 142, 354, 20, C.muted, 500);
   }
 
-  const origins = [
-    ['밀가루', '우리밀 농장', 'flour', C.wheat], ['소고기', '한우', 'beef', C.rose],
-    ['양상추·토마토', '국내 농장', 'veg', C.mint], ['치즈', '국내산 우유', 'cheese', C.wheat],
-    ['깨', '국내산', 'sesame', C.wheat], ['불고기 양념', '한국식 레시피', 'sauce', C.rose],
-  ];
+  function cow(x, y, size, graze = 0) {
+    ctx.save();
+    ctx.translate(x, y);
+    ctx.scale(size, size);
+    line([[-42, -41], [-53, -29], [-52, -20]], C.meat, 3);
+    box(-42, -52, 73, 34, 13, C.toast);
+    for (const dx of [-32, -17, 12, 25]) box(dx, -24, 7, 22, 3, C.meat);
+    ctx.save();
+    ctx.translate(29, -40 + graze * 20);
+    ctx.rotate(graze * .34);
+    if (size > .62) {
+      polygon([[2, -12], [-3, -24], [9, -15]], C.wheat);
+      polygon([[16, -12], [24, -23], [22, -10]], C.wheat);
+    }
+    oval(-4, -10, 9, 5, C.toast, .5);
+    oval(23, -9, 10, 5, C.toast, -.55);
+    oval(9, 0, 18, 16, C.toast);
+    oval(17, 7, 15, 8, C.wheat);
+    oval(13, 5, 2, 2, C.meat);
+    oval(24, 6, 2, 2, C.meat);
+    oval(14, -3, 2.3, 2.3, C.ink);
+    ctx.restore();
+    ctx.restore();
+  }
+
+  function fence(x, y, width) {
+    for (const dy of [0, 12]) line([[x, y + dy], [x + width, y + dy]], C.panel, 5);
+    for (let dx = 0; dx <= width; dx += width / 6) box(x + dx - 3, y - 8, 6, 28, 2, C.panel);
+  }
+
+  function stalk(x, y, height, ripe, sway) {
+    const color = ripe ? C.toast : C.green, tip = x + sway;
+    line([[x, y], [tip, y - height]], color, 2.5);
+    for (let i = 0; i < 3; i++) {
+      const k = i % 2 ? -1 : 1;
+      oval(tip + k * 4, y - height + 4 + i * 5, height * .15, 2.8, ripe ? C.butter : C.leaf, k * -.68);
+    }
+  }
+
+  const tomatoBranches = [-14, 13, -11];
+
+  function tomatoY(y, height, index) {
+    return y - height * (.46 + index * .16);
+  }
+
+  function tomatoFruit(x, y, height, ripe) {
+    oval(x, y, 5 + height * .09, 5 + height * .08, ripe ? C.tomato : C.leaf);
+  }
+
+  function vine(x, y, height, ripe, fruit = 1) {
+    line([[x, y], [x, y - height - 4]], C.toast, 3);
+    line([[x - 6, y], [x - 8, y - height * .70], [x + 4, y - height]], C.green, 3);
+    for (const [i, dx] of tomatoBranches.entries()) {
+      const dy = tomatoY(y, height, i);
+      oval(x + dx / 2, dy - 5, 9, 3.8, C.leaf, dx / 22);
+      if (fruit > i / 3) tomatoFruit(x + dx, dy + 6, height, ripe);
+    }
+  }
+
+  function lettuceHead(x, y, size) {
+    for (const [dx, dy, r] of [[-.6, 0, -.6], [.6, 0, .6], [0, -.46, 0]]) {
+      oval(x + dx * size, y + dy * size, size * .53, size * .63, dx === 0 ? C.leaf : C.green, r);
+    }
+    line([[x - size * .38, y + size * .15], [x, y + size * .4], [x + size * .1, y - size * .64]], C.mint);
+  }
+
+  function basket(x, y, contents) {
+    box(x - 32, y - 5, 64, 24, 6, C.toast);
+    box(x - 36, y - 9, 72, 7, 3, C.wheat);
+    for (const dx of [-20, 0, 20]) line([[x + dx, y + 2], [x + dx, y + 13]], C.wheat);
+    contents();
+  }
+
+  function landscape() {
+    box(48, 104, 864, 293, 19, C.sky);
+    oval(158, 215, 93, 42, '#C2DAD0');
+    oval(345, 212, 111, 55, '#C2DAD0');
+    oval(602, 217, 148, 64, '#C2DAD0');
+    oval(812, 221, 91, 42, '#C2DAD0');
+    box(48, 219, 864, 178, 18, C.mint);
+  }
+
+  function deliveryTruck(x, y) {
+    box(x - 85, y - 39, 104, 31, 5, C.green);
+    box(x + 20, y - 60, 50, 54, 8, C.leaf);
+    box(x + 37, y - 52, 26, 18, 5, C.sky);
+    for (const [i, glyph] of ['beef', 'flour', 'veg'].entries()) {
+      const left = x - 81 + i * 33;
+      box(left, y - 64, 31, 25, 4, C.wheat);
+      icon(glyph, left + 15, y - 52, .34);
+    }
+    for (const dx of [-57, 44]) {
+      oval(x + dx, y - 8, 14, 14, C.ink);
+      oval(x + dx, y - 8, 5, 5, C.cream);
+    }
+  }
+
+  function shotAt(t, stops) {
+    const cut = stops.findIndex(stop => t < stop);
+    const index = cut < 0 ? stops.length - 1 : cut;
+    return [index, seg(t, stops[index - 1] ?? 0, stops[index])];
+  }
 
   function scOrigin(t) {
     heading('01', '재료는 어디서 왔을까?', '농장에서 주방까지');
-    box(48, 104, 864, 135, 17, C.mint);
-    line([[181, 161], [782, 161]], '#ABC0AA');
-    const journey = easeIO(seg(t, .05, .82));
-    arrow(180, 161, 600 * journey);
-    for (const [x, glyph, name] of [[141, 'farm', '농장'], [480, 'truck', '운송'], [819, 'shop', '버거집']]) {
-      oval(x, 158, 34, 34, C.panel);
-      icon(glyph, x, 158, .73);
-      center(name, x, 209, 18, C.dark);
+    const [shot, p] = shotAt(t, [.22, .43, .67, 1]);
+    landscape();
+    if (shot === 0) {
+      icon('farm', 231, 218, 2.45);
+      fence(110, 259, 742);
+      box(301, 344, 112, 22, 7, C.meat);
+      box(295, 339, 124, 12, 6, C.butter);
+      cow(483 - 16 * p, 355, 1.44, .53 + .45 * Math.sin(p * 8));
+      cow(707 - 12 * p, 329, .94, .37 + .31 * Math.sin(p * 6));
+    } else if (shot === 1) {
+      box(65, 249, 830, 134, 16, '#EBD5A0');
+      for (let i = 0; i < 16; i++) {
+        for (const [row, height] of [[0, 39], [1, 60], [2, 87]]) {
+          stalk(99 + i * 49 + row * 5, 277 + row * 48,
+            height + i % 4 * 4, true, Math.sin(p * 7 + i + row) * 7);
+        }
+      }
+    } else if (shot === 2) {
+      box(66, 250, 828, 130, 16, '#E5C49B');
+      for (const [i, x] of [144, 302, 460, 618, 776].entries()) {
+        vine(x, 294, 75 + i % 3 * 8 + p * 8, true);
+        lettuceHead(x + 31, 344, 25 + i % 2 * 4 + p * 5);
+      }
+    } else {
+      icon('farm', 150, 239, 1.57);
+      tag('시골 농장', 100, 160, 100);
+      for (const [x, w, h] of [[700, 43, 89], [749, 56, 127], [813, 35, 94], [849, 40, 74]]) {
+        box(x, 268 - h, w, h, 5, '#A7C2BE');
+        for (let dy = 14; dy < h - 12; dy += 19) box(x + 9, 268 - h + dy, w - 18, 4, 2, C.sky);
+      }
+      icon('shop', 815, 256, 1.50);
+      box(851, 253, 5, 34, 2, C.green);
+      tag('서울', 827, 222, 60, C.green, C.white);
+      box(62, 287, 836, 92, 13, '#50625B');
+      for (let x = 80; x < 890; x += 55) line([[x, 342], [x + 26, 342]], C.wheat, 3);
+      const progress = easeIO(p);
+      deliveryTruck(lerp(169, 773, progress), 337 + Math.sin(progress * 46) * 2);
     }
-    origins.forEach(([name, detail, glyph, color], i) => {
-      const x = 48 + i % 3 * 291, y = 252 + Math.floor(i / 3) * 94;
-      const a = seg(t, .08 + i * .06, .33 + i * .06);
-      ctx.save();
-      ctx.globalAlpha = a;
-      ctx.translate(0, (1 - easeO(a)) * 8);
-      box(x, y, 282, 83, 14, C.cream);
-      oval(x + 42, y + 41, 25, 25, color);
-      icon(glyph, x + 42, y + 41, .70);
-      text(name, x + 81, y + 29, 22);
-      text(detail, x + 81, y + 56, 16, C.muted, 500);
-      ctx.restore();
-    });
+    const [name, detail, color] = [
+      ['한우 농장', '먹이를 먹으며 자라는 한우', C.rose],
+      ['우리밀 밭', '들판에서 자라는 우리밀', C.wheat],
+      ['국내 농장', '토마토 열매와 양상추 잎이 자라요', C.mint],
+      ['서울 버거집', '식재료를 싣고 서울 버거집으로', C.sky],
+    ][shot];
+    tag(name, 49, 412, 131, color);
+    text(detail, 196, 427, 21, C.dark);
   }
 
   const production = [
-    ['한우', 30, '송아지 → 비육 → 도축', 'beef', C.meat],
-    ['밀', 7, '파종(10월) → 월동 → 수확(5월)', 'flour', C.toast],
-    ['토마토', 3, '육묘 → 정식 → 수확', 'tomato', C.tomato],
-    ['참깨', 3, '파종(5월) → 개화 → 수확(8월)', 'sesame', C.toast],
-    ['양상추', 2, '파종 → 수확', 'lettuce', C.green],
-    ['치즈', 0, '착유 → 응고 → 가공', 'cheese', '#A57426'],
+    ['한우', '30개월', C.mint, ['송아지', '자라는 중', '다 자란 한우']],
+    ['밀', '7개월', C.wheat, ['새싹', '이삭', '수확']],
+    ['토마토', '3개월', C.rose, ['모종', '열매가 익어요', '수확']],
+    ['양상추', '2개월', C.mint, ['새싹', '잎이 자라요', '수확']],
+    ['참깨', '3개월', C.wheat, ['새싹', '꼬투리', '수확']],
+    ['치즈', '단 며칠!', C.cream, ['착유', '응고', '가공']],
   ];
+
+  function growth(i, x, y, t) {
+    const p = easeIO(seg(t, .10, .65)), pick = easeIO(seg(t, .67, .93));
+    oval(x + 89, y + 6, 79, 7, i === 0 || i === 3 ? '#BCD3B8' : '#E5C49B');
+    if (i === 0) {
+      fence(x + 13, y - 16, 151);
+      cow(x + 75, y + 5, lerp(.56, 1.10, p), .30 + .30 * Math.sin(t * 14));
+      if (pick > .2) accent(x + 162, y - 45, C.toast);
+    } else if (i === 1 || i === 4) {
+      for (let j = 0; j < 6; j++) {
+        const sx = x + 24 + j * 23;
+        if (i === 1) {
+          if (j >= 3 && pick > 0) line([[sx, y], [sx, y - 8]], C.toast, 2.5);
+          else stalk(sx, y, lerp(13, 58 + j % 3 * 5, p), p > .84, Math.sin(t * 13 + j) * 3);
+        } else {
+          const height = lerp(12, 57, p);
+          line([[sx, y], [sx + 3, y - height]], C.green, 3);
+          for (const [k, sign] of [-1, 1, -1].entries()) {
+            if (j >= 3 && k === 2 && pick > 0) continue;
+            oval(sx + sign * 6, y - height * (.45 + k * .19), 6, 3 + p * 2, p > .73 ? C.toast : C.leaf, sign * -.50);
+          }
+        }
+      }
+      basket(x + 206, y - 4, () => {
+        for (const [j, dx] of [-16, 0, 15].entries()) {
+          if (pick === 0) continue;
+          const lift = Math.sin(pick * Math.PI) * 34;
+          const stemX = x + 24 + (3 + j) * 23;
+          if (i === 1) {
+            const sx = lerp(stemX, x + 206 + dx, pick), sy = lerp(y, y - 6, pick) - lift;
+            stalk(sx, sy, lerp(58 + j * 5, 31, pick), true, dx / 2);
+          } else {
+            const sx = lerp(stemX - 6, x + 206 + dx, pick), sy = lerp(y - 57 * .83, y - 10, pick) - lift;
+            oval(sx, sy, 6, 5, C.toast, lerp(.50, dx / 28, pick));
+          }
+        }
+      });
+    } else if (i === 2 || i === 3) {
+      const height = lerp(15, 62, p), last = x + 133;
+      for (let j = 0; j < 3; j++) {
+        const sx = x + 37 + j * 48;
+        if (i === 2) vine(sx, y, height, t > .43, j === 2 && pick > 0 ? 1 / 3 : Math.min(1, p * 1.2));
+        else if (j !== 2 || pick === 0) lettuceHead(sx, y - lerp(3, 14, p), lerp(5, 25, p));
+      }
+      basket(x + 206, y - 4, () => {
+        if (pick === 0) return;
+        const lift = Math.sin(pick * Math.PI) * 38;
+        if (i === 2) {
+          for (const [j, dx] of [[1, 12], [2, -12]]) {
+            const sx = lerp(last + tomatoBranches[j], x + 206 + dx, pick);
+            const sy = lerp(tomatoY(y, height, j) + 6, y - 13, pick) - lift;
+            tomatoFruit(sx, sy, height, true);
+          }
+        } else lettuceHead(lerp(last, x + 206, pick), y - 14 - lift, lerp(25, 23, pick));
+      });
+    } else {
+      box(x + 29, y - 36, 42, 43, 9, C.blue);
+      oval(x + 50, y - 36, 21, 6, C.sky);
+      box(x + 37, y - 31, 26, 11, 3, C.panel);
+      oval(x + 49, y - 51 + Math.sin(t * 18) * 7, 4, 6, C.white);
+      arrow(x + 89, y - 23, 36);
+      oval(x + 171, y + 4, 40, 6, C.toast);
+      if (t < .63) {
+        box(x + 137, y - 22, 69, 25, 10, C.blue);
+        oval(x + 171, y - 22, 31, 8, C.panel);
+      } else icon('cheese', x + 171, y - 19, 1.14);
+    }
+  }
 
   function scTime(t) {
     heading('02', '자라는 데 걸리는 시간', '국내 일반적인 사육·재배 기준');
-    const start = 418, span = 376;
-    box(48, 104, 864, 289, 17, C.cream);
-    for (const mark of [0, 10, 20, 30]) {
-      const x = start + span * mark / 30;
-      line([[x, 126], [x, 355]], C.line);
-      center(mark === 0 ? '지금' : mark + '개월', x, 373, 15, C.muted, 500);
+    const [i, p] = shotAt(t, [.20, .39, .56, .73, .88, 1]);
+    const [name, duration, color, stages] = production[i];
+    const phase = p < .35 ? 0 : p < .67 ? 1 : 2;
+    box(48, 104, 864, 291, 18, color);
+    text(name, 78, 147, 36, C.dark);
+    tag(duration, 770, 132, 112, C.panel);
+    ctx.save();
+    ctx.translate(i === 0 ? 317 : 195, 343);
+    ctx.scale(2.35, 2.35);
+    growth(i, 0, 0, p);
+    ctx.restore();
+    tag(stages[phase], 49, 410, 152, color);
+    if (i === 0 || i === 3) {
+      text('소가 자라는 동안, 양상추는 열다섯 번 자랄 수 있어요', 221, 425, 18, C.dark);
     }
-    production.forEach(([name, months, stages, glyph, color], i) => {
-      const y = 134 + i * 42;
-      if (i > 0) line([[65, y - 21], [895, y - 21]], C.line, 1);
-      icon(glyph, 85, y, .60);
-      text(name, 115, y, 17);
-      text(stages, 196, y, 15, C.muted, 500, 'left', start - 196 - 21);
-      const p = easeO(seg(t, .07 + i * .073, .43 + i * .073));
-      const length = p * (months === 0 ? 15 : span * months / 30);
-      if (length > 0) box(start, y - 7, length, 14, 7, color);
-      if (p > .83) text(months === 0 ? '단 며칠!' : months + '개월', start + length + 12, y, 17);
-    });
-    box(48, 402, 864, 39, 12, C.mint);
-    center('소가 자라는 동안, 양상추는 열다섯 번 자랄 수 있어요', 480, 422, 18, C.dark);
   }
 
   function process(t, step, title, detail, stages, draw) {
@@ -366,41 +534,91 @@ function createBurgerScenes(ctx, kit) {
   }
 
   function scPatty(t) {
-    process(t, '04', '패티를 만들어요', '한우', [
+    heading('04', '패티를 만들어요', '버거집 주방 · 한우');
+    box(48, 104, 864, 280, 18, C.sky);
+    for (let y = 167; y < 325; y += 40) {
+      line([[49, y], [911, y]], '#BCD2CF');
+      for (let x = 91 + (y % 80 < 40 ? 47 : 0); x < 910; x += 96) line([[x, y], [x, y + 38]], '#BCD2CF');
+    }
+    box(63, 147, 190, 8, 4, C.blue);
+    for (const [x, h] of [[82, 22], [116, 28], [159, 18], [192, 25]]) {
+      box(x, 146 - h, 23, h, 5, C.cream);
+      box(x + 3, 143 - h, 17, 7, 3, C.toast);
+    }
+    box(362, 123, 236, 30, 8, C.panel);
+    center('버거집 주방', 480, 137, 17, C.dark);
+    box(730, 119, 100, 22, 5, C.blue);
+    polygon([[731, 138], [829, 138], [856, 165], [704, 165]], C.blue);
+    box(704, 162, 152, 8, 4, C.dark);
+    box(48, 317, 864, 67, 12, '#819D98');
+    const stages = [
       ['다지기', '고기를 고르게 다져요', C.rose],
       ['빚기', '둥글고 납작하게 모양 잡기', C.wheat],
       ['굽기', '뜨거운 철판에 올려요', C.mint],
-    ], (i, x, y, p) => {
-      if (i === 0) {
-        box(x - 72, y - 34, 144, 84, 14, '#D79A71');
-        box(x - 65, y - 38, 130, 74, 10, C.wheat);
-        oval(x - 49, y + 24, 4, 4, C.toast);
-        for (const [dx, dy] of [[-17, -12], [10, -6], [26, 11], [-25, 13], [3, 16]]) {
-          box(x + dx - 8, y + dy - 6, 17, 12, 4, C.tomato);
-        }
-        const chop = Math.sin(p * Math.PI * 4) * 5;
-        polygon([[x - 42, y - 24 + chop], [x + 31, y - 47 + chop], [x + 32, y - 31 + chop], [x - 26, y - 10 + chop]], C.blue);
-        line([[x + 28, y - 41 + chop], [x + 65, y - 53 + chop]], C.dark, 9);
-      } else if (i === 1) {
-        oval(x, y + 23, 74, 30, C.panel);
-        const size = lerp(44, 54, easeO(p));
-        oval(x, y + 13, size, 25, C.sauce);
-        oval(x, y + 4, size, 23, C.tomato);
-        for (const [dx, dy] of [[-27, 0], [-9, -7], [17, 0], [29, 8], [2, 12]]) {
-          line([[x + dx - 4, y + dy], [x + dx + 4, y + dy + 1]], C.rose);
-        }
-      } else {
-        box(x - 81, y + 1, 162, 56, 13, C.dark);
-        box(x - 72, y - 5, 144, 45, 9, C.green);
-        for (let j = -2; j <= 2; j++) line([[x + 22 * j, y + 3], [x + 22 * j, y + 32]], '#72917E');
-        const flip = seg(p, .49, .74);
-        oval(x, y + 8 - Math.sin(flip * Math.PI) * 28, 54, 4 + 13 * Math.abs(Math.cos(flip * Math.PI)), C.meat);
-        for (const dx of [-29, 0, 29]) {
-          const lift = Math.sin(p * Math.PI * 3 + dx) * 4;
-          line([[x + dx, y - 26 + lift], [x + dx + 5, y - 35 + lift], [x + dx + 1, y - 45 + lift]], C.blue, 2.5);
+    ];
+    const [i, p] = shotAt(t, [1 / 3, 2 / 3, 1]);
+    const [name, description, color] = stages[i];
+    const x = 0, y = 0;
+    ctx.save();
+    ctx.translate(480, 253);
+    ctx.scale(2.05, 2.05);
+    if (i === 0) {
+      box(x - 72, y - 34, 144, 84, 14, '#D79A71');
+      box(x - 65, y - 38, 130, 74, 10, C.wheat);
+      oval(x - 49, y + 24, 4, 4, C.toast);
+      for (const [dx, dy] of [[-17, -12], [10, -6], [26, 11], [-25, 13], [3, 16]]) {
+        box(x + dx - 8, y + dy - 6, 17, 12, 4, C.tomato);
+      }
+      const chop = -Math.abs(Math.sin(p * Math.PI * 6)) * 19;
+      polygon([[x - 42, y - 24 + chop], [x + 31, y - 47 + chop], [x + 32, y - 31 + chop], [x - 26, y - 10 + chop]], C.blue);
+      line([[x + 28, y - 41 + chop], [x + 65, y - 53 + chop]], C.dark, 9);
+    } else if (i === 1) {
+      oval(x, y + 23, 74, 30, C.panel);
+      const size = lerp(34, 54, easeO(p)), height = lerp(33, 18, easeO(p));
+      oval(x, y + 16, size, height, C.sauce);
+      oval(x, y + 7, size, height, C.tomato);
+      for (const [dx, dy] of [[-27, 0], [-9, -7], [17, 0], [29, 8], [2, 12]]) {
+        line([[x + dx - 4, y + dy], [x + dx + 4, y + dy + 1]], C.rose);
+      }
+      if (p < 1) {
+        const reach = Math.sin(p * Math.PI) * 17, press = Math.sin(p * Math.PI * 3) * 7;
+        for (const side of [-1, 1]) {
+          const hx = x + side * (67 - reach);
+          line([[hx + side * 24, y - 32], [hx + side * 6, y - 20 + press]], C.green, 16);
+          oval(hx, y - 13 + press, 21, 10, '#D99B75', side * -.47);
+          oval(hx + side * 5, y - 7 + press, 12, 5, '#E9AB86', side * .30);
         }
       }
-    });
+    } else {
+      box(x - 81, y + 1, 162, 56, 13, C.dark);
+      box(x - 72, y - 5, 144, 45, 9, '#50625B');
+      line([[x - 65, y + 35], [x + 65, y + 35]], '#819D98', 2);
+      for (const dx of [-47, 47]) oval(x + dx, y + 47, 5, 5, C.butter);
+      const flip = seg(p, .49, .74);
+      const lift = Math.sin(flip * Math.PI) * 34;
+      const slide = easeO(seg(p, 0, .28));
+      const pattyX = lerp(x - 76, x, slide);
+      if (p < .75) {
+        const handleX = lerp(x - 100, x - 30, slide);
+        line([[handleX, y + 25 - lift], [pattyX - 13, y + 19 - lift]], C.ink, 6);
+        box(pattyX - 15, y + 13 - lift, 49, 9, 4, C.sky);
+      }
+      oval(pattyX, y + 8 - lift, 45, 4 + 12 * Math.abs(Math.cos(flip * Math.PI)), p < .42 ? C.sauce : C.meat);
+      for (const dx of [-29, 0, 29]) {
+        if (p < .27) continue;
+        const steam = Math.sin(p * Math.PI * 3 + dx) * 5;
+        line([[x + dx, y - 26 + steam], [x + dx + 5, y - 35 + steam], [x + dx + 1, y - 45 + steam]], C.blue, 3);
+      }
+    }
+    ctx.restore();
+    tag('0' + (i + 1), 68, 177, 48, C.green, C.white);
+    tag(name, 49, 408, 119, color);
+    text(description, 184, 423, 21, C.dark);
+    for (let j = 0; j < stages.length; j++) {
+      box(682 + j * 77, 421, 68, 5, 3, C.line);
+      const progress = j < i ? 1 : j === i ? p : 0;
+      if (progress > 0) box(682 + j * 77, 421, progress * 68, 5, 3, C.green);
+    }
   }
 
   function scStack(t) {
