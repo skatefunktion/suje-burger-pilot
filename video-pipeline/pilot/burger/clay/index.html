@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="ko">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>수제버거 · 클레이 시안</title>
+<style>
+  *{box-sizing:border-box}body{margin:0;padding:32px;background:#ede7dd;color:#2e2921;font:16px system-ui,sans-serif}
+  main{max-width:1500px;margin:auto}h1{font-size:30px;margin:0 0 12px}p{color:#685c4e;line-height:1.6}
+  .views{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin:24px 0}figure{margin:0;min-width:0}figcaption{margin-bottom:12px;font-weight:700}
+  canvas{width:100%;height:auto;display:block;border-radius:14px}nav{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+  button{font:inherit;padding:10px 18px;border:1px solid #c3b9a8;border-radius:20px;background:#fffdf7;color:inherit;cursor:pointer}
+  button[aria-pressed=true]{background:#315947;color:#fffdf7;border-color:#315947}input{flex:1;min-width:180px;accent-color:#315947}
+  @media(max-width:850px){body{padding:20px}.views{grid-template-columns:1fr}}
+</style>
+<main>
+  <h1>수제버거 · 클레이 시안</h1>
+  <p>번과 패티 두 장면만 비교합니다. 기존 파일럿은 그대로예요. 960 × 540 · 57초 구성과 자막 유지 · 무음 미리보기</p>
+  <nav aria-label="장면 선택">
+    <button data-scene="3" aria-pressed="true">번 만들기</button>
+    <button data-scene="4" aria-pressed="false">패티 만들기</button>
+    <button id="play" aria-pressed="false">재생</button>
+    <label for="time">장면 진행</label><input id="time" type="range" min="0" max="209" value="180"><output id="position"></output>
+  </nav>
+  <div class="views">
+    <figure><figcaption>기존 · 플랫</figcaption><canvas id="flat" width="960" height="540"></canvas></figure>
+    <figure><figcaption>시안 · 플레이도 클레이</figcaption><canvas id="clay" width="960" height="540"></canvas></figure>
+  </div>
+  <p id="error" role="alert"></p>
+</main>
+<script type="module">
+  import { createBurgerScenes } from '../scenes.mjs';
+  import { createClayBurgerScenes } from './scenes.mjs';
+  import { createCanvasKit } from '../../../scenes/canvas-kit.mjs';
+  const players = [['flat', createBurgerScenes], ['clay', createClayBurgerScenes]].map(([id, create]) => {
+    const ctx = document.getElementById(id).getContext('2d'), kit = createCanvasKit(ctx);
+    return { ctx, kit, scenes: create(ctx, kit) };
+  });
+  const slider = document.getElementById('time'), play = document.getElementById('play');
+  let index = 3, playing = false, start = 0;
+  function draw() {
+    try {
+      for (const {ctx, kit, scenes} of players) {
+        ctx.reset(); kit.bg(); const scene = scenes[index];
+        scene.draw(Number(slider.value) / (scene.dur * 30));
+        ctx.resetTransform(); ctx.fillStyle = kit.INK; ctx.fillRect(0, 480, 960, 60);
+        ctx.font = '700 22px "Noto Sans KR","Apple SD Gothic Neo",sans-serif';
+        ctx.fillStyle = kit.PAPER; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(scene.cap, 480, 510);
+      }
+      document.getElementById('position').textContent = (Number(slider.value) / 30).toFixed(1) + ' / 7.0초';
+    } catch (error) {
+      playing = false; syncButton(); document.getElementById('error').textContent = error.message;
+    }
+  }
+  function syncButton() { play.textContent = playing ? '일시정지' : '재생'; play.setAttribute('aria-pressed', String(playing)); }
+  slider.addEventListener('input', () => { playing = false; syncButton(); draw(); });
+  for (const button of document.querySelectorAll('[data-scene]')) button.addEventListener('click', () => {
+    index = Number(button.dataset.scene); slider.value = 180; playing = false; syncButton();
+    for (const other of document.querySelectorAll('[data-scene]')) other.setAttribute('aria-pressed', String(other === button));
+    draw();
+  });
+  play.addEventListener('click', () => {
+    playing = !playing;
+    if (playing) { if (Number(slider.value) >= 209) slider.value = 0; start = performance.now() - Number(slider.value) / 30 * 1000; }
+    syncButton();
+  });
+  function tick(now) {
+    if (playing) {
+      slider.value = Math.min(209, Math.floor((now - start) / 1000 * 30)); draw();
+      if (Number(slider.value) >= 209) { playing = false; syncButton(); }
+    }
+    requestAnimationFrame(tick);
+  }
+  await document.fonts.ready; draw(); requestAnimationFrame(tick);
+</script>
+</html>
