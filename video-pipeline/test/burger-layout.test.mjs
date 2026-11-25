@@ -3,10 +3,23 @@ import test from 'node:test';
 import { createCanvas, GlobalFonts } from '@napi-rs/canvas';
 import { episode } from '../pilot/burger/episode.mjs';
 import { createCanvasKit } from '../scenes/canvas-kit.mjs';
-import { HEIGHT, WIDTH, frameCount, visualBounds } from '../queue/frames.mjs';
+import { HEIGHT, WIDTH, frameCount, samplePositions, visualBounds } from '../queue/frames.mjs';
 
 GlobalFonts.registerFromPath('/usr/share/fonts/opentype/noto/NotoSansCJK-Regular.ttc', 'Noto Sans KR');
 GlobalFonts.registerFromPath('/usr/share/fonts/opentype/noto/NotoSansCJK-Bold.ttc', 'Noto Sans KR');
+
+test('the polished illustrations use the same caption-safe geometry in both renders', () => {
+  const ctx = createCanvas(1, 1).getContext('2d');
+  const scenes = episode.createScenes(ctx, createCanvasKit(ctx));
+  assert.equal(episode.viewport, undefined);
+  assert.deepEqual(scenes.map(scene => scene.dur), [4, 8, 10, 7, 7, 9, 7, 5]);
+  for (const [i, scene] of scenes.entries()) {
+    for (const position of samplePositions) {
+      const frame = Math.round(position * (frameCount(scene.dur) - 1));
+      assert.ok(visualBounds(episode, i, frame), `scene ${i + 1}, frame ${frame}`);
+    }
+  }
+});
 
 test('ingredient cards stay inside the standalone canvas throughout their bounce', () => {
   const ctx = createCanvas(1, 1).getContext('2d');

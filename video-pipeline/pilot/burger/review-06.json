@@ -1,6 +1,6 @@
 {
-  "reviewer": "Devin (verified revised pilot frames)",
-  "fingerprint": "f0a447478656f1ccae6c4b19ddd7f49cb8afba86a284686a3b3bf2e72798e601",
+  "reviewer": "Devin (pilot polish smoke fixture)",
+  "fingerprint": "c49d37d85def0e2d5e9ca061b794d36c18cbf46fcb178759b2de582635318ede",
   "checks": {
     "insideCanvas": true,
     "captionClear": true,
