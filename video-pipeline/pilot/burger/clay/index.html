@@ -2,6 +2,7 @@
 <html lang="ko">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='14' fill='%23FFB523'/%3E%3C/svg%3E">
 <title>수제버거 · 클레이 시안</title>
 <style>
   *{box-sizing:border-box}body{margin:0;padding:32px;background:#ede7dd;color:#2e2921;font:16px system-ui,sans-serif}
@@ -10,7 +11,8 @@
   canvas{width:100%;height:auto;display:block;border-radius:14px}nav{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
   button{font:inherit;padding:10px 18px;border:1px solid #c3b9a8;border-radius:20px;background:#fffdf7;color:inherit;cursor:pointer}
   button[aria-pressed=true]{background:#315947;color:#fffdf7;border-color:#315947}input{flex:1;min-width:180px;accent-color:#315947}
-  @media(max-width:850px){body{padding:20px}.views{grid-template-columns:1fr}}
+  .mobile-caption{display:none}
+  @media(max-width:850px){body{padding:20px}.views{grid-template-columns:1fr}.mobile-caption{display:block;font-size:18px;color:#2e2921;background:#fffdf7;padding:14px 18px;border-radius:14px}}
 </style>
 <main>
   <h1>수제버거 · 클레이 시안</h1>
@@ -21,6 +23,7 @@
     <button id="play" aria-pressed="false">재생</button>
     <label for="time">장면 진행</label><input id="time" type="range" min="0" max="209" value="180"><output id="position"></output>
   </nav>
+  <p id="caption" class="mobile-caption" aria-live="polite"></p>
   <div class="views">
     <figure><figcaption>기존 · 플랫</figcaption><canvas id="flat" width="960" height="540"></canvas></figure>
     <figure><figcaption>시안 · 플레이도 클레이</figcaption><canvas id="clay" width="960" height="540"></canvas></figure>
@@ -47,6 +50,8 @@
         ctx.fillStyle = kit.PAPER; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(scene.cap, 480, 510);
       }
       document.getElementById('position').textContent = (Number(slider.value) / 30).toFixed(1) + ' / 7.0초';
+      const caption = document.getElementById('caption'), line = players[0].scenes[index].cap;
+      if (caption.textContent !== line) caption.textContent = line;
     } catch (error) {
       playing = false; syncButton(); document.getElementById('error').textContent = error.message;
     }
