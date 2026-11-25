@@ -16,7 +16,7 @@ export function createScenes(ctx, kit) {
 export const episode = {
   id: 'ep02', title, createScenes,
   narration: script.map(scene => scene.narration),
-  reviewSources: [new URL(import.meta.url), new URL('./script.mjs', import.meta.url)],
+  reviewSources: [new URL('./script.mjs', import.meta.url)],
   sources: ['01', '02', '03', '04', '05'].map(id =>
     new URL(`../../scenes/ep02/${id}.mjs`, import.meta.url)),
 };

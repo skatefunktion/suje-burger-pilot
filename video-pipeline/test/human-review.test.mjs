@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import { relative } from 'node:path';
 import test from 'node:test';
 import { fileURLToPath } from 'node:url';
+import { episode as ep02 } from '../episodes/ep02/episode.mjs';
 import { createHumanReviewVerifier, reviewFingerprint } from '../queue/review.mjs';
 
 const head = 'a'.repeat(40);
@@ -44,7 +45,8 @@ function setup({ author = 'scene-author', reviews = [approval],
         : Response.json(results[key]);
     },
   });
-  return { calls, check: context => assertReviewed({ number: 19, expectedHead: head, ...context }, fingerprint, fingerprintFrom) };
+  return { calls, check: (context, expected = fingerprint, from = fingerprintFrom) =>
+    assertReviewed({ number: 19, expectedHead: head, ...context }, expected, from) };
 }
 
 test('an allowlisted human approval on the exact scene PR head counts without review JSON', async () => {
@@ -53,6 +55,25 @@ test('an allowlisted human approval on the exact scene PR head counts without re
   assert.equal(calls.length, 2 + filenames.length);
   const approvedSources = new Map(contents).set(source, Buffer.from('different scene actually approved'));
   await assert.rejects(setup({ approvedSources }).check(), /Scene source .* does not match/);
+});
+
+test('episode 2 approvals survive wiring metadata changes but not script changes', async () => {
+  const script = 'video-pipeline/episodes/ep02/script.mjs';
+  const wiring = 'video-pipeline/episodes/ep02/episode.mjs';
+  const approvedSources = new Map(contents).set(script, Buffer.from('approved script'))
+    .set(wiring, Buffer.from('episode wiring without reviewSources'));
+  const currentSources = new Map(approvedSources).set(wiring, Buffer.from('episode wiring with reviewSources'));
+  const from = readSource => reviewFingerprint(ep02, 0, ep02.createScenes()[0], readSource);
+  const expected = await from(url => currentSources.get(relative(localRoot, fileURLToPath(url))));
+
+  const { check, calls } = setup({ approvedSources });
+  await check({}, expected, from);
+  assert.ok(calls.includes(`${root}/contents/${script}?ref=${head}`));
+  assert.ok(calls.every(path => !path.includes(wiring)));
+
+  const staleSources = new Map(approvedSources).set(script, Buffer.from('different narration'));
+  await assert.rejects(setup({ approvedSources: staleSources }).check({}, expected, from),
+    /Scene source .* does not match/);
 });
 
 test('scene checklist JSON neither grants nor blocks approval', async () => {
