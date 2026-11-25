@@ -41,32 +41,15 @@ def finish(obj, mat):
         for face in obj.data.polygons: face.use_smooth = True
     return obj
 
-def ball(name, pos, scale, mat, seed=1, dents=False):
-    # Hero pieces carry real pressed fingerprint grooves, not painted marks.
-    bpy.ops.mesh.primitive_uv_sphere_add(segments=192 if dents else 56, ring_count=112 if dents else 32, location=pos)
+def ball(name, pos, scale, mat, seed=1, dense=False):
+    # Preserve the established silhouettes without fingerprints or finger dents.
+    bpy.ops.mesh.primitive_uv_sphere_add(segments=192 if dense else 56, ring_count=112 if dense else 32, location=pos)
     obj = bpy.context.object; obj.name = name
-    patches = []
-    if dents:
-        for center in [(.35,-.84,.42)]:
-            normal = Vector(center).normalized()
-            tangent = normal.cross(Vector((0,0,1))).normalized()
-            patches.append((normal, tangent, normal.cross(tangent)))
     for v in obj.data.vertices:
         n = v.co.normalized(); x,y,z = n
         irregular = 1 + .018*math.sin(x*6+y*4+seed)*math.cos(z*7-x*3) + .006*math.sin(y*15+z*8+seed)
-        if dents:
-            for normal, tangent, bitangent in patches:
-                if n.dot(normal) < .85: continue
-                u, w = n.dot(tangent), n.dot(bitangent)
-                radius = math.sqrt((u/.23)**2 + (w/.17)**2)
-                if radius < 1:
-                    mask = min(1, (1-radius)*4)
-                    # Concentric, slightly asymmetric fingertip ridges pressed into dough.
-                    whorl = radius + .045*math.sin(math.atan2(w,u)*2)
-                    groove = .5 + .5*math.cos(whorl*math.tau*4)
-                    irregular -= mask*(.006 + .008*groove)
         v.co *= irregular
-    # Refresh normals after sculpting; otherwise grooves keep smooth-sphere shading.
+    # Refresh normals after the broad silhouette variation.
     obj.data.update()
     obj.scale = scale; return finish(obj, mat)
 
@@ -76,16 +59,8 @@ def block(name, pos, scale, mat, bevel=.15):
     mod=obj.modifiers.new('Soft hand-shaped corners', 'BEVEL'); mod.width=bevel; mod.segments=5
     return finish(obj, mat)
 
-def fingerprint(u, v, width=.30, height=.22, depth=.035):
-    """A pressed asymmetric whorl, resolved in geometry rather than painted rings."""
-    u/=width; v/=height; radius=math.hypot(u,v)
-    if radius>=1: return 0
-    whorl=radius+.035*math.sin(2*math.atan2(v,u))
-    mask=min(1,(1-radius)*4)
-    return depth*mask*(.55+.45*math.cos(whorl*math.tau*4))
-
 def hand_block(name,pos,scale,mat,bevel=.15):
-    """A legible rounded appliance with dense, genuinely thumb-pressed surfaces."""
+    """A rounded appliance with the existing broad, uneven clay contour."""
     count=64; vertices=[]; faces=[]; half=Vector(scale)*.5
     inner=Vector(tuple(max(.001,h-bevel) for h in half))
     for axis in range(3):
@@ -99,9 +74,6 @@ def hand_block(name,pos,scale,mat,bevel=.15):
             normal=(p-core).normalized(); p=core+normal*bevel
             x,y,z=p
             pressed=.014*math.sin(x*7+y*4+z*3)+.009*math.cos(y*11-z*7)
-            if axis==2 and side==1: pressed-=fingerprint(x+.20,y-.03,.34,.26,.045)
-            if axis==0 and side==1: pressed-=fingerprint(y+.12,z-.20,.31,.31,.040)
-            if axis==1 and side==-1: pressed-=fingerprint(x+.44,z-.69,.22,.16,.028)
             vertices.append(tuple(p+normal*pressed))
         for j in range(count):
           for i in range(count):
@@ -125,18 +97,14 @@ def ring(name, pos, radius, thickness, mat, sy=1):
     pts=[(pos[0]+radius*math.cos(i*math.tau/48),pos[1]+radius*math.sin(i*math.tau/48)*sy,pos[2]+.007*math.sin(i*1.7)) for i in range(49)]
     return rope(name,pts,thickness,mat)
 
-def lathe(name, pos, profile, mat, scale=(1,1,1), seed=1, hand=.008, stamp=False):
+def lathe(name, pos, profile, mat, scale=(1,1,1), seed=1, hand=.008, segments=160):
     """Closed, round silhouettes with deliberate sidewalls, rims and flat bases."""
-    segments=512 if stamp else 160; vertices=[]; faces=[]
+    vertices=[]; faces=[]
     for z,r in profile:
         for i in range(segments):
             a=math.tau*i/segments
             wobble=1+hand*math.sin(5*a+seed)*math.sin(z*5+.5)+hand*.35*math.cos(11*a+seed)
             rr=r*wobble
-            if stamp and r>.65:
-                u=(a-math.tau if a>math.pi else a)+1.14
-                rr-=fingerprint(u,z-.49,.32,.19,.040)
-                rr-=fingerprint(u+.70,z-.73,.25,.12,.027)
             vertices.append((rr*math.cos(a)*scale[0],rr*math.sin(a)*scale[1],z*scale[2]))
     for j in range(len(profile)-1):
         for i in range(segments):
@@ -150,14 +118,14 @@ def rod(name, a, b, radius, mat):
     """A capped wooden/metal shaft with softly rounded ends."""
     return rope(name,[a,b],radius,mat)
 
-def puck(name,pos,radius,height,mat,seed=1,stamp=False):
+def puck(name,pos,radius,height,mat,seed=1):
     bevel=min(.12,height*.28); inner=radius-bevel
     profile=[(0,0),(0,inner)]
     profile += [(bevel+bevel*math.sin(a),inner+bevel*math.cos(a)) for a in [-math.pi/2+i*math.pi/24 for i in range(13)]]
     profile += [(height-bevel,radius)]
     profile += [(height-bevel+bevel*math.sin(a),inner+bevel*math.cos(a)) for a in [i*math.pi/24 for i in range(13)]]
     profile += [(height-.008,inner*.7),(height-.014,inner*.35),(height-.014,0)]
-    return lathe(name,pos,profile,mat,seed=seed,hand=.008,stamp=stamp)
+    return lathe(name,pos,profile,mat,seed=seed,hand=.008)
 
 def setup():
     bpy.ops.object.select_all(action='SELECT'); bpy.ops.object.delete(use_global=False)
@@ -196,7 +164,7 @@ def bun(x,y,z,M,scale=1, baked=True):
     # One continuous dome: a stable flat base, narrow crumb band and rounded shoulder.
     profile=[(0,0),(0,.90),(.04,1.04),(.12,1.11),(.21,1.12)]
     profile += [(.21+.67*math.cos(a),1.12*math.sin(a)) for a in [math.pi/2-i*math.pi/384 for i in range(193)]]
-    obj=lathe('Round bun dome',(x,y,z),profile,M['bread'] if baked else M['dough'],(scale,scale,scale),seed=8,hand=.018,stamp=True)
+    obj=lathe('Round bun dome',(x,y,z),profile,M['bread'] if baked else M['dough'],(scale,scale,scale),seed=8,hand=.018,segments=512)
     if baked:
       obj.data.materials.append(M['crumb']); obj.data.materials.append(M['crust'])
       for polygon in obj.data.polygons:
@@ -308,11 +276,6 @@ def patty(M,pose,cooked=False):
       for xx in [-.58,-.20,.20,.58]:
         span=math.sqrt(max(.1,(radius*.86)**2-xx**2))
         rope('Dark sear mark',[(xx-.10,-.18-span,base+height-.005),(xx,-.18,base+height+.003),(xx+.10,-.18+span,base+height-.005)],.025,M['brownprint'])
-    # Tiny pressed sidewall marks preserve the clay feel without a ragged double layer.
-    for j in range(12):
-      a=-math.pi*.90+j*math.pi*.067
-      xx,yy=(radius+.001)*math.cos(a),-.18+(radius+.001)*math.sin(a)
-      ball('Hand-pressed edge grain',(xx,yy,base+.17),(.026,.019,.035),mat,j)
 
 def shaping(M,pose):
     board(M); patty(M,pose)

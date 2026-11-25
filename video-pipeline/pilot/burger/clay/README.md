@@ -7,19 +7,20 @@ The prototype inherits every duration and caption from the original scenes:
 Nothing is wired into the canonical episode or standalone player.
 
 The previous three-card vector treatment is replaced with full-width miniature
-workbench sets: code-sculpted, imperfect clay meshes, pressed marks, rolled
+workbench sets: code-sculpted, imperfect clay meshes, rolled
 seams, soft studio lighting and real contact shadows. Four posed renders per
 step are held on a 12-exposure-per-second stop-motion clock. The scene clock
 and export cadence remain 30fps. Texture never flickers randomly.
-Fingerprint whorls are physically pressed into the mesh; broader unevenness
-breaks up the silhouette, while a fine surface bump and high roughness keep
-the dough matte rather than smooth plastic.
+Broad unevenness breaks up the silhouette, while a fine surface bump and high
+roughness keep the dough matte rather than smooth plastic. Fingerprint whorls,
+finger dents and fingertip edge marks are deliberately omitted from all food
+and props at the owner's request.
 The revised silhouettes use one continuous bun dome, a beveled patty sidewall,
 and properly open bowls and molds. Connected miniature parts make the tools
 legible: the oven has a door frame, rack, vents and dials; the knife has a blade,
 bolster and riveted handle; the grill has capped bars and a slotted turner.
-Dense hero meshes retain pressed fingerprint grooves on the rounded bun and
-hand-shaped oven rather than trading the clay surface for cleaner proportions.
+The rounded bun and hand-shaped oven keep their established proportions and
+uneven matte material without stamped surface patterns.
 
 Visual reference: [The Play-Doh Show — BBQ Burger Bash](https://www.toongoggles.com/shows/play-doh-show/season/1/episode/22).
 The reference informed the tabletop staging, matte physical material and
