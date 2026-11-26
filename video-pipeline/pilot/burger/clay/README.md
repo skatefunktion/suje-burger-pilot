@@ -73,6 +73,33 @@ For pipeline integration after visual review, the full clay episode
 is exported from `clay/scenes.mjs`. It is deliberately not registered in
 the queue, and is not marked visually approved or ready to publish.
 
+## Original-pilot presentation and narrated review MP4
+
+`original-format.mjs` uses the reference pilot's paper background, full-canvas
+artwork, simple headings and unchanged bottom caption band. It omits the
+comparison page's inset cards, scene counters and process-progress strips.
+Geometry-derived alpha mattes remove only the baked studio floor; pale props,
+food surfaces and meat textures remain intact. The approved held-pose animation
+is unchanged: this presentation correction does not remove stop-motion boil.
+
+From `video-pipeline/`, pass the owner's existing 57-second narrated reference:
+
+```sh
+node pilot/burger/clay/render-original.mjs /absolute/path/to/reference.mp4
+```
+
+The ignored `out/clay-original-format/` directory contains the standalone MP4,
+scene samples and an export manifest. The original audio stream is copied, not
+regenerated or retimed, including any pre-existing test-voice pronunciation
+artifacts. This is a review export, not a production publication or approval.
+
+The committed mattes rebuild with the same geometry/camera as the color assets:
+
+```sh
+CLAY_ALPHA_ONLY=1 DISPLAY=:0 blender -b -t 4 --python video-pipeline/pilot/burger/clay/sculpt.py -- video-pipeline/pilot/burger/clay/assets/mattes
+CLAY_ALPHA_ONLY=1 DISPLAY=:0 blender -b -t 4 --python video-pipeline/pilot/burger/clay/sculpt_episode.py -- video-pipeline/pilot/burger/clay/assets/mattes
+```
+
 ## Rebuild the miniature assets
 
 The committed images in `assets/` make browser playback and tests independent

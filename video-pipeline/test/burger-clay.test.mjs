@@ -3,10 +3,33 @@ import test from 'node:test';
 import { createCanvas, GlobalFonts } from '@napi-rs/canvas';
 import { episode as flat } from '../pilot/burger/episode.mjs';
 import { episode as clay, claySchedule, clayShotAt } from '../pilot/burger/clay/scenes.mjs';
+import { episode as originalFormat } from '../pilot/burger/clay/original-format.mjs';
 import { createCanvasKit } from '../scenes/canvas-kit.mjs';
 import { paintFrame, visualBounds, samplePositions, frameCount } from '../queue/frames.mjs';
 
 for (const weight of ['Regular', 'Bold']) GlobalFonts.registerFromPath(`/usr/share/fonts/opentype/noto/NotoSansCJK-${weight}.ttc`, 'Noto Sans KR');
+
+test('original-format export preserves captions and timing and keeps all held poses within the original frame', () => {
+  const canvas = createCanvas(960, 540), reference = createCanvas(960, 540);
+  const ctx = canvas.getContext('2d'), kit = createCanvasKit(ctx);
+  const scenes = originalFormat.createScenes(ctx, kit), originals = flat.createScenes(ctx, kit);
+  assert.deepEqual(scenes.map(({ dur, cap }) => ({ dur, cap })), originals.map(({ dur, cap }) => ({ dur, cap })));
+  for (const [index, scene] of scenes.entries()) {
+    const visited = new Set();
+    for (let frame = 0; frame < frameCount(scene.dur); frame++) {
+      const { asset, pose } = clayShotAt(index, frame / frameCount(scene.dur), scene.dur);
+      if (visited.has(`${asset}-${pose}`)) continue;
+      visited.add(`${asset}-${pose}`);
+      assert.ok(visualBounds(originalFormat, index, frame), `${asset}-${pose}: valid artwork`);
+    }
+    paintFrame(canvas, originalFormat, index, 30);
+    paintFrame(reference, flat, index, 30);
+    assert.deepEqual(ctx.getImageData(0, 480, 960, 60).data,
+      reference.getContext('2d').getImageData(0, 480, 960, 60).data, 'original bottom caption band');
+    assert.deepEqual(ctx.getImageData(20, 20, 1, 1).data,
+      reference.getContext('2d').getImageData(20, 20, 1, 1).data, 'paper background without review-card chrome');
+  }
+});
 
 test('the full clay pilot changes all eight visuals but preserves every caption and duration', () => {
   const canvas = createCanvas(960, 540), ctx = canvas.getContext('2d'), kit = createCanvasKit(ctx);

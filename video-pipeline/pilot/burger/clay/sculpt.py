@@ -167,6 +167,18 @@ def setup():
     bpy.ops.object.camera_add(location=(4.6,-10.5,6.7)); cam=bpy.context.object
     cam.rotation_euler=(Vector((0,0,.9))-cam.location).to_track_quat('-Z','Y').to_euler()
     cam.data.type='ORTHO'; cam.data.ortho_scale=8.9; scene.camera=cam
+    if os.environ.get('CLAY_ALPHA_ONLY') == '1':
+      # Geometry-derived mattes preserve pale props that a chroma key would eat.
+      scene.render.engine='BLENDER_WORKBENCH'
+      scene.render.film_transparent=True
+      scene.render.image_settings.color_mode='RGBA'
+      scene.display.shading.light='FLAT'
+      scene.display.shading.color_type='SINGLE'
+      scene.display.shading.single_color=(1,1,1)
+      scene.display.shading.show_shadows=False
+      scene.display.shading.show_cavity=False
+      scene.display.shading.show_object_outline=False
+      bpy.data.objects['Seamless studio floor'].hide_render=True
     return M
 
 def plate(x,y,M,r=1.3):

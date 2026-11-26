@@ -52,6 +52,8 @@ const images = Object.fromEntries(await Promise.all(assets.map(async ({ asset, p
   await Promise.all(Array.from({ length: poses }, (_, pose) => load(new URL(`./assets/${asset}-${pose}.png`, import.meta.url)))),
 ])));
 
+export { images as clayImages };
+
 export function clayShotAt(index, t, dur) {
   const config = claySchedule[index];
   const exposure = Math.max(0, Math.min(Math.ceil(dur * 12) - 1, Math.floor(Math.max(0, Math.min(1, t)) * dur * 12 + 1e-8)));
