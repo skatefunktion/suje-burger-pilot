@@ -1,0 +1,14 @@
+{
+  "reviewer": "Devin (existing pilot reference)",
+  "fingerprint": "0c1d72b3bea25fb178f8029e179db72515364dfcd56e9bf2d63135b93d909fa7",
+  "checks": {
+    "insideCanvas": true,
+    "captionClear": true,
+    "proportions": true,
+    "readable": false,
+    "contrast": true,
+    "layerOrder": true,
+    "pilotStyle": true
+  },
+  "baselineException": "Timeline stage labels overlap the axis and duration labels."
+}
