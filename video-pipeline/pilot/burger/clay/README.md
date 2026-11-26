@@ -53,6 +53,9 @@ time; choose any of eight scenes, pause or scrub to compare the flat and clay
 versions, or use **전체 57초 재생** for continuous playback. The left side is
 the canonical flat reference, not a duplicate of PR #14. This is a silent
 visual preview, not a replacement for the narrated export.
+On narrow screens, the current process label and description also appear below
+the clay canvas at 20px / 18px, alongside the separate 18px narration caption.
+These use the same shot selector as the artwork, so scrubbing stays synchronized.
 
 From `video-pipeline/`, generate six matched keyframes per style and scene:
 

@@ -11,8 +11,9 @@
   canvas{width:100%;height:auto;display:block;border-radius:14px}nav{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
   button{font:inherit;padding:10px 18px;border:1px solid #c3b9a8;border-radius:20px;background:#fffdf7;color:inherit;cursor:pointer}
   button[aria-pressed=true]{background:#315947;color:#fffdf7;border-color:#315947}input{flex:1;min-width:180px;accent-color:#315947}
-  .mobile-caption{display:none}
-  @media(max-width:850px){body{padding:20px}.views{grid-template-columns:1fr}.mobile-caption{display:block;font-size:18px;color:#2e2921;background:#fffdf7;padding:14px 18px;border-radius:14px}}
+  .mobile-caption,.mobile-process{display:none}
+  .mobile-process strong,.mobile-process span{display:block}.mobile-process strong{font-size:20px}
+  @media(max-width:850px){body{padding:20px}.views{grid-template-columns:1fr}.mobile-caption,.mobile-process{display:block;font-size:18px;color:#2e2921;background:#fffdf7;padding:14px 18px;border-radius:14px}}
 </style>
 <main>
   <h1>수제버거 · 클레이 시안</h1>
@@ -33,13 +34,13 @@
   <p id="caption" class="mobile-caption" aria-live="polite"></p>
   <div class="views">
     <figure><figcaption>기존 플랫 · 참고</figcaption><canvas id="flat" width="960" height="540"></canvas></figure>
-    <figure><figcaption>전체 클레이 · 재료별 장면</figcaption><canvas id="clay" width="960" height="540"></canvas></figure>
+    <figure><figcaption>전체 클레이 · 재료별 장면</figcaption><canvas id="clay" width="960" height="540"></canvas><p class="mobile-process" aria-live="polite"><strong id="step-label"></strong><span id="step-detail"></span></p></figure>
   </div>
   <p id="error" role="alert"></p>
 </main>
 <script type="module">
   import { createBurgerScenes } from '../scenes.mjs';
-  import { createClayBurgerScenes } from './scenes.mjs';
+  import { createClayBurgerScenes, clayShotAt } from './scenes.mjs';
   import { createCanvasKit } from '../../../scenes/canvas-kit.mjs';
   const players = [['flat', createBurgerScenes], ['clay', createClayBurgerScenes]].map(([id, create]) => {
     const ctx = document.getElementById(id).getContext('2d'), kit = createCanvasKit(ctx);
@@ -65,6 +66,11 @@
       document.getElementById('position').textContent = `${(Number(slider.value) / 30).toFixed(1)} / ${scenes[index].dur.toFixed(1)}초 · ${(offsets[index] + Number(slider.value) / 30).toFixed(1)} / ${total}초`;
       const caption = document.getElementById('caption'), line = players[0].scenes[index].cap;
       if (caption.textContent !== line) caption.textContent = line;
+      const current = clayShotAt(index, Number(slider.value) / (scenes[index].dur * 30), scenes[index].dur);
+      for (const [id, value] of [['step-label', current.label], ['step-detail', current.detail]]) {
+        const element = document.getElementById(id);
+        if (element.textContent !== value) element.textContent = value;
+      }
     } catch (error) {
       playing = false; syncButton(); document.getElementById('error').textContent = error.message;
     }
