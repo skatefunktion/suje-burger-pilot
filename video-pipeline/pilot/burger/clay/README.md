@@ -1,4 +1,68 @@
-# Full clay burger pilot (unmerged)
+# Clay burger review exports (unmerged)
+
+## Current request: 64-second square reference remake
+
+`restyle-reference.py` follows the confirmed [Kevin Ngo film](https://x.com/kevin_t_ngo/status/2111569193347018977)
+itself, not the earlier Korean pilot: **1080×1080, 24fps, 1,536 frames, 64 seconds**.
+`reference-film.json` records 24 source-timed sections, 84 clay anchors, Korean
+captions and the approved localization. The original video is supplied locally;
+it is not committed. This remains a draft visual-review export, not a queue
+registration or production rollout.
+
+The source-frame image edits in `reference-assets/` follow the source compositions,
+ingredient stages and camera framing, with matte clay material, rounded shapes,
+meat-textured patties, and no fingerprints or finger dents. Faint construction
+outlines remain outlines until their objects appear. Asset hashes and authoring
+provenance are in `reference-assets/manifest.json`. These new anchors are AI-assisted
+image edits, **not** the procedural Blender assets described below. The renderer
+registers them against their source poses before applying source-derived optical
+flow; it does not reuse the old pilot's 12-exposure wiggle or scene layouts.
+Each frame uses one registered clay exposure, not a dissolve between different
+sculpts; this avoids transparent doubled edges during motion.
+Exposures match the source's illustrated content rather than the nearest timestamp,
+so abrupt ingredient, dairy, oven-tray and worker stages do not switch half an
+anchor interval early or late.
+
+All visible headings, diagram labels, map labels, worker labels and restaurant
+lettering are typeset in Korean. The rounded **Jua Regular** font is bundled in
+`fonts/` under the [SIL Open Font License 1.1](fonts/OFL.txt), permitting use in
+published videos. Source: [Google Fonts](https://fonts.google.com/specimen/Jua).
+The native type-on follows measured source-ink timing; the red underlined markers
+retain their original location.
+
+### Approved Daegwallyeong exception
+
+The cattle sequences use tawny Hanwoo and green Daegwallyeong mountain pasture,
+instead of California Herefords and golden hills. Their marker is **약 30개월**;
+the opening countdown and closing total agree at **약 2년 6개월**. The
+[Korea Institute for Animal Products Quality Evaluation, September 2024](https://www.ekape.or.kr/webjin/202409/resource/sub01-01.html)
+describes most Hanwoo steers being marketed at approximately 30 months of age.
+This is an illustrative localization, not farm traceability or a claim of
+exclusive grazing throughout that period. All other numbers, the California
+delivery map, source order, compositions and audio remain source-based.
+
+### Rebuild and QC
+
+From the repository root, with ffmpeg and Python 3 installed:
+
+```sh
+python3 -m pip install numpy==1.26.4 Pillow==11.3.0 opencv-python-headless==4.10.0.84
+python3 video-pipeline/pilot/burger/clay/restyle-reference.py prepare /path/to/confirmed-reference.mp4 /path/to/work
+python3 video-pipeline/pilot/burger/clay/restyle-reference.py render /path/to/confirmed-reference.mp4 /path/to/work
+```
+
+The source must match the committed anchors' source hash, and the prepared source
+hash must still match at render time. Missing anchors fail before
+encoding. Committed WebP anchors make rendering independent of image-generation
+access. `--shot 0` through `--shot 23` render a short silent motion study instead.
+The full export copies the source AAC payload, verifies square dimensions,
+frame rate and frame count, compares audio hashes, and fully decodes both streams.
+Output: `kevin-burger-clay-ko-64s.mp4`, `export-review.json`, and one review frame
+per section. Generated outputs and the original MP4 remain outside Git.
+
+Run authoring checks with `python3 -m unittest discover -s video-pipeline/test -p 'test_reference_clay.py'`.
+
+## Earlier 57-second landscape pilot
 
 A complete claymation rendering of **all eight scenes**, following the owner's
 choice of clay and the per-ingredient cuts in PR #14. No scene delegates its
