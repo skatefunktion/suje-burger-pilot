@@ -16,17 +16,24 @@
 </style>
 <main>
   <h1>수제버거 · 클레이 시안</h1>
-  <p>실제 점토 작업대처럼 빚은 번·패티 시안입니다. 기존 파일럿은 그대로예요. 960 × 540 · 57초 구성과 자막 유지 · 무음 미리보기</p>
+  <p>농장부터 완성까지, 재료별 장면을 모두 클레이로 빚었습니다. 960 × 540 · 8장면 · 57초 구성과 자막 유지 · 무음 미리보기</p>
   <nav aria-label="장면 선택">
-    <button data-scene="3" aria-pressed="true">번 만들기</button>
+    <button data-scene="0" aria-pressed="true">시작</button>
+    <button data-scene="1" aria-pressed="false">재료의 고향</button>
+    <button data-scene="2" aria-pressed="false">성장·수확</button>
+    <button data-scene="3" aria-pressed="false">번 만들기</button>
     <button data-scene="4" aria-pressed="false">패티 만들기</button>
+    <button data-scene="5" aria-pressed="false">쌓기</button>
+    <button data-scene="6" aria-pressed="false">소스·깨</button>
+    <button data-scene="7" aria-pressed="false">완성</button>
     <button id="play" aria-pressed="false">재생</button>
-    <label for="time">장면 진행</label><input id="time" type="range" min="0" max="209" value="180"><output id="position"></output>
+    <button id="play-all" aria-pressed="false">전체 57초 재생</button>
+    <label for="time">장면 진행</label><input id="time" type="range" min="0" max="119" value="0"><output id="position"></output>
   </nav>
   <p id="caption" class="mobile-caption" aria-live="polite"></p>
   <div class="views">
-    <figure><figcaption>기존 · 플랫</figcaption><canvas id="flat" width="960" height="540"></canvas></figure>
-    <figure><figcaption>시안 · 플레이도우 클레이메이션</figcaption><canvas id="clay" width="960" height="540"></canvas></figure>
+    <figure><figcaption>기존 플랫 · 참고</figcaption><canvas id="flat" width="960" height="540"></canvas></figure>
+    <figure><figcaption>전체 클레이 · 재료별 장면</figcaption><canvas id="clay" width="960" height="540"></canvas></figure>
   </div>
   <p id="error" role="alert"></p>
 </main>
@@ -38,8 +45,14 @@
     const ctx = document.getElementById(id).getContext('2d'), kit = createCanvasKit(ctx);
     return { ctx, kit, scenes: create(ctx, kit) };
   });
-  const slider = document.getElementById('time'), play = document.getElementById('play');
-  let index = 3, playing = false, start = 0;
+  const slider = document.getElementById('time'), play = document.getElementById('play'), playAll = document.getElementById('play-all');
+  const scenes = players[1].scenes, total = scenes.reduce((sum, scene) => sum + scene.dur, 0);
+  const offsets = scenes.map((_, i) => scenes.slice(0, i).reduce((sum, scene) => sum + scene.dur, 0));
+  let index = 0, playing = false, full = false, start = 0;
+  function select(next, frame = 0) {
+    index = next; slider.max = scenes[index].dur * 30 - 1; slider.value = frame;
+    for (const button of document.querySelectorAll('[data-scene]')) button.setAttribute('aria-pressed', String(Number(button.dataset.scene) === index));
+  }
   function draw() {
     try {
       for (const {ctx, kit, scenes} of players) {
@@ -49,29 +62,49 @@
         ctx.font = '700 22px "Noto Sans KR","Apple SD Gothic Neo",sans-serif';
         ctx.fillStyle = kit.PAPER; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(scene.cap, 480, 510);
       }
-      document.getElementById('position').textContent = (Number(slider.value) / 30).toFixed(1) + ' / 7.0초';
+      document.getElementById('position').textContent = `${(Number(slider.value) / 30).toFixed(1)} / ${scenes[index].dur.toFixed(1)}초 · ${(offsets[index] + Number(slider.value) / 30).toFixed(1)} / ${total}초`;
       const caption = document.getElementById('caption'), line = players[0].scenes[index].cap;
       if (caption.textContent !== line) caption.textContent = line;
     } catch (error) {
       playing = false; syncButton(); document.getElementById('error').textContent = error.message;
     }
   }
-  function syncButton() { play.textContent = playing ? '일시정지' : '재생'; play.setAttribute('aria-pressed', String(playing)); }
-  slider.addEventListener('input', () => { playing = false; syncButton(); draw(); });
+  function syncButton() {
+    play.textContent = playing ? '일시정지' : '재생'; play.setAttribute('aria-pressed', String(playing));
+    playAll.textContent = playing && full ? '전체 일시정지' : '전체 57초 재생'; playAll.setAttribute('aria-pressed', String(playing && full));
+  }
+  slider.addEventListener('input', () => { playing = false; full = false; syncButton(); draw(); });
   for (const button of document.querySelectorAll('[data-scene]')) button.addEventListener('click', () => {
-    index = Number(button.dataset.scene); slider.value = 180; playing = false; syncButton();
-    for (const other of document.querySelectorAll('[data-scene]')) other.setAttribute('aria-pressed', String(other === button));
+    select(Number(button.dataset.scene)); playing = false; full = false; syncButton();
     draw();
   });
   play.addEventListener('click', () => {
     playing = !playing;
-    if (playing) { if (Number(slider.value) >= 209) slider.value = 0; start = performance.now() - Number(slider.value) / 30 * 1000; }
+    if (playing) {
+      if (Number(slider.value) >= Number(slider.max)) {
+        if (full && index === scenes.length - 1) select(0);
+        else slider.value = 0;
+      }
+      start = performance.now() - (Number(slider.value) / 30 + (full ? offsets[index] : 0)) * 1000;
+    }
+    syncButton();
+  });
+  playAll.addEventListener('click', () => {
+    if (playing && full) { playing = false; }
+    else { select(0); full = true; playing = true; start = performance.now(); draw(); }
     syncButton();
   });
   function tick(now) {
     if (playing) {
-      slider.value = Math.min(209, Math.floor((now - start) / 1000 * 30)); draw();
-      if (Number(slider.value) >= 209) { playing = false; syncButton(); }
+      const frame = Math.floor((now - start) / 1000 * 30);
+      if (full) {
+        const clamped = Math.min(total * 30 - 1, frame);
+        let next = scenes.length - 1;
+        while (next > 0 && offsets[next] * 30 > clamped) next--;
+        select(next, clamped - offsets[next] * 30);
+      } else slider.value = Math.min(Number(slider.max), frame);
+      draw();
+      if (full ? frame >= total * 30 - 1 : frame >= Number(slider.max)) { playing = false; syncButton(); }
     }
     requestAnimationFrame(tick);
   }

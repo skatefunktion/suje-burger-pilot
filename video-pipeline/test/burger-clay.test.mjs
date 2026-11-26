@@ -2,13 +2,13 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import { createCanvas, GlobalFonts } from '@napi-rs/canvas';
 import { episode as flat } from '../pilot/burger/episode.mjs';
-import { episode as clay } from '../pilot/burger/clay/scenes.mjs';
+import { episode as clay, claySchedule, clayShotAt } from '../pilot/burger/clay/scenes.mjs';
 import { createCanvasKit } from '../scenes/canvas-kit.mjs';
 import { paintFrame, visualBounds, samplePositions, frameCount } from '../queue/frames.mjs';
 
 for (const weight of ['Regular', 'Bold']) GlobalFonts.registerFromPath(`/usr/share/fonts/opentype/noto/NotoSansCJK-${weight}.ttc`, 'Noto Sans KR');
 
-test('the opt-in clay study preserves every scene caption, duration and untouched frame', () => {
+test('the full clay pilot changes all eight visuals but preserves every caption and duration', () => {
   const canvas = createCanvas(960, 540), ctx = canvas.getContext('2d'), kit = createCanvasKit(ctx);
   const originals = flat.createScenes(ctx, kit), study = clay.createScenes(ctx, kit);
   assert.equal(study.length, 8);
@@ -17,15 +17,17 @@ test('the opt-in clay study preserves every scene caption, duration and untouche
   for (let i = 0; i < 8; i++) {
     paintFrame(canvas, flat, i, 60); const original = canvas.toBuffer('image/png');
     paintFrame(canvas, clay, i, 60); const result = canvas.toBuffer('image/png');
-    if ([3, 4].includes(i)) assert.notDeepEqual(result, original);
-    else assert.deepEqual(result, original, `flat scene ${i + 1} changed`);
+    assert.notDeepEqual(result, original, `scene ${i + 1} must be clay, not delegated flat artwork`);
   }
 });
 
 test('clay keyframes and process-step boundaries stay clear of captions and canvas edges', () => {
-  for (const index of [3, 4]) {
-    for (const position of [...samplePositions, .18, .65, .86, 1 / 3 - .001, 1 / 3, 2 / 3 - .001, 2 / 3]) {
-      assert.ok(visualBounds(clay, index, Math.round(position * (frameCount(7) - 1))));
+  const canvas = createCanvas(960, 540), ctx = canvas.getContext('2d');
+  const originals = flat.createScenes(ctx, createCanvasKit(ctx));
+  for (const index of claySchedule.keys()) {
+    const dur = originals[index].dur;
+    for (const position of [...samplePositions, ...claySchedule[index].stops.flatMap(stop => [Math.max(0, stop - .001), stop])]) {
+      assert.ok(visualBounds(clay, index, Math.round(position * (frameCount(dur) - 1))));
     }
   }
 });
@@ -44,8 +46,10 @@ test('every clay process label stays outside the miniature artwork', () => {
     labels.push({ value, top: y - metrics.actualBoundingBoxAscent, bottom: y + metrics.actualBoundingBoxDescent });
     return fillText(value, x, y, ...rest);
   };
-  for (const index of [3, 4]) {
-    for (const t of [.18, .5, .86]) {
+  for (const index of claySchedule.keys()) {
+    const { stops } = claySchedule[index];
+    for (const [i, stop] of stops.entries()) {
+      const t = ((stops[i - 1] ?? 0) + stop) / 2;
       artwork = null; labels = []; scenes[index].draw(t);
       assert.ok(artwork, 'miniature must be drawn');
       assert.ok(labels.length > 0, 'process labels must be drawn');
@@ -71,9 +75,31 @@ test('claymation holds poses on a fixed 12-exposure clock and changes between pr
 
 test('clay rendering is deterministic when frames are visited out of order', () => {
   const canvas = createCanvas(960, 540);
-  for (const index of [3, 4]) {
-    paintFrame(canvas, clay, index, 180); const first = canvas.toBuffer('image/png');
+  for (const index of claySchedule.keys()) {
+    paintFrame(canvas, clay, index, 90); const first = canvas.toBuffer('image/png');
     paintFrame(canvas, clay, index, 15);
-    paintFrame(canvas, clay, index, 180); assert.deepEqual(canvas.toBuffer('image/png'), first);
+    paintFrame(canvas, clay, index, 90); assert.deepEqual(canvas.toBuffer('image/png'), first);
+  }
+});
+
+test('ingredient, growth, preparation and assembly shots remain separate and progress forward', () => {
+  assert.deepEqual(claySchedule[1].shots.map(s => s.asset), ['origin-farm', 'origin-wheat', 'origin-tomato', 'origin-lettuce', 'delivery']);
+  assert.deepEqual(claySchedule[2].shots.map(s => s.asset), ['grow-cow', 'grow-wheat', 'grow-tomato', 'grow-lettuce', 'grow-sesame', 'grow-cheese']);
+  assert.deepEqual(claySchedule[4].shots.map(s => s.asset), ['patty-mince', 'patty-shape', 'patty-grill']);
+  assert.deepEqual(claySchedule[5].shots.map(s => s.asset), Array.from({ length: 6 }, (_, i) => `stack-${i}`));
+  const canvas = createCanvas(960, 540), ctx = canvas.getContext('2d');
+  const scenes = clay.createScenes(ctx, createCanvasKit(ctx));
+  for (const [index, scene] of scenes.entries()) {
+    const visited = new Map(); let previousStep = 0;
+    for (let frame = 0; frame < scene.dur * 30; frame++) {
+      const current = clayShotAt(index, frame / (scene.dur * 30), scene.dur);
+      assert.ok(current.step >= previousStep, 'shots must not rewind');
+      previousStep = current.step;
+      if (!visited.has(current.asset)) visited.set(current.asset, new Set());
+      visited.get(current.asset).add(current.pose);
+    }
+    assert.deepEqual([...visited.keys()], claySchedule[index].shots.map(s => s.asset));
+    for (const s of claySchedule[index].shots) assert.equal(visited.get(s.asset).size, s.poses, `${s.asset}: every pose reachable`);
+    assert.equal(clayShotAt(index, 1, scene.dur).asset, claySchedule[index].shots.at(-1).asset);
   }
 });

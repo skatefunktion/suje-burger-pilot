@@ -41,10 +41,21 @@ def finish(obj, mat):
         for face in obj.data.polygons: face.use_smooth = True
     return obj
 
+_sphere_templates = {}
+
 def ball(name, pos, scale, mat, seed=1, dense=False):
     # Preserve the established silhouettes without fingerprints or finger dents.
-    bpy.ops.mesh.primitive_uv_sphere_add(segments=192 if dense else 56, ring_count=112 if dense else 32, location=pos)
-    obj = bpy.context.object; obj.name = name
+    # Copy unmodified topology rather than invoking an operator for every grain.
+    # Operators repeatedly evaluate the whole burger's dependency graph.
+    if dense not in _sphere_templates:
+        bpy.ops.mesh.primitive_uv_sphere_add(segments=96 if dense else 32, ring_count=56 if dense else 20)
+        template = bpy.context.object; mesh = template.data
+        mesh.use_fake_user = True; _sphere_templates[dense] = mesh
+        bpy.data.objects.remove(template, do_unlink=True)
+    mesh = _sphere_templates[dense].copy()
+    mesh.use_fake_user = False
+    obj = bpy.data.objects.new(name, mesh); bpy.context.collection.objects.link(obj)
+    obj.location = pos
     for v in obj.data.vertices:
         n = v.co.normalized(); x,y,z = n
         irregular = 1 + .018*math.sin(x*6+y*4+seed)*math.cos(z*7-x*3) + .006*math.sin(y*15+z*8+seed)
@@ -54,8 +65,10 @@ def ball(name, pos, scale, mat, seed=1, dense=False):
     obj.scale = scale; return finish(obj, mat)
 
 def block(name, pos, scale, mat, bevel=.15):
-    bpy.ops.mesh.primitive_cube_add(size=1, location=pos); obj=bpy.context.object; obj.name=name
-    obj.dimensions = scale; bpy.ops.object.transform_apply(location=False, rotation=False, scale=True)
+    vertices=[(x*scale[0]/2,y*scale[1]/2,z*scale[2]/2) for x,y,z in [(-1,-1,-1),(1,-1,-1),(1,1,-1),(-1,1,-1),(-1,-1,1),(1,-1,1),(1,1,1),(-1,1,1)]]
+    mesh=bpy.data.meshes.new(name)
+    mesh.from_pydata(vertices,[],[(0,3,2,1),(4,5,6,7),(0,1,5,4),(1,2,6,5),(2,3,7,6),(3,0,4,7)])
+    mesh.update(); obj=bpy.data.objects.new(name,mesh); bpy.context.collection.objects.link(obj); obj.location=pos
     mod=obj.modifiers.new('Soft hand-shaped corners', 'BEVEL'); mod.width=bevel; mod.segments=5
     return finish(obj, mat)
 
@@ -249,10 +262,10 @@ def mince(M,pose):
     board(M); flour_jar(M)
     for row in range(5):
       yy=-.27+row*.19
-      rope('Capped clay mince',[(-.94+i*.23,yy+.022*math.sin(i*2+row),.39) for i in range(5)],.082,M['pink'])
+      rope('Capped clay mince',[(-.94+i*.23,yy+.022*math.sin(i*2+row),.39) for i in range(5)],.082,M['raw-beef'])
     for j in range(22):
       xx=.45+(j%5)*.18+.02*math.sin(j*6); yy=-.75+(j//5)*.20
-      chunk=block('Diced mince',(xx,yy,.38+(j%3)*.014),(.16,.14,.14),M['pink'] if j%4 else M['fat'],.047)
+      chunk=block('Diced mince',(xx,yy,.38+(j%3)*.014),(.16,.14,.14),M['raw-beef'] if j%4 else M['fat'],.047)
       chunk.rotation_euler[2]=.3*math.sin(j*7)
     # Blade, bolster and riveted handle are visibly one connected kitchen knife.
     lift=pose*.055
@@ -262,16 +275,52 @@ def mince(M,pose):
     block('Knife handle',(.68,.07,1.04+lift),(.72,.17,.20),M['red'],.06)
     for xx in [.48,.84]: ball('Handle rivet',(xx,-.019,1.04+lift),(.026,.012,.026),M['silver'])
 
+def meat_material(cooked=False):
+    """Irregular minced grain and toasted variation, never fingertip stamps."""
+    mat=material('Seared minced beef' if cooked else 'Raw minced beef','80503B' if cooked else 'B65E59')
+    nodes=mat.node_tree.nodes; links=mat.node_tree.links; bs=nodes.get('Principled BSDF')
+    grain=nodes.new('ShaderNodeTexNoise'); grain.inputs['Scale'].default_value=38
+    grain.inputs['Detail'].default_value=4; grain.inputs['Roughness'].default_value=.8
+    ramp=nodes.new('ShaderNodeValToRGB')
+    colors=['422C23','81513A','B17B50'] if cooked else ['863D39','B95D56','DA8D7A']
+    ramp.color_ramp.elements.remove(ramp.color_ramp.elements[1])
+    for i,color in enumerate(colors):
+      el=ramp.color_ramp.elements[0] if i==0 else ramp.color_ramp.elements.new(.23+i*.27)
+      el.position=.23+i*.27; el.color=(*rgb(color),1)
+    bump=nodes.new('ShaderNodeBump'); bump.inputs['Strength'].default_value=.65; bump.inputs['Distance'].default_value=.055
+    links.new(grain.outputs['Fac'],ramp.inputs['Fac']); links.new(ramp.outputs['Color'],bs.inputs['Base Color'])
+    links.new(grain.outputs['Fac'],bump.inputs['Height']); links.new(bump.outputs['Normal'],bs.inputs['Normal'])
+    return mat
+
+def meat_disk(pos,radius,height,M,cooked=False):
+    from mathutils.noise import noise_vector
+    profile=[(0,0),(0,radius*.86),(.055,radius*.97),(.12,radius),(height-.08,radius),(height,radius*.95)]
+    profile += [(height,radius*.95*(1-i/32)) for i in range(1,33)]
+    obj=lathe('Coherent minced beef patty',pos,profile,M['cooked-beef'] if cooked else M['raw-beef'],hand=.014,segments=144)
+    for v in obj.data.vertices:
+      x,y,z=v.co
+      n=noise_vector(Vector((x*19+7,y*19-3,z*19+5)))
+      if z>.1:
+        v.co.z += n.z*.031
+        radial=Vector((x,y,0)).normalized(); v.co += radial*n.x*.012
+    obj.data.update()
+    for j in range(112):
+      a=j*2.39996; rr=radius*.94*math.sqrt((j+.5)/112)
+      xx,yy=pos[0]+rr*math.cos(a),pos[1]+rr*math.sin(a)
+      col=M['brownprint'] if cooked and j%3 else M['crust'] if cooked else M['rawdetail'] if j%5 else M['fat']
+      flake=ball('Irregular minced meat grain',(xx,yy,pos[2]+height+.003),(.022+.009*(j%3),.012+.005*(j%2),.009),col,j)
+      flake.rotation_euler[2]=j*1.73
+    # Broken, short fibers on the sidewall follow meat grain, not repeated finger grooves.
+    for j in range(39):
+      a=j*2.39996; rr=radius+.003; z=pos[2]+.10+(j%5)*height*.13
+      flake=ball('Sidewall minced fiber',(pos[0]+rr*math.cos(a),pos[1]+rr*math.sin(a),z),(.028,.014,.012),M['crust'] if cooked else M['fat'],j)
+      flake.rotation_euler[2]=a+.8
+    return obj
+
 def patty(M,pose,cooked=False):
-    mat=M['meat'] if cooked else M['pink']
     base=.80 if cooked else .295
     radius=1.04 if cooked else 1.12; height=.40 if cooked else .43
-    puck('Single thick patty',(0,-.18,base),radius,height,mat,seed=9)
-    for j in range(29):
-      a=j*2.39996; rr=radius*.88*math.sqrt((j+.5)/29)
-      xx,yy=rr*math.cos(a),-.18+rr*math.sin(a)
-      col=M['brownprint'] if cooked and j%3 else M['crust'] if cooked else M['rawdetail'] if j%3 else M['fat']
-      ball('Pressed clay meat fleck',(xx,yy,base+height-.009),(.030+.012*(j%2),.023,.010),col,j)
+    meat_disk((0,-.18,base),radius,height,M,cooked)
     if cooked:
       for xx in [-.58,-.20,.20,.58]:
         span=math.sqrt(max(.1,(radius*.86)**2-xx**2))
@@ -304,10 +353,11 @@ def grill(M,pose):
     block('Spatula head',(2.47,.51,.25),(.66,.65,.065),M['silver'],.055)
     for xx in [2.30,2.47,2.64]: block('Turner slot',(xx,.51,.286),(.055,.35,.008),M['dark'],.018)
 
-for label,build in [('bun-mix',mixing),('bun-proof',proof),('bun-bake',oven),('patty-mince',mince),('patty-shape',shaping),('patty-grill',grill)]:
-    if FILTER and FILTER not in label: continue
-    for pose in range(4):
-        if POSE is not None and pose != POSE: continue
-        M=setup(); build(M,pose)
-        scene=bpy.context.scene; scene.render.filepath=os.path.join(OUT,f'{label}-{pose}.png')
-        bpy.ops.render.render(write_still=True)
+if __name__ == '__main__':
+    for label,build in [('bun-mix',mixing),('bun-proof',proof),('bun-bake',oven),('patty-mince',mince),('patty-shape',shaping),('patty-grill',grill)]:
+        if FILTER and FILTER not in label: continue
+        for pose in range(4):
+            if POSE is not None and pose != POSE: continue
+            M=setup(); M['raw-beef']=meat_material(); M['cooked-beef']=meat_material(True); build(M,pose)
+            scene=bpy.context.scene; scene.render.filepath=os.path.join(OUT,f'{label}-{pose}.png')
+            bpy.ops.render.render(write_still=True)
