@@ -73,19 +73,34 @@ For pipeline integration after visual review, the full clay episode
 is exported from `clay/scenes.mjs`. It is deliberately not registered in
 the queue, and is not marked visually approved or ready to publish.
 
-## Original-pilot presentation and narrated review MP4
+## Confirmed-reference presentation and narrated review MP4
 
-`original-format.mjs` uses the reference pilot's paper background, full-canvas
-artwork, simple headings and unchanged bottom caption band. It omits the
-comparison page's inset cards, scene counters and process-progress strips.
+The owner confirmed [Kevin Ngo's burger film](https://x.com/kevin_t_ngo/status/2111569193347018977)
+as the visual reference, not the earlier Korean smoke export. Its numbers are
+production-time markers, not prices. `original-format.mjs` follows its small red,
+underlined time marker and one-line caption at the upper left, above large clay
+artwork. There is no bottom caption band, centered heading, badge, inset card,
+scene counter or process-progress strip.
+
+The Korean pilot remains **960×540 landscape, eight scenes and 57 seconds**;
+this is not a 64-second square remake of the English film. Every canonical
+Korean caption stays verbatim, moved to the top. Ingredient durations come from
+the existing Korean storyboard (Hanwoo 30 months, wheat 7, tomato/sesame 3,
+lettuce 2, cheese a few days), not the California reference. Preparation,
+delivery and finishing use verbal time/stage markers where no duration was
+specified; no prices or new numeric claims are added.
+
 Geometry-derived alpha mattes remove only the baked studio floor; pale props,
 food surfaces and meat textures remain intact. The approved held-pose animation
 is unchanged: this presentation correction does not remove stop-motion boil.
+The export has its own top-caption painter/encoder; the shared production queue
+and the comparison player's bottom-caption layout remain untouched.
 
-From `video-pipeline/`, pass the owner's existing 57-second narrated reference:
+From `video-pipeline/`, pass the owner's existing **57-second Korean narration
+MP4** as the audio source, not the 64-second English reference:
 
 ```sh
-node pilot/burger/clay/render-original.mjs /absolute/path/to/reference.mp4
+node pilot/burger/clay/render-original.mjs /absolute/path/to/korean-pilot-57s.mp4
 ```
 
 The ignored `out/clay-original-format/` directory contains the standalone MP4,

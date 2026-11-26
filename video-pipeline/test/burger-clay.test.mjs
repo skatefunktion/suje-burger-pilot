@@ -3,14 +3,15 @@ import test from 'node:test';
 import { createCanvas, GlobalFonts } from '@napi-rs/canvas';
 import { episode as flat } from '../pilot/burger/episode.mjs';
 import { episode as clay, claySchedule, clayShotAt } from '../pilot/burger/clay/scenes.mjs';
-import { episode as originalFormat } from '../pilot/burger/clay/original-format.mjs';
+import { episode as originalFormat, paintOriginalFormatFrame, referenceTimeLabel } from '../pilot/burger/clay/original-format.mjs';
 import { createCanvasKit } from '../scenes/canvas-kit.mjs';
 import { paintFrame, visualBounds, samplePositions, frameCount } from '../queue/frames.mjs';
 
 for (const weight of ['Regular', 'Bold']) GlobalFonts.registerFromPath(`/usr/share/fonts/opentype/noto/NotoSansCJK-${weight}.ttc`, 'Noto Sans KR');
 
-test('original-format export preserves captions and timing and keeps all held poses within the original frame', () => {
-  const canvas = createCanvas(960, 540), reference = createCanvas(960, 540);
+test('reference-format export preserves captions and timing and frames every held pose without a bottom band', () => {
+  const canvas = createCanvas(960, 540), paper = createCanvas(960, 540);
+  createCanvasKit(paper.getContext('2d')).bg();
   const ctx = canvas.getContext('2d'), kit = createCanvasKit(ctx);
   const scenes = originalFormat.createScenes(ctx, kit), originals = flat.createScenes(ctx, kit);
   assert.deepEqual(scenes.map(({ dur, cap }) => ({ dur, cap })), originals.map(({ dur, cap }) => ({ dur, cap })));
@@ -20,14 +21,50 @@ test('original-format export preserves captions and timing and keeps all held po
       const { asset, pose } = clayShotAt(index, frame / frameCount(scene.dur), scene.dur);
       if (visited.has(`${asset}-${pose}`)) continue;
       visited.add(`${asset}-${pose}`);
-      assert.ok(visualBounds(originalFormat, index, frame), `${asset}-${pose}: valid artwork`);
+      assert.ok(visualBounds(originalFormat, index, frame, { captionY: 540 }), `${asset}-${pose}: valid artwork`);
     }
-    paintFrame(canvas, originalFormat, index, 30);
-    paintFrame(reference, flat, index, 30);
-    assert.deepEqual(ctx.getImageData(0, 480, 960, 60).data,
-      reference.getContext('2d').getImageData(0, 480, 960, 60).data, 'original bottom caption band');
+    paintOriginalFormatFrame(canvas, index, 30);
+    assert.deepEqual(ctx.getImageData(0, 520, 960, 20).data,
+      paper.getContext('2d').getImageData(0, 520, 960, 20).data, 'paper canvas, not the former bottom caption band');
     assert.deepEqual(ctx.getImageData(20, 20, 1, 1).data,
-      reference.getContext('2d').getImageData(20, 20, 1, 1).data, 'paper background without review-card chrome');
+      paper.getContext('2d').getImageData(20, 20, 1, 1).data, 'paper background without review-card chrome');
+  }
+});
+
+test('every reference-format shot keeps its time marker and unchanged one-line caption above the artwork', () => {
+  const canvas = createCanvas(960, 540), ctx = canvas.getContext('2d');
+  const scenes = originalFormat.createScenes(ctx, createCanvasKit(ctx));
+  const drawImage = ctx.drawImage.bind(ctx), fillText = ctx.fillText.bind(ctx);
+  let artwork, labels;
+  ctx.drawImage = (...args) => {
+    artwork = args.slice(1);
+    return drawImage(...args);
+  };
+  ctx.fillText = (value, x, y, ...rest) => {
+    const metrics = ctx.measureText(value);
+    labels.push({ value, x, y, width: metrics.width, top: y - metrics.actualBoundingBoxAscent,
+      bottom: y + metrics.actualBoundingBoxDescent });
+    return fillText(value, x, y, ...rest);
+  };
+  for (const [index, config] of claySchedule.entries()) {
+    for (const [step, stop] of config.stops.entries()) {
+      const t = ((config.stops[step - 1] ?? 0) + stop) / 2;
+      artwork = null; labels = [];
+      scenes[index].draw(t);
+      assert.ok(artwork);
+      assert.equal(labels.length, 2, 'one time marker and one canonical caption, no extra title/card');
+      assert.equal(labels[0].value, referenceTimeLabel(index, config.shots[step]));
+      assert.equal(labels[1].value, scenes[index].cap);
+      assert.ok(labels[0].bottom < labels[1].top, 'time marker stays above the caption');
+      for (const label of labels) {
+        assert.ok(label.x >= 40 && label.x + label.width <= 920.01, `${label.value}: horizontal safe area`);
+        assert.ok(label.top >= 0 && label.bottom < artwork[1], `${label.value}: no prop/text overlap`);
+      }
+      if (index === 2) {
+        const months = config.shots[step].label.match(/\d+/)?.[0];
+        if (months) assert.ok(labels[0].value.includes(`${months}개월`), 'keep the Korean production duration');
+      }
+    }
   }
 });
 

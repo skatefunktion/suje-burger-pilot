@@ -1,8 +1,30 @@
-// Node-only presentation for the owner's original full-canvas pilot format.
+// Node-only presentation based on the owner's confirmed Kevin Ngo reference.
 // The comparison page deliberately retains its separate review-card layout.
 import { createCanvas, loadImage } from '@napi-rs/canvas';
 import { createBurgerScenes } from '../scenes.mjs';
-import { clayImages, claySchedule, clayShotAt } from './scenes.mjs';
+import { createCanvasKit } from '../../../scenes/canvas-kit.mjs';
+import { frameCount } from '../../../queue/frames.mjs';
+import { clayImages, clayShotAt } from './scenes.mjs';
+
+// Values come from the Korean pilot's storyboard, not the California film.
+// Unspecified preparation/delivery durations stay verbal: never invent hours.
+const productionTimes = {
+  farm: '한우 · 약 30개월', cow: '한우 · 약 30개월',
+  wheat: '우리밀 · 약 7개월', tomato: '토마토 · 약 3개월',
+  lettuce: '양상추 · 약 2개월', sesame: '참깨 · 약 3개월', cheese: '치즈 · 며칠',
+};
+
+export function referenceTimeLabel(index, current) {
+  const ingredient = current.asset.replace(/^(origin|grow)-/, '');
+  if (productionTimes[ingredient]) return productionTimes[ingredient];
+  if (index === 0) return '농장에서 식탁까지';
+  if (index === 1) return '조리하기 전 · 서울로';
+  if (index === 3) return `조리할 때 · 번 ${current.label}`;
+  if (index === 4) return `조리할 때 · 패티 ${current.label}`;
+  if (index === 5) return `차곡차곡 쌓는 시간 · ${current.label}`;
+  if (index === 6) return `완성 직전 · ${current.label}`;
+  return '드디어 완성';
+}
 
 async function removeStudioBackdrop(image, asset, pose) {
   const matte = await loadImage(new URL(`./assets/mattes/${asset}-${pose}.png`, import.meta.url).pathname);
@@ -29,25 +51,33 @@ export function createOriginalFormatScenes(ctx, kit) {
     // Same held poses and shot timing as the approved clay version: do not
     // remove its stop-motion boil as part of a presentation-only correction.
     const image = cutouts[current.asset][current.pose];
-    if (index === 5 || index === 6) ctx.drawImage(image, 0, 86, 960, 384);
-    else if (index === 0 || index === 7) ctx.drawImage(image, 30, 116, 900, 360);
-    else ctx.drawImage(image, 60, 140, 840, 336);
-    const title = (value, x, y, size = 34, color = kit.INK) => {
-      ctx.font = `800 ${size}px "Noto Sans KR", sans-serif`;
-      ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-      ctx.fillStyle = color; ctx.fillText(value, x, y);
-    };
-    if (index === 0 || index === 7) {
-      title(index === 7 ? scene.cap : claySchedule[index].title, 480, 88, index === 0 ? 44 : 40);
-    } else if (index === 3 || index === 4) {
-      title(index === 3 ? '번' : '패티', 210, 70);
-      kit.pill(index === 3 ? '우리밀 100%' : '한우 100%', 760, 70, kit.BUN, kit.INK, 22);
-      title(current.label, 480, 120, 24, '#8a7a63');
-    } else if (index !== 5 && index !== 6) {
-      title(claySchedule[index].title, 480, 54, 34);
-      title(current.label, 480, 106, 24, '#8a7a63');
-    }
+    ctx.drawImage(image, 0, 130, 960, 384);
+
+    // The reference uses a small red, underlined time marker above one line
+    // of left-aligned narration. Preserve the Korean caption verbatim.
+    ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
+    ctx.font = '500 20px "Noto Sans KR", sans-serif';
+    ctx.fillStyle = kit.TOMATO_D;
+    const timeLabel = referenceTimeLabel(index, current);
+    ctx.fillText(timeLabel, 40, 34);
+    ctx.fillRect(40, 49, ctx.measureText(timeLabel).width, 1);
+    ctx.font = '500 28px "Noto Sans KR", sans-serif';
+    const size = Math.min(28, 28 * 880 / ctx.measureText(scene.cap).width);
+    ctx.font = `500 ${size}px "Noto Sans KR", sans-serif`;
+    ctx.fillStyle = kit.INK;
+    ctx.fillText(scene.cap, 40, 84);
   } }));
+}
+
+// This review-only painter owns the top caption. The production queue and
+// comparison player's bottom-caption contract deliberately remain untouched.
+export function paintOriginalFormatFrame(canvas, index, frame) {
+  const ctx = canvas.getContext('2d');
+  ctx.reset();
+  const kit = createCanvasKit(ctx);
+  const scene = createOriginalFormatScenes(ctx, kit)[index];
+  kit.bg();
+  scene.draw(frame / frameCount(scene.dur));
 }
 
 export const episode = {
