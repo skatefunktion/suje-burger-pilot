@@ -24,8 +24,6 @@ samples fixed frames at 30fps in an isolated process per attempt. If the first
 attempt and two retries fail, a caption-only error card becomes the diagnostic
 segment; the job is **degraded** and no final video is created. The smoke video
 uses a local synthetic QA voice and is **not** a publication candidate.
-Known readability issues in the existing pilot can be recorded as pilot
-smoke-only exceptions; they do not satisfy production visual QC.
 
 For production, set `FISH_AUDIO_API_KEY` and `FISH_AUDIO_REFERENCE_ID` (a Korean
 voice authorized for the project) and use `npm run render -- ep02` with

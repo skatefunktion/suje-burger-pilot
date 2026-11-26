@@ -1,14 +1,13 @@
 {
-  "reviewer": "Devin (existing pilot reference)",
-  "fingerprint": "0c1d72b3bea25fb178f8029e179db72515364dfcd56e9bf2d63135b93d909fa7",
+  "reviewer": "Devin (pilot polish smoke fixture)",
+  "fingerprint": "77ff66f13a8da1af58d38133a29662e7449b29c19e8188a6aae9376de47943bf",
   "checks": {
     "insideCanvas": true,
     "captionClear": true,
     "proportions": true,
-    "readable": false,
+    "readable": true,
     "contrast": true,
     "layerOrder": true,
     "pilotStyle": true
-  },
-  "baselineException": "Timeline stage labels overlap the axis and duration labels."
+  }
 }

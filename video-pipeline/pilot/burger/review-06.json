@@ -1,14 +1,13 @@
 {
-  "reviewer": "Devin (existing pilot reference)",
-  "fingerprint": "e5cb0dbd7b2602953d19e6953e35589adc69c9fc0bdbd781b5ed38bfa38d838f",
+  "reviewer": "Devin (pilot polish smoke fixture)",
+  "fingerprint": "10d2403f36cfa64a842c88a608eccfacd306b9d056a9f6907a3e002d54ddcf33",
   "checks": {
     "insideCanvas": true,
     "captionClear": true,
     "proportions": true,
-    "readable": false,
+    "readable": true,
     "contrast": true,
     "layerOrder": true,
     "pilotStyle": true
-  },
-  "baselineException": "Stack step badges 2 and 3 overlap."
+  }
 }

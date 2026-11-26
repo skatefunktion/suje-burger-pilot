@@ -1,6 +1,6 @@
 {
-  "reviewer": "Devin (existing pilot reference)",
-  "fingerprint": "a101d7e376d7ab74f01c61184b8257f1fa56f103cd39dcb73a3e755377706dea",
+  "reviewer": "Devin (pilot polish smoke fixture)",
+  "fingerprint": "ef2f8b5dea7ffcc8a2b25ffa4def0c2450886d2fae69a06b8ab090a89146614d",
   "checks": {
     "insideCanvas": true,
     "captionClear": true,

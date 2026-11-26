@@ -122,11 +122,7 @@ async function main() {
       if (result.status !== 'rendered') continue;
 
       try {
-        const baselineException = await review();
-        if (baselineException) {
-          result.visualBaselineException = baselineException;
-          console.warn(`Scene ${number}: pilot smoke-only visual exception: ${baselineException}`);
-        }
+        await review();
         result.status = 'passed';
       } catch (error) {
         Object.assign(result, { status: 'unapproved', visualError: error.message });
@@ -168,8 +164,7 @@ async function main() {
       await rm(stage, { force: true });
     }
     job.status = smoke ? 'smoke-passed-not-for-publication' : 'passed';
-    const baselineExceptions = job.scenes.filter(scene => scene.visualBaselineException).length;
-    console.log(`QC PASS: ${job.qc.duration}s, ${job.qc.frames} frames, audible narration, ${job.scenes.length - baselineExceptions} visually approved scenes${baselineExceptions ? `, ${baselineExceptions} pilot smoke-only exceptions` : ''}`);
+    console.log(`QC PASS: ${job.qc.duration}s, ${job.qc.frames} frames, audible narration, ${job.scenes.length} visually approved scenes`);
     console.log(`${job.status}: ${job.video}`);
   } catch (error) {
     job.status = job.scenes.some(scene => scene.status === 'degraded') ? 'degraded' : 'failed';

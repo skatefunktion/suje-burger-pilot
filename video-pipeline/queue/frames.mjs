@@ -62,7 +62,7 @@ export function paintFrame(canvas, episode, index, frame, { guard = 0, fallback 
   ctx.fillText(scene.cap, WIDTH / 2, (HEIGHT + CAPTION_Y) / 2);
 }
 
-export function visualBounds(episode, index, frame) {
+export function visualBounds(episode, index, frame, { captionY = CAPTION_Y } = {}) {
   const guard = 64, width = WIDTH + guard * 2;
   const canvas = createCanvas(width, HEIGHT + guard * 2);
   paintFrame(canvas, episode, index, frame, { guard });
@@ -75,7 +75,7 @@ export function visualBounds(episode, index, frame) {
     if (x < 0 || x >= WIDTH || y < 0 || y >= HEIGHT) {
       throw new SceneError('visual', frame, `Artwork extends outside the canvas at (${x}, ${y})`);
     }
-    if (y >= CAPTION_Y) {
+    if (y >= captionY) {
       throw new SceneError('visual', frame, `Artwork enters the caption band at (${x}, ${y})`);
     }
     visible = true;

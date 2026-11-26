@@ -33,17 +33,15 @@ export async function reviewFingerprint(episode, index, scene, readSource = read
   return hash.digest('hex');
 }
 
-function assertChecklist(review, fingerprint, baseline = false) {
+function assertChecklist(review, fingerprint) {
   if (typeof review?.reviewer !== 'string' || !review.reviewer.trim() || review.fingerprint !== fingerprint ||
-      !checks.every(check => review.checks?.[check] === true || (baseline && check === 'readable'))) {
+      !checks.every(check => review.checks?.[check] === true)) {
     throw new Error('Missing or stale visual checklist approval');
   }
 }
 
 export function assertPilotSmokeReviewed(review, fingerprint) {
-  const baseline = typeof review?.baselineException === 'string' && !!review.baselineException.trim();
-  assertChecklist(review, fingerprint, baseline);
-  return baseline ? review.baselineException : null;
+  assertChecklist(review, fingerprint);
 }
 
 export function createHumanReviewVerifier({
