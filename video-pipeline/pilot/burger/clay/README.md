@@ -4,7 +4,7 @@
 
 `restyle-reference.py` follows the confirmed [Kevin Ngo film](https://x.com/kevin_t_ngo/status/2111569193347018977)
 itself, not the earlier Korean pilot: **1080×1080, 24fps, 1,536 frames, 64 seconds**.
-`reference-film.json` records 24 source-timed sections, 84 clay anchors, Korean
+`reference-film.json` records 24 source-timed sections, 88 clay anchors, Korean
 captions and the approved localization. The original video is supplied locally;
 it is not committed. This remains a draft visual-review export, not a queue
 registration or production rollout.

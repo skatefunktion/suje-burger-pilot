@@ -397,6 +397,13 @@
       "subject": "The exact front/overhead griddle shot: two beef patties at their current flipping, raw or browned stage, dark rectangular steel cooking surface, silver backsplash, same rows of blue/orange gas flames and black burner knobs below. No buns or cheese before they appear in the source."
     },
     {
+      "frame": 1120,
+      "shot": "griddle-patties",
+      "file": "1120.webp",
+      "sha256": "e4e7f5eb66a4068fe2bf38af9a26520f31136d3fb19567ff74e4e9450714a7c2",
+      "subject": "The exact front/overhead griddle shot: two beef patties at their current flipping, raw or browned stage, dark rectangular steel cooking surface, silver backsplash, same rows of blue/orange gas flames and black burner knobs below. No buns or cheese before they appear in the source. Explicit intermediate stage: Left patty browned; right patty raw pink."
+    },
+    {
       "frame": 1128,
       "shot": "griddle-patties",
       "file": "1128.webp",
@@ -446,6 +453,13 @@
       "subject": "The exact burger assembly on white folded paper, preserving each incoming ingredient's current position and order: bottom bun and spread, tomato, lettuce, first cheese-topped patty, onion, second cheese-topped patty, plain top bun. Do not complete the burger early or add a plate; retain airborne ingredients if shown."
     },
     {
+      "frame": 1232,
+      "shot": "burger-assembly",
+      "file": "1232.webp",
+      "sha256": "a5eeeee320d02acccd7d8b31eb0fd0965645ffe999c2a6b58c11dc5e381791ab",
+      "subject": "The exact burger assembly on white folded paper, preserving each incoming ingredient's current position and order: bottom bun and spread, tomato, lettuce, first cheese-topped patty, onion, second cheese-topped patty, plain top bun. Do not complete the burger early or add a plate; retain airborne ingredients if shown. Explicit intermediate stage: Only bottom bun, pink spread and tomato; no lettuce or upper layers."
+    },
+    {
       "frame": 1240,
       "shot": "burger-assembly",
       "file": "1240.webp",
@@ -453,11 +467,25 @@
       "subject": "The exact burger assembly on white folded paper, preserving each incoming ingredient's current position and order: bottom bun and spread, tomato, lettuce, first cheese-topped patty, onion, second cheese-topped patty, plain top bun. Do not complete the burger early or add a plate; retain airborne ingredients if shown."
     },
     {
+      "frame": 1248,
+      "shot": "burger-assembly",
+      "file": "1248.webp",
+      "sha256": "aeb58befc14e775c0bb2af38956c22dbc9cf64731fa3f736289dc033a939001f",
+      "subject": "The exact burger assembly on white folded paper, preserving each incoming ingredient's current position and order: bottom bun and spread, tomato, lettuce, first cheese-topped patty, onion, second cheese-topped patty, plain top bun. Do not complete the burger early or add a plate; retain airborne ingredients if shown. Explicit intermediate stage: One cooked beef patty and one cheese above vegetables; no onion, second patty or top bun."
+    },
+    {
       "frame": 1256,
       "shot": "burger-assembly",
       "file": "1256.webp",
       "sha256": "0ffaf0d053592c8a4a5d46db8452bcc78172d982d511e381259315315194e053",
       "subject": "The exact burger assembly on white folded paper, preserving each incoming ingredient's current position and order: bottom bun and spread, tomato, lettuce, first cheese-topped patty, onion, second cheese-topped patty, plain top bun. Do not complete the burger early or add a plate; retain airborne ingredients if shown."
+    },
+    {
+      "frame": 1264,
+      "shot": "burger-assembly",
+      "file": "1264.webp",
+      "sha256": "0130bcd34ad87a34109d78e78fea7dd5443ff6f4c3c4fae967effb9b7804faeb",
+      "subject": "The exact burger assembly on white folded paper, preserving each incoming ingredient's current position and order: bottom bun and spread, tomato, lettuce, first cheese-topped patty, onion, second cheese-topped patty, plain top bun. Do not complete the burger early or add a plate; retain airborne ingredients if shown. Explicit intermediate stage: Two beef patties, two cheeses and onion above vegetables; no top bun."
     },
     {
       "frame": 1272,

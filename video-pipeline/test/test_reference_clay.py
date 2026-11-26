@@ -51,7 +51,7 @@ class ReferenceClayChecks(unittest.TestCase):
                     self.assertEqual(image.size, (1024, 1024))
                     image.verify()
         self.assertEqual(covered, list(range(1536)))
-        self.assertEqual(len(hashes), 84)
+        self.assertEqual(len(hashes), 88)
         self.assertEqual(REF.FPS, 24)
         self.assertEqual(REF.SIDE, 1080)
 
