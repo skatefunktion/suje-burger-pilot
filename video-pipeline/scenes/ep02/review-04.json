@@ -1,0 +1,14 @@
+{
+  "reviewer": "skatefunktion",
+  "approvalPR": 9,
+  "fingerprint": "fd470b02d2efb5e76d66a67f637581b1b505af351c92f3f323921a0cee5adc2f",
+  "checks": {
+    "insideCanvas": true,
+    "captionClear": true,
+    "proportions": true,
+    "readable": true,
+    "contrast": true,
+    "layerOrder": true,
+    "pilotStyle": true
+  }
+}
