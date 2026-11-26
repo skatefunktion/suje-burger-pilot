@@ -241,7 +241,7 @@ def finish(M,pose,title=False):
 def twist(M,pose,sprinkle=False):
     camera=bpy.context.scene.camera
     camera.data.ortho_scale=10.5
-    camera.rotation_euler=(Vector((0,0,1.3))-camera.location).to_track_quat('-Z','Y').to_euler()
+    camera.rotation_euler=(Vector((0,0,1.47 if sprinkle else 1.3))-camera.location).to_track_quat('-Z','Y').to_euler()
     burger(M,6 if sprinkle else 5,pose,True,open_top=not sprinkle)
     if not sprinkle:
         x=-.70+pose*.44
@@ -254,15 +254,26 @@ def twist(M,pose,sprinkle=False):
     else:
         # A tipped jar and a front-facing trail keep the action readable at 320px.
         # Dark golden seeds contrast with the white set; the bun cannot hide them.
+        shaker=bpy.data.objects.new('Stop-motion shaker pivot',None)
+        bpy.context.collection.objects.link(shaker)
+        shaker.location=(.90,-.58,3.43)
+        existing=set(bpy.data.objects)
         rod('Tipped sesame jar',(1.02,-.55,3.45),(1.75,-.43,3.67),.23,M['teal'])
         rod('Perforated shaker lid',(.90,-.58,3.43),(1.10,-.54,3.49),.245,M['cream'])
         for j in range(3):
             ball('Shaker lid hole',(.878,-.66+j*.07,3.40+j*.035),(.018,.027,.022),M['dark'],j)
+        for obj in set(bpy.data.objects)-existing:
+            obj.parent=shaker
+            obj.location-=shaker.location
+        shake=[-.13,.13,-.11,.11][pose]
+        shaker.rotation_euler[1]=[-.16,.16,-.13,.13][pose]
+        shaker.location.x+=shake
+        shaker.location.z+=[.06,-.04,.05,-.03][pose]
         for j in range(12):
             row,col=divmod(j,3)
-            x=.78-row*.14+(col-1)*.16+.025*math.sin(pose+j)
+            x=.78-row*.14+(col-1)*.16+.025*math.sin(pose+j)+shake*.35
             y=-.72-row*.10+(col-1)*.06
-            z=3.35-row*.23-pose*.045
+            z=3.35-row*.23-pose*.22
             seed=ball('Large falling sesame',(x,y,z),(.11,.065,.055),M['sesame'],j)
             seed.rotation_euler[1]=j*.5+pose*.25
 
