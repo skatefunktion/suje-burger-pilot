@@ -20,7 +20,7 @@ os.makedirs(OUT,exist_ok=True)
 def setup():
     M=parts.setup()
     for key,color in {'soil':'8F6543','grass':'86B96E','stem':'3E8750','leaf':'65AE50','tomato':'D94D3E',
-                      'cow':'B98860','hoof':'554337','sauce':'754027','milk':'FFF5DE','cheese':'F1BE42'}.items():
+                      'cow':'B98860','hoof':'554337','sauce':'754027','sesame':'B77B33','milk':'FFF5DE','cheese':'F1BE42'}.items():
         M[key]=parts.material(key,color)
     M['raw-beef']=parts.meat_material(); M['cooked-beef']=parts.meat_material(True)
     scene=bpy.context.scene
@@ -214,9 +214,9 @@ def burger(M,layers=6,pose=0,sauce=False,open_top=False):
     if layers>=5:
         parts.meat_disk((0,-.18,1.07),1.10,.34,M,True)
         if sauce:
-            rope('Bulgogi sauce ribbon',[(-.88,-.50,1.43),(-.55,.12,1.44),(-.18,-.54,1.44),(.20,.15,1.44),(.54,-.53,1.44),(.87,.05,1.44)],.050,M['sauce'])
+            rope('Bulgogi sauce ribbon',[(-.88,-.50,1.46),(-.55,.12,1.47),(-.18,-.54,1.47),(.20,.15,1.47),(.54,-.53,1.47),(.87,.05,1.47)],.105,M['sauce'])
             for x,y in [(-.65,-1.03),(.56,-1.08)]:
-                rope('Thick sauce drip',[(x,y,1.40),(x,y-.01,1.19)],.045,M['sauce'])
+                rope('Thick sauce drip',[(x,y,1.43),(x,y-.04,1.13)],.085,M['sauce'])
     if layers>=6 and not open_top:
         parts.bun(0,-.18,1.45,M,1.04,True)
 
@@ -239,19 +239,32 @@ def finish(M,pose,title=False):
         stalk(M,-2.62,-.57,.98,False,pose)
 
 def twist(M,pose,sprinkle=False):
+    camera=bpy.context.scene.camera
+    camera.data.ortho_scale=10.5
+    camera.rotation_euler=(Vector((0,0,1.3))-camera.location).to_track_quat('-Z','Y').to_euler()
     burger(M,6 if sprinkle else 5,pose,True,open_top=not sprinkle)
     if not sprinkle:
         x=-.70+pose*.44
-        lathe('Bulgogi sauce bottle',(2.36,.28,.13),[(0,0),(0,.30),(.10,.35),(.91,.35),(1.12,.14),(1.31,.12),(1.31,0)],M['sauce'],segments=64)
-        puck('Bottle cap',(2.36,.28,1.49),.18,.14,M['cream'])
-        rope('Visible sauce pour',[(x,.15,2.22),(x+.07,.10,1.88),(x+.04,.01,1.43)],.047,M['sauce'])
-        rod('Squeeze nozzle',(x-.36,.19,2.28),(x,.15,2.22),.11,M['orange'])
+        rod('Tilted bulgogi bottle',(x-.90,.19,2.77),(x-.35,.01,2.45),.25,M['sauce'])
+        rod('Bottle label band',(x-.74,.14,2.68),(x-.51,.07,2.54),.255,M['cream'])
+        rod('Squeeze bottle neck',(x-.35,.01,2.45),(x-.08,-.07,2.25),.15,M['orange'])
+        rod('Squeeze nozzle',(x-.08,-.07,2.25),(x+.02,-.11,2.16),.11,M['cream'])
+        rope('Visible thick sauce pour',[(x+.02,-.11,2.17),(x+.10,-.22,1.84),(x+.06,-.39,1.47)],.12,M['sauce'])
+        ball('Sauce landing pool',(x+.06,-.39,1.48),(.29,.24,.06),M['sauce'],pose)
     else:
-        shaker=block('Sesame shaker',(1.97,.1,2.14),(.48,.48,.70),M['cream'],.08)
-        shaker.rotation_euler[1]=-.65
-        for j in range(8):
-            x=.30+(j%4)*.24; y=-.16+(j//4)*.25; z=2.50-((j+pose)%4)*.20
-            seed=ball('Falling sesame',(x,y,z),(.054,.025,.018),M['cream'],j); seed.rotation_euler[1]=j*.5
+        # A tipped jar and a front-facing trail keep the action readable at 320px.
+        # Dark golden seeds contrast with the white set; the bun cannot hide them.
+        rod('Tipped sesame jar',(1.02,-.55,3.45),(1.75,-.43,3.67),.23,M['teal'])
+        rod('Perforated shaker lid',(.90,-.58,3.43),(1.10,-.54,3.49),.245,M['cream'])
+        for j in range(3):
+            ball('Shaker lid hole',(.878,-.66+j*.07,3.40+j*.035),(.018,.027,.022),M['dark'],j)
+        for j in range(12):
+            row,col=divmod(j,3)
+            x=.78-row*.14+(col-1)*.16+.025*math.sin(pose+j)
+            y=-.72-row*.10+(col-1)*.06
+            z=3.35-row*.23-pose*.045
+            seed=ball('Large falling sesame',(x,y,z),(.11,.065,.055),M['sesame'],j)
+            seed.rotation_euler[1]=j*.5+pose*.25
 
 GROUPS=[
     ('title',lambda M,p:finish(M,p,True),2),
