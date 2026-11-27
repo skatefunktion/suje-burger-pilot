@@ -1,0 +1,119 @@
+<!doctype html>
+<html lang="ko">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='14' fill='%23FFB523'/%3E%3C/svg%3E">
+<title>수제버거 · 클레이 시안</title>
+<style>
+  *{box-sizing:border-box}body{margin:0;padding:32px;background:#ede7dd;color:#2e2921;font:16px system-ui,sans-serif}
+  main{max-width:1500px;margin:auto}h1{font-size:30px;margin:0 0 12px}p{color:#685c4e;line-height:1.6}
+  .views{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin:24px 0}figure{margin:0;min-width:0}figcaption{margin-bottom:12px;font-weight:700}
+  canvas{width:100%;height:auto;display:block;border-radius:14px}nav{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+  button{font:inherit;padding:10px 18px;border:1px solid #c3b9a8;border-radius:20px;background:#fffdf7;color:inherit;cursor:pointer}
+  button[aria-pressed=true]{background:#315947;color:#fffdf7;border-color:#315947}input{flex:1;min-width:180px;accent-color:#315947}
+  .mobile-caption,.mobile-process{display:none}
+  .mobile-process strong,.mobile-process span{display:block}.mobile-process strong{font-size:20px}
+  @media(max-width:850px){body{padding:20px}.views{grid-template-columns:1fr}.mobile-caption,.mobile-process{display:block;font-size:18px;color:#2e2921;background:#fffdf7;padding:14px 18px;border-radius:14px}}
+</style>
+<main>
+  <h1>수제버거 · 클레이 시안</h1>
+  <p>농장부터 완성까지, 재료별 장면을 모두 클레이로 빚었습니다. 960 × 540 · 8장면 · 57초 구성과 자막 유지 · 무음 미리보기</p>
+  <nav aria-label="장면 선택">
+    <button data-scene="0" aria-pressed="true">시작</button>
+    <button data-scene="1" aria-pressed="false">재료의 고향</button>
+    <button data-scene="2" aria-pressed="false">성장·수확</button>
+    <button data-scene="3" aria-pressed="false">번 만들기</button>
+    <button data-scene="4" aria-pressed="false">패티 만들기</button>
+    <button data-scene="5" aria-pressed="false">쌓기</button>
+    <button data-scene="6" aria-pressed="false">소스·깨</button>
+    <button data-scene="7" aria-pressed="false">완성</button>
+    <button id="play" aria-pressed="false">재생</button>
+    <button id="play-all" aria-pressed="false">전체 57초 재생</button>
+    <label for="time">장면 진행</label><input id="time" type="range" min="0" max="119" value="0"><output id="position"></output>
+  </nav>
+  <p id="caption" class="mobile-caption" aria-live="polite"></p>
+  <div class="views">
+    <figure><figcaption>기존 플랫 · 참고</figcaption><canvas id="flat" width="960" height="540"></canvas></figure>
+    <figure><figcaption>전체 클레이 · 재료별 장면</figcaption><canvas id="clay" width="960" height="540"></canvas><p class="mobile-process" aria-live="polite"><strong id="step-label"></strong><span id="step-detail"></span></p></figure>
+  </div>
+  <p id="error" role="alert"></p>
+</main>
+<script type="module">
+  import { createBurgerScenes } from '../scenes.mjs';
+  import { createClayBurgerScenes, clayShotAt } from './scenes.mjs';
+  import { createCanvasKit } from '../../../scenes/canvas-kit.mjs';
+  const players = [['flat', createBurgerScenes], ['clay', createClayBurgerScenes]].map(([id, create]) => {
+    const ctx = document.getElementById(id).getContext('2d'), kit = createCanvasKit(ctx);
+    return { ctx, kit, scenes: create(ctx, kit) };
+  });
+  const slider = document.getElementById('time'), play = document.getElementById('play'), playAll = document.getElementById('play-all');
+  const scenes = players[1].scenes, total = scenes.reduce((sum, scene) => sum + scene.dur, 0);
+  const offsets = scenes.map((_, i) => scenes.slice(0, i).reduce((sum, scene) => sum + scene.dur, 0));
+  let index = 0, playing = false, full = false, start = 0;
+  function select(next, frame = 0) {
+    index = next; slider.max = scenes[index].dur * 30 - 1; slider.value = frame;
+    for (const button of document.querySelectorAll('[data-scene]')) button.setAttribute('aria-pressed', String(Number(button.dataset.scene) === index));
+  }
+  function draw() {
+    try {
+      for (const {ctx, kit, scenes} of players) {
+        ctx.reset(); kit.bg(); const scene = scenes[index];
+        scene.draw(Number(slider.value) / (scene.dur * 30));
+        ctx.resetTransform(); ctx.fillStyle = kit.INK; ctx.fillRect(0, 480, 960, 60);
+        ctx.font = '700 22px "Noto Sans KR","Apple SD Gothic Neo",sans-serif';
+        ctx.fillStyle = kit.PAPER; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(scene.cap, 480, 510);
+      }
+      document.getElementById('position').textContent = `${(Number(slider.value) / 30).toFixed(1)} / ${scenes[index].dur.toFixed(1)}초 · ${(offsets[index] + Number(slider.value) / 30).toFixed(1)} / ${total}초`;
+      const caption = document.getElementById('caption'), line = players[0].scenes[index].cap;
+      if (caption.textContent !== line) caption.textContent = line;
+      const current = clayShotAt(index, Number(slider.value) / (scenes[index].dur * 30), scenes[index].dur);
+      for (const [id, value] of [['step-label', current.label], ['step-detail', current.detail]]) {
+        const element = document.getElementById(id);
+        if (element.textContent !== value) element.textContent = value;
+      }
+    } catch (error) {
+      playing = false; syncButton(); document.getElementById('error').textContent = error.message;
+    }
+  }
+  function syncButton() {
+    play.textContent = playing ? '일시정지' : '재생'; play.setAttribute('aria-pressed', String(playing));
+    playAll.textContent = playing && full ? '전체 일시정지' : '전체 57초 재생'; playAll.setAttribute('aria-pressed', String(playing && full));
+  }
+  slider.addEventListener('input', () => { playing = false; full = false; syncButton(); draw(); });
+  for (const button of document.querySelectorAll('[data-scene]')) button.addEventListener('click', () => {
+    select(Number(button.dataset.scene)); playing = false; full = false; syncButton();
+    draw();
+  });
+  play.addEventListener('click', () => {
+    playing = !playing;
+    if (playing) {
+      if (Number(slider.value) >= Number(slider.max)) {
+        if (full && index === scenes.length - 1) select(0);
+        else slider.value = 0;
+      }
+      start = performance.now() - (Number(slider.value) / 30 + (full ? offsets[index] : 0)) * 1000;
+    }
+    syncButton();
+  });
+  playAll.addEventListener('click', () => {
+    if (playing && full) { playing = false; }
+    else { select(0); full = true; playing = true; start = performance.now(); draw(); }
+    syncButton();
+  });
+  function tick(now) {
+    if (playing) {
+      const frame = Math.floor((now - start) / 1000 * 30);
+      if (full) {
+        const clamped = Math.min(total * 30 - 1, frame);
+        let next = scenes.length - 1;
+        while (next > 0 && offsets[next] * 30 > clamped) next--;
+        select(next, clamped - offsets[next] * 30);
+      } else slider.value = Math.min(Number(slider.max), frame);
+      draw();
+      if (full ? frame >= total * 30 - 1 : frame >= Number(slider.max)) { playing = false; syncButton(); }
+    }
+    requestAnimationFrame(tick);
+  }
+  await document.fonts.ready; draw(); requestAnimationFrame(tick);
+</script>
+</html>

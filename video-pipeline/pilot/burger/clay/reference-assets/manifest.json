@@ -1,0 +1,776 @@
+{
+  "reference": "https://x.com/kevin_t_ngo/status/2111569193347018977",
+  "source_sha256": "7c9491f4f80f3e14fc604280e250075c59f09bf5b5169a82be34d58387d150aa",
+  "authoring": "Source-frame image edits via generate_image, gpt-image-2.6-flare; native Korean typesetting after motion transfer. These are not the procedural landscape assets.",
+  "common_prompt": "STYLE-ONLY EDIT. The FIRST input is one exact frame from a 64-second animated film. Preserve its square framing and pixel-layout: every object, count, silhouette, size, orientation, camera angle and current animation pose. The SECOND input is only the approved clay material/lighting reference, not a new composition. Rebuild the first frame as tactile matte handmade Play-Doh claymation: softly rounded sculpted shapes, subtle kneaded dough texture, dimensional thickness, softbox lighting, natural contact shadows. Clearly physical toy modeling clay, not painting or a glossy CG filter. No fingerprints, finger dents, whorls or human hands. Keep the first frame's exact background colours and empty spaces, including its blank top header; do not introduce a workbench, plate, border, stage or new props. Keep all diagram leader lines and arrows. ALL lettering and numbers must be absent; leave the spaces unlettered for native Korean typesetting. Do not invent labels or any new objects. The actual pose, number of objects and composition MUST follow the first image even if they differ from the clay style image. In particular:",
+  "anchors": [
+    {
+      "frame": 24,
+      "shot": "opening-burger",
+      "file": "0024.webp",
+      "sha256": "22d05488073a03037bf63a47931dfbabf890e658748a1170bb65fe1e9d065280",
+      "subject": "The exact assembled double cheeseburger on its folded white paper: plain golden top bun without sesame, cheese over beef, onion ring, second cheese over beef, lettuce, tomato, pink spread and bottom bun. No plate or board."
+    },
+    {
+      "frame": 72,
+      "shot": "exploded-burger",
+      "file": "0072.webp",
+      "sha256": "55ab622ce9086975bf693a67e89967903a6f77742e2d87b6f02e13d3e9d3afda",
+      "subject": "The exact exploded vertical burger diagram, with its layers at the exact heights in this input: bun, beef and cheese, onion, beef and cheese, lettuce, tomato, pink spread, bottom bun. Preserve both patties and both cheese slices; no extra food."
+    },
+    {
+      "frame": 96,
+      "shot": "exploded-burger",
+      "file": "0096.webp",
+      "sha256": "b3df83ef8b1aa0c6d92e8042675c66b99941a16c922765c349dc183707ddab00",
+      "subject": "The exact exploded vertical burger diagram, with its layers at the exact heights in this input: bun, beef and cheese, onion, beef and cheese, lettuce, tomato, pink spread, bottom bun. Preserve both patties and both cheese slices; no extra food."
+    },
+    {
+      "frame": 124,
+      "shot": "exploded-burger",
+      "file": "0124.webp",
+      "sha256": "2737c716d3c78aa53baf901abfaed5216d06a921b063e4037faa2942d85fb611",
+      "subject": "The exact exploded vertical burger diagram, with its layers at the exact heights in this input: bun, beef and cheese, onion, beef and cheese, lettuce, tomato, pink spread, bottom bun. Preserve both patties and both cheese slices; no extra food."
+    },
+    {
+      "frame": 136,
+      "shot": "calf-birth",
+      "file": "0136.webp",
+      "sha256": "0ac24096466053d16ac0d43929be0261e63941e8ede171649a0fa6e85cf53792",
+      "subject": "The exact mother cow and newborn calf at their source positions and poses. ONE OWNER-APPROVED LOCALIZATION: replace white-faced Hereford markings with plain warm tawny-brown Hanwoo cattle (including brown faces, no white patches), and the distant hills with lush green rolling mountain pasture of Daegwallyeong, Korea. Keep the tree at right, fence, flowers, blue sky, camera and animal counts unchanged. Preserve the calf's precise lying or standing pose; never add an extra calf."
+    },
+    {
+      "frame": 152,
+      "shot": "calf-birth",
+      "file": "0152.webp",
+      "sha256": "19a78c17dc3a7751c29154094bddea5900b36eec00c55ea8d4c5c26bfdd2d946",
+      "subject": "The exact mother cow and newborn calf at their source positions and poses. ONE OWNER-APPROVED LOCALIZATION: replace white-faced Hereford markings with plain warm tawny-brown Hanwoo cattle (including brown faces, no white patches), and the distant hills with lush green rolling mountain pasture of Daegwallyeong, Korea. Keep the tree at right, fence, flowers, blue sky, camera and animal counts unchanged. Preserve the calf's precise lying or standing pose; never add an extra calf."
+    },
+    {
+      "frame": 168,
+      "shot": "calf-birth",
+      "file": "0168.webp",
+      "sha256": "6ca651984eda79881cd1ab60f6715b807104697285caf6d6b1bd7f2fe849c7ac",
+      "subject": "The exact mother cow and newborn calf at their source positions and poses. ONE OWNER-APPROVED LOCALIZATION: replace white-faced Hereford markings with plain warm tawny-brown Hanwoo cattle (including brown faces, no white patches), and the distant hills with lush green rolling mountain pasture of Daegwallyeong, Korea. Keep the tree at right, fence, flowers, blue sky, camera and animal counts unchanged. Preserve the calf's precise lying or standing pose; never add an extra calf."
+    },
+    {
+      "frame": 184,
+      "shot": "calf-birth",
+      "file": "0184.webp",
+      "sha256": "d82e3d6c28a98f8c2f551672ed2224197fa919194473acc0eb095982971616fe",
+      "subject": "The exact mother cow and newborn calf at their source positions and poses. ONE OWNER-APPROVED LOCALIZATION: replace white-faced Hereford markings with plain warm tawny-brown Hanwoo cattle (including brown faces, no white patches), and the distant hills with lush green rolling mountain pasture of Daegwallyeong, Korea. Keep the tree at right, fence, flowers, blue sky, camera and animal counts unchanged. Preserve the calf's precise lying or standing pose; never add an extra calf."
+    },
+    {
+      "frame": 200,
+      "shot": "calf-standing",
+      "file": "0200.webp",
+      "sha256": "0df0b57d920a5e94981c378cfda6193db14675a72b0294c540c4dc368a646e86",
+      "subject": "The same mother cow and calf, preserving their exact source positions, proportions, head directions and standing poses. ONE OWNER-APPROVED LOCALIZATION: all cattle are plain warm tawny-brown Korean Hanwoo with brown faces, no white markings; distant hills become lush green Daegwallyeong mountain pasture. Keep the exact tree, fence, flowers, sky and animal count. No extra animals."
+    },
+    {
+      "frame": 216,
+      "shot": "calf-standing",
+      "file": "0216.webp",
+      "sha256": "6a12ac0250e5320df4f1225b3d9e966eaf1cc123617bdf260a88b4078df4ee62",
+      "subject": "The same mother cow and calf, preserving their exact source positions, proportions, head directions and standing poses. ONE OWNER-APPROVED LOCALIZATION: all cattle are plain warm tawny-brown Korean Hanwoo with brown faces, no white markings; distant hills become lush green Daegwallyeong mountain pasture. Keep the exact tree, fence, flowers, sky and animal count. No extra animals."
+    },
+    {
+      "frame": 232,
+      "shot": "calf-standing",
+      "file": "0232.webp",
+      "sha256": "f4266c43c9b8d911dbbb3963ef9dedff44adcad03439699d243ea1605e70a5e2",
+      "subject": "The same mother cow and calf, preserving their exact source positions, proportions, head directions and standing poses. ONE OWNER-APPROVED LOCALIZATION: all cattle are plain warm tawny-brown Korean Hanwoo with brown faces, no white markings; distant hills become lush green Daegwallyeong mountain pasture. Keep the exact tree, fence, flowers, sky and animal count. No extra animals."
+    },
+    {
+      "frame": 248,
+      "shot": "calf-standing",
+      "file": "0248.webp",
+      "sha256": "d025aae39818870c5237a0c8f21ee56c75535c58d96e0ef3fe1951b15580b2a5",
+      "subject": "The same mother cow and calf, preserving their exact source positions, proportions, head directions and standing poses. ONE OWNER-APPROVED LOCALIZATION: all cattle are plain warm tawny-brown Korean Hanwoo with brown faces, no white markings; distant hills become lush green Daegwallyeong mountain pasture. Keep the exact tree, fence, flowers, sky and animal count. No extra animals."
+    },
+    {
+      "frame": 264,
+      "shot": "grazing-seasons",
+      "file": "0264.webp",
+      "sha256": "14ca3341378881a5e76b66f16c1f334c1b22214df03112451b11f0767577cf1a",
+      "subject": "The exact grazing cow and only those background cows actually visible in this source frame, at their precise source positions. ONE OWNER-APPROVED LOCALIZATION: replace Hereford markings with plain warm tawny-brown Korean Hanwoo (brown faces, no white patches), and all golden distant hills with lush green Daegwallyeong mountain pasture. Keep the existing tree, fence, flowers, framing, animal counts and the source's current sun, rain and clouds. No new landmarks or objects."
+    },
+    {
+      "frame": 280,
+      "shot": "grazing-seasons",
+      "file": "0280.webp",
+      "sha256": "305a2f626201e4af1c8ffbf20d5477e9d3095b653a53b8a139044d2671ff409e",
+      "subject": "The exact grazing cow and only those background cows actually visible in this source frame, at their precise source positions. ONE OWNER-APPROVED LOCALIZATION: replace Hereford markings with plain warm tawny-brown Korean Hanwoo (brown faces, no white patches), and all golden distant hills with lush green Daegwallyeong mountain pasture. Keep the existing tree, fence, flowers, framing, animal counts and the source's current sun, rain and clouds. No new landmarks or objects."
+    },
+    {
+      "frame": 296,
+      "shot": "grazing-seasons",
+      "file": "0296.webp",
+      "sha256": "fafa1b252b4aad4cf58265ceea5b0400dbe419bbfcccdb062072c55cd3aa9895",
+      "subject": "The exact grazing cow and only those background cows actually visible in this source frame, at their precise source positions. ONE OWNER-APPROVED LOCALIZATION: replace Hereford markings with plain warm tawny-brown Korean Hanwoo (brown faces, no white patches), and all golden distant hills with lush green Daegwallyeong mountain pasture. Keep the existing tree, fence, flowers, framing, animal counts and the source's current sun, rain and clouds. No new landmarks or objects."
+    },
+    {
+      "frame": 312,
+      "shot": "grazing-seasons",
+      "file": "0312.webp",
+      "sha256": "3406f8db75471fe2099dcc66aceb18ef3208102e641c8a93a42c84fa07bf9a27",
+      "subject": "The exact grazing cow and only those background cows actually visible in this source frame, at their precise source positions. ONE OWNER-APPROVED LOCALIZATION: replace Hereford markings with plain warm tawny-brown Korean Hanwoo (brown faces, no white patches), and all golden distant hills with lush green Daegwallyeong mountain pasture. Keep the existing tree, fence, flowers, framing, animal counts and the source's current sun, rain and clouds. No new landmarks or objects."
+    },
+    {
+      "frame": 328,
+      "shot": "wheat-sowing",
+      "file": "0328.webp",
+      "sha256": "9bdb5fabbd0f501fdbb58684178518bcc3c397cc385eea9b2080cb351fc688d9",
+      "subject": "The exact side-view red tractor and driver sowing a vast brown furrowed field with the same growing green rows, distant green tree line, blue sky and clouds. Preserve the tractor's orientation, wheels and exact horizontal position."
+    },
+    {
+      "frame": 352,
+      "shot": "wheat-sowing",
+      "file": "0352.webp",
+      "sha256": "843e66f363101de9951525dbc540b8e31a5b22195bed9dcbca373be1209f150f",
+      "subject": "The exact side-view red tractor and driver sowing a vast brown furrowed field with the same growing green rows, distant green tree line, blue sky and clouds. Preserve the tractor's orientation, wheels and exact horizontal position."
+    },
+    {
+      "frame": 376,
+      "shot": "wheat-sowing",
+      "file": "0376.webp",
+      "sha256": "fa2d03736a495aa58c86e7c1aad7d4ce98ec60073ddc6dd419799734d25bed87",
+      "subject": "The exact side-view red tractor and driver sowing a vast brown furrowed field with the same growing green rows, distant green tree line, blue sky and clouds. Preserve the tractor's orientation, wheels and exact horizontal position."
+    },
+    {
+      "frame": 392,
+      "shot": "milk-to-cheddar",
+      "file": "0392.webp",
+      "sha256": "b20286677db75a903bf45b33ad9ea3b48a65e76246dd3236d207f632c451bf40",
+      "subject": "The exact four-stage dairy diagram, preserving ONLY the stages already visible in this input: black-and-white dairy cow and milk can at upper left, milk vat at upper right, curd vat at lower left and cheddar block on a table at lower right, with the same red flow arrows. Do not prematurely add any still-absent stages."
+    },
+    {
+      "frame": 408,
+      "shot": "milk-to-cheddar",
+      "file": "0408.webp",
+      "sha256": "5311809466e65d37ef8a9059b7b6f985102e47c96537f51fd1fc72b86f81845d",
+      "subject": "The exact four-stage dairy diagram, preserving ONLY the stages already visible in this input: black-and-white dairy cow and milk can at upper left, milk vat at upper right, curd vat at lower left and cheddar block on a table at lower right, with the same red flow arrows. Do not prematurely add any still-absent stages."
+    },
+    {
+      "frame": 424,
+      "shot": "milk-to-cheddar",
+      "file": "0424.webp",
+      "sha256": "8a0656aceae06a66c6a1205719fd85fc27e92cb67e1620afca191efb5213be21",
+      "subject": "The exact four-stage dairy diagram, preserving ONLY the stages already visible in this input: black-and-white dairy cow and milk can at upper left, milk vat at upper right, curd vat at lower left and cheddar block on a table at lower right, with the same red flow arrows. Do not prematurely add any still-absent stages."
+    },
+    {
+      "frame": 440,
+      "shot": "milk-to-cheddar",
+      "file": "0440.webp",
+      "sha256": "2cd8c510995d382e10c1bbdf8a4b17c612df9bec53b796e5c483171563136ff3",
+      "subject": "The exact four-stage dairy diagram, preserving ONLY the stages already visible in this input: black-and-white dairy cow and milk can at upper left, milk vat at upper right, curd vat at lower left and cheddar block on a table at lower right, with the same red flow arrows. Do not prematurely add any still-absent stages."
+    },
+    {
+      "frame": 456,
+      "shot": "cucumber-flower",
+      "file": "0456.webp",
+      "sha256": "e026dab4d8802af14917b863421ffe70f99df4a2324f5349c0e48e7ad6b7d0ab",
+      "subject": "The same close-up green cucumber vine with leaves and one yellow flower, and the bee in exactly its current position if present. Preserve the flower's size, the vine curves and the flat cream negative space."
+    },
+    {
+      "frame": 480,
+      "shot": "cucumber-flower",
+      "file": "0480.webp",
+      "sha256": "3b2bf8acf96519f40ed7397546114b2b43fa34abc886abd84966c64ec93a8623",
+      "subject": "The same close-up green cucumber vine with leaves and one yellow flower, and the bee in exactly its current position if present. Preserve the flower's size, the vine curves and the flat cream negative space."
+    },
+    {
+      "frame": 504,
+      "shot": "cucumber-flower",
+      "file": "0504.webp",
+      "sha256": "e5b49ac1550adf2b006e389752b6a06181f438c46ad42032152e1526facc383f",
+      "subject": "The same close-up green cucumber vine with leaves and one yellow flower, and the bee in exactly its current position if present. Preserve the flower's size, the vine curves and the flat cream negative space."
+    },
+    {
+      "frame": 520,
+      "shot": "bee-pickle-spread",
+      "file": "0520.webp",
+      "sha256": "f9eac70fdb0f22287c28993135ace942f1191f57941defdd5941afe954735bcc",
+      "subject": "The exact same cucumber vine and stage shown: yellow flower or green cucumber, bee if visible, and pickle slices and spread jar only when already present. Preserve all red arrows, layout and transformation stage; do not add later stages early."
+    },
+    {
+      "frame": 544,
+      "shot": "bee-pickle-spread",
+      "file": "0544.webp",
+      "sha256": "73ae481dad6955672362a0e9b0f7b4add33965ad19010ba1c19927d74770ea86",
+      "subject": "The exact same cucumber vine and stage shown: yellow flower or green cucumber, bee if visible, and pickle slices and spread jar only when already present. Preserve all red arrows, layout and transformation stage; do not add later stages early."
+    },
+    {
+      "frame": 568,
+      "shot": "bee-pickle-spread",
+      "file": "0568.webp",
+      "sha256": "ec64beb73f6eaf7bd6fef613527d63f4afa615ba090a5f0ef1fbd842883be2ef",
+      "subject": "The exact same cucumber vine and stage shown: yellow flower or green cucumber, bee if visible, and pickle slices and spread jar only when already present. Preserve all red arrows, layout and transformation stage; do not add later stages early."
+    },
+    {
+      "frame": 584,
+      "shot": "wheat-harvest",
+      "file": "0584.webp",
+      "sha256": "fde7218cc7c135ba9b481586ca4a252cb3d4d7810e71584fc0efa737fc8ceabc",
+      "subject": "The exact red combine harvester in a golden wheat field, the white grain truck below its unloading pipe, the small sun and distant hills, plus the small flour mill inset at bottom right only if present. Retain every machine and its position."
+    },
+    {
+      "frame": 608,
+      "shot": "wheat-harvest",
+      "file": "0608.webp",
+      "sha256": "14bd1fd124bb4690e6f21d79123e36ac56e2c403f4cab6cd4aa785fc25a85e6d",
+      "subject": "The exact red combine harvester in a golden wheat field, the white grain truck below its unloading pipe, the small sun and distant hills, plus the small flour mill inset at bottom right only if present. Retain every machine and its position."
+    },
+    {
+      "frame": 632,
+      "shot": "wheat-harvest",
+      "file": "0632.webp",
+      "sha256": "5804d84adc651322ce90770b2417ad4c94dc9781dc2e7b08845ad657356b1b95",
+      "subject": "The exact red combine harvester in a golden wheat field, the white grain truck below its unloading pipe, the small sun and distant hills, plus the small flour mill inset at bottom right only if present. Retain every machine and its position."
+    },
+    {
+      "frame": 648,
+      "shot": "grind-and-press",
+      "file": "0648.webp",
+      "sha256": "450cdbc69a4914b3234f3199220c68a50468ede91da775167ac3e39c67fcef3f",
+      "subject": "The exact industrial meat-grinder diagram and patty press: silver hopper at left feeding red ground beef onto the black conveyor, round press at right and raw patties at their current positions. Keep the entire machine layout and current action."
+    },
+    {
+      "frame": 672,
+      "shot": "grind-and-press",
+      "file": "0672.webp",
+      "sha256": "7c460813044cca8dba3a09153d228f9230bc14b7d3c1e2bbdf9ccff4e3d93171",
+      "subject": "The exact industrial meat-grinder diagram and patty press: silver hopper at left feeding red ground beef onto the black conveyor, round press at right and raw patties at their current positions. Keep the entire machine layout and current action."
+    },
+    {
+      "frame": 696,
+      "shot": "grind-and-press",
+      "file": "0696.webp",
+      "sha256": "2c540a504b8459bcdcd5e6804173595b8331e95fa306b8c494ccc070f8ca6a47",
+      "subject": "The exact industrial meat-grinder diagram and patty press: silver hopper at left feeding red ground beef onto the black conveyor, round press at right and raw patties at their current positions. Keep the entire machine layout and current action."
+    },
+    {
+      "frame": 712,
+      "shot": "hand-harvest",
+      "file": "0712.webp",
+      "sha256": "179aa0ca4c9808b6fa2ad7cd402584500d35c6d4bf93a62dd9e5ab4518b0947e",
+      "subject": "The exact wide view of farm workers hand-harvesting lettuce and tomatoes, with the harvesting conveyor tractor at left, people across the middle and the same green crop rows, sunset sky, mountains and sun. Preserve the number and positions of all people."
+    },
+    {
+      "frame": 736,
+      "shot": "hand-harvest",
+      "file": "0736.webp",
+      "sha256": "507723c78d04c013f6453139a3f37b31e36b691cf94b48836e73730be4e85ef1",
+      "subject": "The exact wide view of farm workers hand-harvesting lettuce and tomatoes, with the harvesting conveyor tractor at left, people across the middle and the same green crop rows, sunset sky, mountains and sun. Preserve the number and positions of all people."
+    },
+    {
+      "frame": 760,
+      "shot": "hand-harvest",
+      "file": "0760.webp",
+      "sha256": "58969bec000bc713d87cd3b4c81b51b19e049781dd4821f102f7bb54ecc677f9",
+      "subject": "The exact wide view of farm workers hand-harvesting lettuce and tomatoes, with the harvesting conveyor tractor at left, people across the middle and the same green crop rows, sunset sky, mountains and sun. Preserve the number and positions of all people."
+    },
+    {
+      "frame": 776,
+      "shot": "bakery-before-dawn",
+      "file": "0776.webp",
+      "sha256": "e92666105f8f4d0e930d5803a3c41c34f81495e4ddd97fdec3d8d61e487973af",
+      "subject": "The exact dark pre-dawn bakery scene: clock on dark brown wall at left, wooden table with flour sack below and tray of buns, silver oven at right with its actual door and tray state. Preserve whether buns are pale rising dough or baked golden, and the tray's actual position. Keep the dark background dark, including the blank header."
+    },
+    {
+      "frame": 792,
+      "shot": "bakery-before-dawn",
+      "file": "0792.webp",
+      "sha256": "f7cf16e9b0791d93ce4c1628a6ff679bd590b3db3d4fff756c291c79ce74de09",
+      "subject": "The exact dark pre-dawn bakery scene: clock on dark brown wall at left, wooden table with flour sack below and tray of buns, silver oven at right with its actual door and tray state. Preserve whether buns are pale rising dough or baked golden, and the tray's actual position. Keep the dark background dark, including the blank header."
+    },
+    {
+      "frame": 808,
+      "shot": "bakery-before-dawn",
+      "file": "0808.webp",
+      "sha256": "acd211ba1cd4313c5b32458d1af36a567f6e8f01bc0c12023fba055116f86027",
+      "subject": "The exact dark pre-dawn bakery scene: clock on dark brown wall at left, wooden table with flour sack below and tray of buns, silver oven at right with its actual door and tray state. Preserve whether buns are pale rising dough or baked golden, and the tray's actual position. Keep the dark background dark, including the blank header."
+    },
+    {
+      "frame": 824,
+      "shot": "bakery-before-dawn",
+      "file": "0824.webp",
+      "sha256": "f4c082552500a2479b05f93458e8830528d3cea616b1a181481bc413614b876b",
+      "subject": "The exact dark pre-dawn bakery scene: clock on dark brown wall at left, wooden table with flour sack below and tray of buns, silver oven at right with its actual door and tray state. Preserve whether buns are pale rising dough or baked golden, and the tray's actual position. Keep the dark background dark, including the blank header."
+    },
+    {
+      "frame": 840,
+      "shot": "night-delivery-map",
+      "file": "0840.webp",
+      "sha256": "233a9258d6fe4cb6cf74d49772e1420dcae982345f44b196f9522c785ce3767b",
+      "subject": "The exact California map on a deep navy night background, with its same coast, mountains, food-source icons, colored routes and tiny trucks in the exact current positions. Rebuild the map as raised matte clay terrain and the routes as thin colored clay cords, preserving exact geography, route paths and star destination. No new routes or destinations. Keep the entire background deep navy."
+    },
+    {
+      "frame": 864,
+      "shot": "night-delivery-map",
+      "file": "0864.webp",
+      "sha256": "f27e923c890287a771cbe8054d58aa290c218be5b493317815c4cd3764209bdd",
+      "subject": "The exact California map on a deep navy night background, with its same coast, mountains, food-source icons, colored routes and tiny trucks in the exact current positions. Rebuild the map as raised matte clay terrain and the routes as thin colored clay cords, preserving exact geography, route paths and star destination. No new routes or destinations. Keep the entire background deep navy."
+    },
+    {
+      "frame": 888,
+      "shot": "night-delivery-map",
+      "file": "0888.webp",
+      "sha256": "35d26cd56dcd3402df74422fd3ce1eaee3bc3f0531ccc453053f2411afb692bf",
+      "subject": "The exact California map on a deep navy night background, with its same coast, mountains, food-source icons, colored routes and tiny trucks in the exact current positions. Rebuild the map as raised matte clay terrain and the routes as thin colored clay cords, preserving exact geography, route paths and star destination. No new routes or destinations. Keep the entire background deep navy."
+    },
+    {
+      "frame": 904,
+      "shot": "night-map-and-dawn",
+      "file": "0904.webp",
+      "sha256": "1789f0ff0310ea86a1c699ff0491147125d3b2b1cb62d5bc050371cd1d639eed",
+      "subject": "The same California delivery map at its exact current night-to-day stage. Preserve the geometry of the diagonal night/day paper wipe if visible: navy at left, cream daylight at right. Keep the exact coastline, icons, colored route lines and current tiny truck positions. Raised matte clay terrain and thin colored clay cords, without changing the map."
+    },
+    {
+      "frame": 928,
+      "shot": "night-map-and-dawn",
+      "file": "0928.webp",
+      "sha256": "4300e2abdbcf241ce78d6c5885a61ccff3e4cd2a830d3ca386484c440c31f708",
+      "subject": "The same California delivery map at its exact current night-to-day stage. Preserve the geometry of the diagonal night/day paper wipe if visible: navy at left, cream daylight at right. Keep the exact coastline, icons, colored route lines and current tiny truck positions. Raised matte clay terrain and thin colored clay cords, without changing the map."
+    },
+    {
+      "frame": 952,
+      "shot": "night-map-and-dawn",
+      "file": "0952.webp",
+      "sha256": "70652d41fe2c3ab3b388f9efbcc7eb11d1e8d47cc4675941115c9e7f3690e46f",
+      "subject": "The same California delivery map at its exact current night-to-day stage. Preserve the geometry of the diagonal night/day paper wipe if visible: navy at left, cream daylight at right. Keep the exact coastline, icons, colored route lines and current tiny truck positions. Raised matte clay terrain and thin colored clay cords, without changing the map."
+    },
+    {
+      "frame": 968,
+      "shot": "day-delivery-map",
+      "file": "0968.webp",
+      "sha256": "bcd719d795d7ab3d41bf14df6e4fb07672f09fbb3d361bab7ea49cf9136f3af1",
+      "subject": "The exact California delivery map in daylight, including any remaining diagonal wipe at far left. Preserve geography, food-source icons, mountains, sun, route paths, trucks and star destination in their exact positions. A raised matte clay map on the same warm cream backdrop."
+    },
+    {
+      "frame": 992,
+      "shot": "day-delivery-map",
+      "file": "0992.webp",
+      "sha256": "78b89dad179dea23678e743b8cd3b92779582be0d80e517ca2551eeee606517e",
+      "subject": "The exact California delivery map in daylight, including any remaining diagonal wipe at far left. Preserve geography, food-source icons, mountains, sun, route paths, trucks and star destination in their exact positions. A raised matte clay map on the same warm cream backdrop."
+    },
+    {
+      "frame": 1016,
+      "shot": "day-delivery-map",
+      "file": "1016.webp",
+      "sha256": "e73cc734fe3fc115a92ff39838552e13be21a44b77de5bf781ff612816c3effd",
+      "subject": "The exact California delivery map in daylight, including any remaining diagonal wipe at far left. Preserve geography, food-source icons, mountains, sun, route paths, trucks and star destination in their exact positions. A raised matte clay map on the same warm cream backdrop."
+    },
+    {
+      "frame": 1032,
+      "shot": "fresh-slicing",
+      "file": "1032.webp",
+      "sha256": "1351e8bb229632dcfad841ec7ed55af5473a9550f380d499379715e98b5a2717",
+      "subject": "The exact top-down wooden cutting board on a silver countertop: red tomato halves and slices, purple onion and onion ring, green lettuce and separated leaves, and the horizontal knife near the bottom, in the exact current slicing state. Preserve the overhead view and every object's position."
+    },
+    {
+      "frame": 1056,
+      "shot": "fresh-slicing",
+      "file": "1056.webp",
+      "sha256": "65e97fbdfe3f4fdf47ba1f553a89c9de34d50f495cb1034da87053f6cb1e0c48",
+      "subject": "The exact top-down wooden cutting board on a silver countertop: red tomato halves and slices, purple onion and onion ring, green lettuce and separated leaves, and the horizontal knife near the bottom, in the exact current slicing state. Preserve the overhead view and every object's position."
+    },
+    {
+      "frame": 1080,
+      "shot": "fresh-slicing",
+      "file": "1080.webp",
+      "sha256": "bea80abf5ea7bf1d9e29e61b32ffca8545440cb1671e47b3c77087f6ee9c83f2",
+      "subject": "The exact top-down wooden cutting board on a silver countertop: red tomato halves and slices, purple onion and onion ring, green lettuce and separated leaves, and the horizontal knife near the bottom, in the exact current slicing state. Preserve the overhead view and every object's position."
+    },
+    {
+      "frame": 1096,
+      "shot": "griddle-patties",
+      "file": "1096.webp",
+      "sha256": "a5e7700486957ef43e8fead7455bf191a1810da647f2d29c19b7abe36b7ffdc9",
+      "subject": "The exact front/overhead griddle shot: two beef patties at their current flipping, raw or browned stage, dark rectangular steel cooking surface, silver backsplash, same rows of blue/orange gas flames and black burner knobs below. No buns or cheese before they appear in the source."
+    },
+    {
+      "frame": 1112,
+      "shot": "griddle-patties",
+      "file": "1112.webp",
+      "sha256": "cdd66ed5aa995fd4f98cf653f7da458be85900c2550c5e395da46c1d5cb97222",
+      "subject": "The exact front/overhead griddle shot: two beef patties at their current flipping, raw or browned stage, dark rectangular steel cooking surface, silver backsplash, same rows of blue/orange gas flames and black burner knobs below. No buns or cheese before they appear in the source."
+    },
+    {
+      "frame": 1120,
+      "shot": "griddle-patties",
+      "file": "1120.webp",
+      "sha256": "e4e7f5eb66a4068fe2bf38af9a26520f31136d3fb19567ff74e4e9450714a7c2",
+      "subject": "The exact front/overhead griddle shot: two beef patties at their current flipping, raw or browned stage, dark rectangular steel cooking surface, silver backsplash, same rows of blue/orange gas flames and black burner knobs below. No buns or cheese before they appear in the source. Explicit intermediate stage: Left patty browned; right patty raw pink."
+    },
+    {
+      "frame": 1128,
+      "shot": "griddle-patties",
+      "file": "1128.webp",
+      "sha256": "31207d648858e2af087f46dcaccc9ea508292ac75b14c00dfbfcc62ab6a87502",
+      "subject": "The exact front/overhead griddle shot: two beef patties at their current flipping, raw or browned stage, dark rectangular steel cooking surface, silver backsplash, same rows of blue/orange gas flames and black burner knobs below. No buns or cheese before they appear in the source."
+    },
+    {
+      "frame": 1144,
+      "shot": "griddle-patties",
+      "file": "1144.webp",
+      "sha256": "0bb0fcd89fd100b6337e237504713e6915b5826f4f2dfe38a5285967528d9cd1",
+      "subject": "The exact front/overhead griddle shot: two beef patties at their current flipping, raw or browned stage, dark rectangular steel cooking surface, silver backsplash, same rows of blue/orange gas flames and black burner knobs below. No buns or cheese before they appear in the source."
+    },
+    {
+      "frame": 1160,
+      "shot": "griddle-buns-cheese",
+      "file": "1160.webp",
+      "sha256": "9ec5ae41c4671b48c7841602d1f92778c39c5f4682a4ade4267c5b5dbeee2509",
+      "subject": "The exact same griddle with two beef patties, melting yellow cheese and two plain bun halves in their current airborne or resting positions. Preserve their exact positions and cooking stages, flames, knobs, griddle and backsplash. No sesame or extra ingredients."
+    },
+    {
+      "frame": 1176,
+      "shot": "griddle-buns-cheese",
+      "file": "1176.webp",
+      "sha256": "f8b1a0ac0193dcfe186e1fc4a846c12c570317237f65aa74faf354992d2d3365",
+      "subject": "The exact same griddle with two beef patties, melting yellow cheese and two plain bun halves in their current airborne or resting positions. Preserve their exact positions and cooking stages, flames, knobs, griddle and backsplash. No sesame or extra ingredients."
+    },
+    {
+      "frame": 1192,
+      "shot": "griddle-buns-cheese",
+      "file": "1192.webp",
+      "sha256": "6ae5f830058477a311dbb817b5bd6f5eb2acbe55d7b7d9e971594c101edb547d",
+      "subject": "The exact same griddle with two beef patties, melting yellow cheese and two plain bun halves in their current airborne or resting positions. Preserve their exact positions and cooking stages, flames, knobs, griddle and backsplash. No sesame or extra ingredients."
+    },
+    {
+      "frame": 1208,
+      "shot": "griddle-buns-cheese",
+      "file": "1208.webp",
+      "sha256": "4158a55a4fe6d6d9f040059e4f69993bfdf4a05e5dcd5e89aeeb4cfe10e08286",
+      "subject": "The exact same griddle with two beef patties, melting yellow cheese and two plain bun halves in their current airborne or resting positions. Preserve their exact positions and cooking stages, flames, knobs, griddle and backsplash. No sesame or extra ingredients."
+    },
+    {
+      "frame": 1224,
+      "shot": "burger-assembly",
+      "file": "1224.webp",
+      "sha256": "bba40fcb0c0d5bd884086e0a5a02c4604bc32b175f21faf4f9a58a2d688502ac",
+      "subject": "The exact burger assembly on white folded paper, preserving each incoming ingredient's current position and order: bottom bun and spread, tomato, lettuce, first cheese-topped patty, onion, second cheese-topped patty, plain top bun. Do not complete the burger early or add a plate; retain airborne ingredients if shown."
+    },
+    {
+      "frame": 1232,
+      "shot": "burger-assembly",
+      "file": "1232.webp",
+      "sha256": "a5eeeee320d02acccd7d8b31eb0fd0965645ffe999c2a6b58c11dc5e381791ab",
+      "subject": "The exact burger assembly on white folded paper, preserving each incoming ingredient's current position and order: bottom bun and spread, tomato, lettuce, first cheese-topped patty, onion, second cheese-topped patty, plain top bun. Do not complete the burger early or add a plate; retain airborne ingredients if shown. Explicit intermediate stage: Only bottom bun, pink spread and tomato; no lettuce or upper layers."
+    },
+    {
+      "frame": 1240,
+      "shot": "burger-assembly",
+      "file": "1240.webp",
+      "sha256": "15d7bf25a9072bb5ff5dbc31b05a95e5f69728d6a18efbc20baf73782abb068f",
+      "subject": "The exact burger assembly on white folded paper, preserving each incoming ingredient's current position and order: bottom bun and spread, tomato, lettuce, first cheese-topped patty, onion, second cheese-topped patty, plain top bun. Do not complete the burger early or add a plate; retain airborne ingredients if shown."
+    },
+    {
+      "frame": 1248,
+      "shot": "burger-assembly",
+      "file": "1248.webp",
+      "sha256": "aeb58befc14e775c0bb2af38956c22dbc9cf64731fa3f736289dc033a939001f",
+      "subject": "The exact burger assembly on white folded paper, preserving each incoming ingredient's current position and order: bottom bun and spread, tomato, lettuce, first cheese-topped patty, onion, second cheese-topped patty, plain top bun. Do not complete the burger early or add a plate; retain airborne ingredients if shown. Explicit intermediate stage: One cooked beef patty and one cheese above vegetables; no onion, second patty or top bun."
+    },
+    {
+      "frame": 1256,
+      "shot": "burger-assembly",
+      "file": "1256.webp",
+      "sha256": "0ffaf0d053592c8a4a5d46db8452bcc78172d982d511e381259315315194e053",
+      "subject": "The exact burger assembly on white folded paper, preserving each incoming ingredient's current position and order: bottom bun and spread, tomato, lettuce, first cheese-topped patty, onion, second cheese-topped patty, plain top bun. Do not complete the burger early or add a plate; retain airborne ingredients if shown."
+    },
+    {
+      "frame": 1264,
+      "shot": "burger-assembly",
+      "file": "1264.webp",
+      "sha256": "0130bcd34ad87a34109d78e78fea7dd5443ff6f4c3c4fae967effb9b7804faeb",
+      "subject": "The exact burger assembly on white folded paper, preserving each incoming ingredient's current position and order: bottom bun and spread, tomato, lettuce, first cheese-topped patty, onion, second cheese-topped patty, plain top bun. Do not complete the burger early or add a plate; retain airborne ingredients if shown. Explicit intermediate stage: Two beef patties, two cheeses and onion above vegetables; no top bun."
+    },
+    {
+      "frame": 1272,
+      "shot": "burger-assembly",
+      "file": "1272.webp",
+      "sha256": "545ee57a666cf831f590364ddcf722930c40ccde00f4748dec6415fbe30045aa",
+      "subject": "The exact burger assembly on white folded paper, preserving each incoming ingredient's current position and order: bottom bun and spread, tomato, lettuce, first cheese-topped patty, onion, second cheese-topped patty, plain top bun. Do not complete the burger early or add a plate; retain airborne ingredients if shown."
+    },
+    {
+      "frame": 1288,
+      "shot": "drive-in-lunch",
+      "file": "1288.webp",
+      "sha256": "2b71f2749131772bc0928c83c9f283a482bf2e24b41cac1bac47eadca2d85af6",
+      "subject": "The exact California roadside burger drive-in, with the same teal and cream low building, red rectangular rooftop sign, palm tree at right, server in white at the car window, teal convertible and any second red car at their current positions. Keep the car motion and character count; no redesigned storefront or added props."
+    },
+    {
+      "frame": 1312,
+      "shot": "drive-in-lunch",
+      "file": "1312.webp",
+      "sha256": "dee82effb86bfe9027a5113d0167dc85fb36fd6aa1e875a331415dfd358ff752",
+      "subject": "The exact California roadside burger drive-in, with the same teal and cream low building, red rectangular rooftop sign, palm tree at right, server in white at the car window, teal convertible and any second red car at their current positions. Keep the car motion and character count; no redesigned storefront or added props."
+    },
+    {
+      "frame": 1336,
+      "shot": "drive-in-lunch",
+      "file": "1336.webp",
+      "sha256": "10c547b796734e39d92d42f44e55be4692b05330cf0fb5c4c88f8ccf6e98b3c0",
+      "subject": "The exact California roadside burger drive-in, with the same teal and cream low building, red rectangular rooftop sign, palm tree at right, server in white at the car window, teal convertible and any second red car at their current positions. Keep the car motion and character count; no redesigned storefront or added props."
+    },
+    {
+      "frame": 1348,
+      "shot": "people-lineup",
+      "file": "1348.webp",
+      "sha256": "ab95b070a34200d71254d1027da44a06022c94a1a9631e50e22318349b73af1e",
+      "subject": "The exact growing lineup of workers, preserving ONLY the people already visible and their exact positions and clothes: rancher with cowboy hat and rope, red plaid farmer with wheat, green dairy farmer with pail, blue-shirt picker with lettuce, white-hat baker with tray, plaid-shirt red-cap driver, white-apron cook with spatula. Keep the bee in its current position only if shown. Do not add any missing person early."
+    },
+    {
+      "frame": 1356,
+      "shot": "people-lineup",
+      "file": "1356.webp",
+      "sha256": "9c06483deef0e08fde382e0619f0b3779d6f7759366aae7423bcac8bd9712ae3",
+      "subject": "The exact growing lineup of workers, preserving ONLY the people already visible and their exact positions and clothes: rancher with cowboy hat and rope, red plaid farmer with wheat, green dairy farmer with pail, blue-shirt picker with lettuce, white-hat baker with tray, plaid-shirt red-cap driver, white-apron cook with spatula. Keep the bee in its current position only if shown. Do not add any missing person early."
+    },
+    {
+      "frame": 1364,
+      "shot": "people-lineup",
+      "file": "1364.webp",
+      "sha256": "c7759a21b3925d9cc2caaa085774914734a4825ebf10810b8c4bcf0b8ef10f77",
+      "subject": "The exact growing lineup of workers, preserving ONLY the people already visible and their exact positions and clothes: rancher with cowboy hat and rope, red plaid farmer with wheat, green dairy farmer with pail, blue-shirt picker with lettuce, white-hat baker with tray, plaid-shirt red-cap driver, white-apron cook with spatula. Keep the bee in its current position only if shown. Do not add any missing person early."
+    },
+    {
+      "frame": 1372,
+      "shot": "people-lineup",
+      "file": "1372.webp",
+      "sha256": "5800ed932993e11dd3a27e0d1e54b9c113c4729ab62bbbff83f125d2f67560bd",
+      "subject": "The exact growing lineup of workers, preserving ONLY the people already visible and their exact positions and clothes: rancher with cowboy hat and rope, red plaid farmer with wheat, green dairy farmer with pail, blue-shirt picker with lettuce, white-hat baker with tray, plaid-shirt red-cap driver, white-apron cook with spatula. Keep the bee in its current position only if shown. Do not add any missing person early."
+    },
+    {
+      "frame": 1380,
+      "shot": "people-lineup",
+      "file": "1380.webp",
+      "sha256": "86afb467edb6eb61913dd17bb922651ffa0eb57b745b18aa30bf1075d933bc10",
+      "subject": "The exact growing lineup of workers, preserving ONLY the people already visible and their exact positions and clothes: rancher with cowboy hat and rope, red plaid farmer with wheat, green dairy farmer with pail, blue-shirt picker with lettuce, white-hat baker with tray, plaid-shirt red-cap driver, white-apron cook with spatula. Keep the bee in its current position only if shown. Do not add any missing person early."
+    },
+    {
+      "frame": 1388,
+      "shot": "people-lineup",
+      "file": "1388.webp",
+      "sha256": "09534a19bf20ce1f4e924f727c20aba8a98ce82ef82206f243112e2bad38310f",
+      "subject": "The exact growing lineup of workers, preserving ONLY the people already visible and their exact positions and clothes: rancher with cowboy hat and rope, red plaid farmer with wheat, green dairy farmer with pail, blue-shirt picker with lettuce, white-hat baker with tray, plaid-shirt red-cap driver, white-apron cook with spatula. Keep the bee in its current position only if shown. Do not add any missing person early."
+    },
+    {
+      "frame": 1396,
+      "shot": "people-lineup",
+      "file": "1396.webp",
+      "sha256": "1b154e2961ee9bf1961d3d5c906585cc6172de9432d469241aa170929dca4e4e",
+      "subject": "The exact growing lineup of workers, preserving ONLY the people already visible and their exact positions and clothes: rancher with cowboy hat and rope, red plaid farmer with wheat, green dairy farmer with pail, blue-shirt picker with lettuce, white-hat baker with tray, plaid-shirt red-cap driver, white-apron cook with spatula. Keep the bee in its current position only if shown. Do not add any missing person early."
+    },
+    {
+      "frame": 1404,
+      "shot": "people-lineup",
+      "file": "1404.webp",
+      "sha256": "94011fdf176528f53075053a887f5a57f7e6e89c708551c9b0209011a3672370",
+      "subject": "The exact growing lineup of workers, preserving ONLY the people already visible and their exact positions and clothes: rancher with cowboy hat and rope, red plaid farmer with wheat, green dairy farmer with pail, blue-shirt picker with lettuce, white-hat baker with tray, plaid-shirt red-cap driver, white-apron cook with spatula. Keep the bee in its current position only if shown. Do not add any missing person early."
+    },
+    {
+      "frame": 1416,
+      "shot": "people-and-bee",
+      "file": "1416.webp",
+      "sha256": "ef0a02d9f31b923742669098987b0b1aa1e033dd7b52d12599ab9cc81aacd619",
+      "subject": "The exact seven-person lineup and hovering bee, with each worker's clothes, tools, skin tone, pose and position preserved. Left to right: rancher with cowboy hat and rope, farmer with wheat, dairy farmer with pail, picker with lettuce, baker with buns, driver with keys, cook with spatula. Rounded friendly handmade clay figures, no extra characters."
+    },
+    {
+      "frame": 1440,
+      "shot": "people-and-bee",
+      "file": "1440.webp",
+      "sha256": "8b7828d2b8ecf5c9e0b1b644c2ff121405f3003aeec873e3f8f956d3a1042ee5",
+      "subject": "The exact seven-person lineup and hovering bee, with each worker's clothes, tools, skin tone, pose and position preserved. Left to right: rancher with cowboy hat and rope, farmer with wheat, dairy farmer with pail, picker with lettuce, baker with buns, driver with keys, cook with spatula. Rounded friendly handmade clay figures, no extra characters."
+    },
+    {
+      "frame": 1464,
+      "shot": "people-and-bee",
+      "file": "1464.webp",
+      "sha256": "7d44b77cb8088eaa17882f3c5fe426dcf900ff2e87ad185ff48d493e250df704",
+      "subject": "The exact seven-person lineup and hovering bee, with each worker's clothes, tools, skin tone, pose and position preserved. Left to right: rancher with cowboy hat and rope, farmer with wheat, dairy farmer with pail, picker with lettuce, baker with buns, driver with keys, cook with spatula. Rounded friendly handmade clay figures, no extra characters."
+    },
+    {
+      "frame": 1480,
+      "shot": "final-bite",
+      "file": "1480.webp",
+      "sha256": "0db11374442977be77c5bb7a6564ad8d16638193b4bbadd789a7af46256b55bb",
+      "subject": "The exact final double cheeseburger on folded white paper, preserving whether the right-side bite is already present and its precise shape. Two beef patties and two melted cheese slices with onion between, lettuce, tomato, spread and plain bun. Keep crumbs and steam only where shown; no sesame, no plate and no different camera framing."
+    },
+    {
+      "frame": 1496,
+      "shot": "final-bite",
+      "file": "1496.webp",
+      "sha256": "09b59cbf6cd311a2f21639a7eeae45a0f89ef719dcf423eb8480244749f58ea7",
+      "subject": "The exact final double cheeseburger on folded white paper, preserving whether the right-side bite is already present and its precise shape. Two beef patties and two melted cheese slices with onion between, lettuce, tomato, spread and plain bun. Keep crumbs and steam only where shown; no sesame, no plate and no different camera framing."
+    },
+    {
+      "frame": 1512,
+      "shot": "final-bite",
+      "file": "1512.webp",
+      "sha256": "2159aa62120d9a68bb847146c8275e8806d0a2fbace03486d91ff1409bb86820",
+      "subject": "The exact final double cheeseburger on folded white paper, preserving whether the right-side bite is already present and its precise shape. Two beef patties and two melted cheese slices with onion between, lettuce, tomato, spread and plain bun. Keep crumbs and steam only where shown; no sesame, no plate and no different camera framing."
+    },
+    {
+      "frame": 1528,
+      "shot": "final-bite",
+      "file": "1528.webp",
+      "sha256": "09e429ffd187e4ea5266667eb3cbe8cc48945218927113da6a529f4b427eb0d7",
+      "subject": "The exact final double cheeseburger on folded white paper, preserving whether the right-side bite is already present and its precise shape. Two beef patties and two melted cheese slices with onion between, lettuce, tomato, spread and plain bun. Keep crumbs and steam only where shown; no sesame, no plate and no different camera framing."
+    }
+  ],
+  "motion_assets": [
+    {
+      "file": "griddle-empty.webp",
+      "sha256": "3f2f391b09edbd13d9812b426f47abda9598cccffac399efdb82b750586fbf4a",
+      "authoring": "Source-derived generate_image edit; fixed background or isolated intact clay sculpt. Native alpha retained for loose actors. No fingerprints or finger dents."
+    },
+    {
+      "file": "wheat-empty.webp",
+      "sha256": "33c2b8aed9f83b4d67d4878d9b69ac437d294014bda51b51b8898d4f3c8a41bd",
+      "authoring": "Source-derived generate_image edit; fixed background or isolated intact clay sculpt. Native alpha retained for loose actors. No fingerprints or finger dents."
+    },
+    {
+      "file": "assembly-empty.webp",
+      "sha256": "b78165c2565c1c863644cf568033dac3a753b96e72652813ff2be9c3d5db2b83",
+      "authoring": "Source-derived generate_image edit; fixed background or isolated intact clay sculpt. Native alpha retained for loose actors. No fingerprints or finger dents."
+    },
+    {
+      "file": "burger-actors.webp",
+      "sha256": "376f0ed8a9184f02efcdbb37fbbe073b185572504c7319dc63b5f213bef36e64",
+      "authoring": "Source-derived generate_image edit; fixed background or isolated intact clay sculpt. Native alpha retained for loose actors. No fingerprints or finger dents."
+    },
+    {
+      "file": "people-actors.webp",
+      "sha256": "3a7f04e17f2c5165644659f406e60caf56e06e1a34c2d4731756c2f64e8a092b",
+      "authoring": "Source-derived generate_image edit; fixed background or isolated intact clay sculpt. Native alpha retained for loose actors. No fingerprints or finger dents."
+    },
+    {
+      "file": "harvest-empty.webp",
+      "sha256": "759285e0927d0417beb9648a760e0a007dedf8bcb7125a4b23d6e5663f497af4",
+      "authoring": "Source-derived generate_image fixed set, isolated complete clay actor, or eight authored calf-rise sculpts. True alpha retained for actors. No fingerprints/finger dents. Korean context approved by owner; natural hair/workwear, no exaggerated faces."
+    },
+    {
+      "file": "grinder-empty.webp",
+      "sha256": "141258091c28f7964a9e54438769e9d3f4a817e4abb2f38474cf144533abd219",
+      "authoring": "Source-derived generate_image fixed set, isolated complete clay actor, or eight authored calf-rise sculpts. True alpha retained for actors. No fingerprints/finger dents. Korean context approved by owner; natural hair/workwear, no exaggerated faces."
+    },
+    {
+      "file": "slicing-empty.webp",
+      "sha256": "326409649ba5d242d6413c6a3e27dc3b7da5ecf012872ab9fb4b9fa340991d5b",
+      "authoring": "Source-derived generate_image fixed set, isolated complete clay actor, or eight authored calf-rise sculpts. True alpha retained for actors. No fingerprints/finger dents. Korean context approved by owner; natural hair/workwear, no exaggerated faces."
+    },
+    {
+      "file": "bakery-empty.webp",
+      "sha256": "fbd57a24eed88281114b4bac0f2f9028d8e4077f9ff5bd9bdad6e0e0ea05ba99",
+      "authoring": "Source-derived generate_image fixed set, isolated complete clay actor, or eight authored calf-rise sculpts. True alpha retained for actors. No fingerprints/finger dents. Korean context approved by owner; natural hair/workwear, no exaggerated faces."
+    },
+    {
+      "file": "hand-harvest-empty.webp",
+      "sha256": "426730d64d4e2d029348ba31fb96e6d20ac9a00230e28598ec622fd6ee87efc4",
+      "authoring": "Source-derived generate_image fixed set, isolated complete clay actor, or eight authored calf-rise sculpts. True alpha retained for actors. No fingerprints/finger dents. Korean context approved by owner; natural hair/workwear, no exaggerated faces."
+    },
+    {
+      "file": "flower-empty.webp",
+      "sha256": "e47c9da29f76fe068694ae44e5cd8eff54831c64f3653da0444643dc6665099a",
+      "authoring": "Source-derived generate_image fixed set, isolated complete clay actor, or eight authored calf-rise sculpts. True alpha retained for actors. No fingerprints/finger dents. Korean context approved by owner; natural hair/workwear, no exaggerated faces."
+    },
+    {
+      "file": "garden-actors.webp",
+      "sha256": "f548aac4060eec034cd8bb759f7881c858706ccb4d1b67f6115d77d03899e28b",
+      "authoring": "Source-derived generate_image fixed set, isolated complete clay actor, or eight authored calf-rise sculpts. True alpha retained for actors. No fingerprints/finger dents. Korean context approved by owner; natural hair/workwear, no exaggerated faces."
+    },
+    {
+      "file": "grinder-actors.webp",
+      "sha256": "473a0d3dc2ab498556f34b74e8a2de8a41b2f35d4f62bbb358a27e68b0dd9075",
+      "authoring": "Source-derived generate_image fixed set, isolated complete clay actor, or eight authored calf-rise sculpts. True alpha retained for actors. No fingerprints/finger dents. Korean context approved by owner; natural hair/workwear, no exaggerated faces."
+    },
+    {
+      "file": "slicing-actors.webp",
+      "sha256": "938ec4f15f11bca40837c8d55b3d4edfef2431ea516f4c948c8b0d219b25ca3a",
+      "authoring": "Source-derived generate_image fixed set, isolated complete clay actor, or eight authored calf-rise sculpts. True alpha retained for actors. No fingerprints/finger dents. Korean context approved by owner; natural hair/workwear, no exaggerated faces."
+    },
+    {
+      "file": "pasture-empty.webp",
+      "sha256": "bda9865565ef2cc09b25099354b349c81fbe12a35612d3a8a6436d44d38ce871",
+      "authoring": "Source-derived generate_image fixed set, isolated complete clay actor, or eight authored calf-rise sculpts. True alpha retained for actors. No fingerprints/finger dents. Korean context approved by owner; natural hair/workwear, no exaggerated faces."
+    },
+    {
+      "file": "mother-cow-actor.webp",
+      "sha256": "c06ef83e1e22404267418a0e4dd6ea8304bc1d851c22b43de0c62cafcd57bc12",
+      "authoring": "Source-derived generate_image fixed set, isolated complete clay actor, or eight authored calf-rise sculpts. True alpha retained for actors. No fingerprints/finger dents. Korean context approved by owner; natural hair/workwear, no exaggerated faces."
+    },
+    {
+      "file": "calf-actor.webp",
+      "sha256": "9e24b1c91415f5fd792811464a22630db650973dfedc492f117b08cea2734b7e",
+      "authoring": "Source-derived generate_image fixed set, isolated complete clay actor, or eight authored calf-rise sculpts. True alpha retained for actors. No fingerprints/finger dents. Korean context approved by owner; natural hair/workwear, no exaggerated faces."
+    },
+    {
+      "file": "grazing-cow-actor.webp",
+      "sha256": "9eae0d3ee3192285ea5d8b6ac1c0375444641446ef9e0b31fd532471d158ed36",
+      "authoring": "Source-derived generate_image fixed set, isolated complete clay actor, or eight authored calf-rise sculpts. True alpha retained for actors. No fingerprints/finger dents. Korean context approved by owner; natural hair/workwear, no exaggerated faces."
+    },
+    {
+      "file": "calf-rise-poses.webp",
+      "sha256": "316dff73158e9eb634cabfd34fff8bd68bc244206ecb6759218a657044188dd6",
+      "authoring": "Source-derived generate_image fixed set, isolated complete clay actor, or eight authored calf-rise sculpts. True alpha retained for actors. No fingerprints/finger dents. Korean context approved by owner; natural hair/workwear, no exaggerated faces."
+    },
+    {
+      "file": "drive-in-korea-empty.webp",
+      "sha256": "f96a77685baa50758e41776d96ea77b8ba45ad1107a838894c41a7921e44f870",
+      "authoring": "Source-derived generate_image fixed set, isolated complete clay actor, or eight authored calf-rise sculpts. True alpha retained for actors. No fingerprints/finger dents. Korean context approved by owner; natural hair/workwear, no exaggerated faces."
+    },
+    {
+      "file": "drive-in-korea-actors.webp",
+      "sha256": "c119d32dda0eb1379aecca32bce4901bcd6deae5693f51206f07c7ba8498856d",
+      "authoring": "Source-derived generate_image fixed set, isolated complete clay actor, or eight authored calf-rise sculpts. True alpha retained for actors. No fingerprints/finger dents. Korean context approved by owner; natural hair/workwear, no exaggerated faces."
+    },
+    {
+      "file": "truck-korea-actor.webp",
+      "sha256": "d905aaa26b77cadd668e4a51a13383fb89d6daf4c2a222b0a1d21583d627a47a",
+      "authoring": "Source-derived generate_image fixed set, isolated complete clay actor, or eight authored calf-rise sculpts. True alpha retained for actors. No fingerprints/finger dents. Korean context approved by owner; natural hair/workwear, no exaggerated faces."
+    },
+    {
+      "file": "people-korea-actors.webp",
+      "sha256": "7e0fea0bca1ae6b90e4ee9b3d396bdf3369daa0629dbf8eeb4139bae3fcfdc03",
+      "authoring": "Source-derived generate_image edit: rancher in brown quilted vest and olive shirt; dairy worker in pale blue shirt, ivory waterproof apron and cream cap. Seven complete separated Korean clay actors with true alpha; no fingerprints/dents. Heights are uniformly authored per character."
+    },
+    {
+      "file": "harvest-korea-worker-actors.webp",
+      "sha256": "a2552050dbac979f0642df8d3d5726e3bf28655e0f21b50d71f6a2b79e4d8f07",
+      "authoring": "Source-derived generate_image fixed set, isolated complete clay actor, or eight authored calf-rise sculpts. True alpha retained for actors. No fingerprints/finger dents. Korean context approved by owner; natural hair/workwear, no exaggerated faces."
+    },
+    {
+      "file": "tractor-korea-actor.webp",
+      "sha256": "5969c57da637463a4960b85194c14cd6a98d72c0654783bb6b1721ccc8b732ad",
+      "authoring": "Source-derived generate_image fixed set, isolated complete clay actor, or eight authored calf-rise sculpts. True alpha retained for actors. No fingerprints/finger dents. Korean context approved by owner; natural hair/workwear, no exaggerated faces."
+    },
+    {
+      "file": "korea-terrain.png",
+      "sha256": "81bbc057820d8baba09cc753716dfbb8006625ea0e7567eea594fcef82176267",
+      "authoring": "Procedural Blender sculpt from Natural Earth coastline; connected stylized Taebaek/Sobaek crests, not measured elevation. No sun."
+    },
+    {
+      "file": "harvest-puppet-parts.webp",
+      "sha256": "52747a17c938319f046f7e97de8c26ee2453f8300e4b7fca0a089b286f861437",
+      "authoring": "Source-derived generate_image atlas: two Korean side-view farm workers with armless full bodies, detached upper arms and forearms/gloved hands, lettuce/tomato and baskets. True alpha. Fixed sculpts rotate only at hips/shoulder/elbow; feet remain planted. No fingerprints or dents."
+    },
+    {
+      "file": "harvest-full-poses-0.webp",
+      "sha256": "da1df178c4d730f21de58d42bc988cf75c2c6b26823b88e0051bb7760b9c9d67",
+      "authoring": "Procedural Blender sculpt-harvest.py: 64 complete 3D poses per worker, native 24fps, fixed camera and feet, adult arm proportions, continuous jacket/seat/sleeves. Source-calibrated 270px upright height and lit profile features outside the cheek surface. No image flow, body cutouts or fingerprint textures. Crops and baskets are composited separately; projected landmarks keep the grasp attached."
+    },
+    {
+      "file": "harvest-full-poses-1.webp",
+      "sha256": "26abe1f29c1814d146962401339d9b6e343f6632f54e1a5dc54c0afbe2e64573",
+      "authoring": "Procedural Blender sculpt-harvest.py: 64 complete 3D poses per worker, native 24fps, fixed camera and feet, adult arm proportions, continuous jacket/seat/sleeves. Source-calibrated 270px upright height and lit profile features outside the cheek surface. No image flow, body cutouts or fingerprint textures. Crops and baskets are composited separately; projected landmarks keep the grasp attached."
+    },
+    {
+      "file": "harvest-landmarks.json",
+      "sha256": "2068af9e06d15d36ea1eb441bdef7afa7d1b9f45f13a23c3c551e82b92730e2e",
+      "authoring": "Procedural Blender sculpt-harvest.py: 64 complete 3D poses per worker, native 24fps, fixed camera and feet, adult arm proportions, continuous jacket/seat/sleeves. Source-calibrated 270px upright height and lit profile features outside the cheek surface. No image flow, body cutouts or fingerprint textures. Crops and baskets are composited separately; projected landmarks keep the grasp attached."
+    }
+  ]
+}
