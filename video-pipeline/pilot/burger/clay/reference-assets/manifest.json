@@ -756,6 +756,21 @@
       "file": "harvest-puppet-parts.webp",
       "sha256": "52747a17c938319f046f7e97de8c26ee2453f8300e4b7fca0a089b286f861437",
       "authoring": "Source-derived generate_image atlas: two Korean side-view farm workers with armless full bodies, detached upper arms and forearms/gloved hands, lettuce/tomato and baskets. True alpha. Fixed sculpts rotate only at hips/shoulder/elbow; feet remain planted. No fingerprints or dents."
+    },
+    {
+      "file": "harvest-full-poses-0.webp",
+      "sha256": "da1df178c4d730f21de58d42bc988cf75c2c6b26823b88e0051bb7760b9c9d67",
+      "authoring": "Procedural Blender sculpt-harvest.py: 64 complete 3D poses per worker, native 24fps, fixed camera and feet, adult arm proportions, continuous jacket/seat/sleeves. Source-calibrated 270px upright height and lit profile features outside the cheek surface. No image flow, body cutouts or fingerprint textures. Crops and baskets are composited separately; projected landmarks keep the grasp attached."
+    },
+    {
+      "file": "harvest-full-poses-1.webp",
+      "sha256": "26abe1f29c1814d146962401339d9b6e343f6632f54e1a5dc54c0afbe2e64573",
+      "authoring": "Procedural Blender sculpt-harvest.py: 64 complete 3D poses per worker, native 24fps, fixed camera and feet, adult arm proportions, continuous jacket/seat/sleeves. Source-calibrated 270px upright height and lit profile features outside the cheek surface. No image flow, body cutouts or fingerprint textures. Crops and baskets are composited separately; projected landmarks keep the grasp attached."
+    },
+    {
+      "file": "harvest-landmarks.json",
+      "sha256": "2068af9e06d15d36ea1eb441bdef7afa7d1b9f45f13a23c3c551e82b92730e2e",
+      "authoring": "Procedural Blender sculpt-harvest.py: 64 complete 3D poses per worker, native 24fps, fixed camera and feet, adult arm proportions, continuous jacket/seat/sleeves. Source-calibrated 270px upright height and lit profile features outside the cheek surface. No image flow, body cutouts or fingerprint textures. Crops and baskets are composited separately; projected landmarks keep the grasp attached."
     }
   ]
 }

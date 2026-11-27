@@ -6,6 +6,7 @@ growth and dough rising; it never changes an object's aspect ratio.
 """
 from functools import lru_cache
 from pathlib import Path
+import json
 
 import cv2
 import numpy as np
@@ -182,20 +183,63 @@ def grinder_flow(canvas):
     R.place(canvas,strands,origin+np.array((w/2,h/2)))
 
 
+def press_items(frame):
+    """One portion per press stroke, with a single ball -> patty handoff."""
+    items=[]
+    for index,start in enumerate((646,656,666,676)):
+        age=frame-start
+        if age<0:continue
+        if age<17:
+            # Conveyor ends below the die, not half a patty-width before it.
+            items.append(('ball',index,(470+345*ease(age/17),846),age))
+        elif age<21:
+            # The die occludes the instantaneous sculpt swap at full pressure.
+            items.append(('flat',index,(815,855),age))
+        elif age<27:
+            # Carry the pressed disc onto the receiving stack. Finish above
+            # its landing spot before lowering it; never ghost through a disc.
+            u=ease((age-21)/6)
+            items.append(('flat',index,(815+(974-815)*u,
+                855+(17-index*16)*u-18*np.sin(np.pi*u)),age))
+        else:
+            items.append(('stack',index,(974,872-index*16),age))
+    return items
+
+
+@lru_cache(maxsize=1)
+def opaque_patty():
+    """Remove the translucent cast-shadow halo before drawing layered food."""
+    rgb,alpha,origin=part('grinder-actors.webp',1,width=90)
+    # The meat's original matte is 252/255, including its interior. Repeated
+    # semitransparent discs made the rims show through the next patty.
+    contours=cv2.findContours(np.uint8(alpha>150),cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_SIMPLE)[0]
+    alpha=np.zeros_like(alpha)
+    cv2.drawContours(alpha,[max(contours,key=cv2.contourArea)],-1,255,
+        cv2.FILLED,lineType=cv2.LINE_AA)
+    return rgb,alpha,origin
+
+
 def grinder(frame):
     canvas=plate('grinder-empty.webp').copy()
     grinder_flow(canvas)
     ball=part('grinder-actors.webp',0,width=45)
-    flat=part('grinder-actors.webp',1,width=90)
-    for i,start in enumerate((652,658,664,670)):
-        age=frame-start
-        if 0<=age<24:
-            R.place(canvas,similarity(ball,angle=-age*18),(470+age*14.3,846))
-        elif age>=24:
-            R.place(canvas,flat,(974,875-i*11))
+    flat=opaque_patty()
+    for kind,index,center,age in press_items(frame):
+        if kind=='ball':
+            R.place(canvas,similarity(ball,angle=-age*18),center)
+        else:
+            if kind=='stack':
+                # Real, opaque separator sheets distinguish the source's
+                # finished stack from several copies blended into one image.
+                cx,cy=center
+                paper=np.int32([(cx-47,cy+18),(cx+44,cy+18),(cx+48,cy+27),(cx-50,cy+27)])
+                cv2.fillConvexPoly(canvas,paper,(209,223,231),cv2.LINE_AA)
+                cv2.polylines(canvas,[paper],True,(170,189,200),1,cv2.LINE_AA)
+            R.place(canvas,flat,center)
     # The moving cylinder/foot is independent of the fixed support beam.
-    cycle=(frame-668)%7
-    yy=705+145*(np.sin(cycle/7*np.pi)**2) if frame>=668 else 705
+    # Contact is synchronized to the same ten-frame portion schedule.
+    phase=(frame-646)%10
+    yy=705+145*max(0,1-abs(phase-7)/2) if frame>=661 else 705
     cv2.line(canvas,(815,round(yy-430)),(815,round(yy-15)),(125,132,134),7,cv2.LINE_AA)
     cv2.line(canvas,(813,round(yy-430)),(813,round(yy-15)),(193,201,203),2,cv2.LINE_AA)
     whole=part('grinder-actors.webp',3,width=110)
@@ -249,57 +293,68 @@ def rotate_point(point,pivot,angle):
     return np.array((np.cos(a)*dx+np.sin(a)*dy,-np.sin(a)*dx+np.cos(a)*dy))
 
 
-def arm_joints(shoulder,hand,upper=65,lower=68):
-    """Two fixed-length limbs reach the hand target without scaling a sculpt."""
-    delta=np.subtract(hand,shoulder);distance=np.linalg.norm(delta)
-    direction=delta/max(distance,.001)
-    distance=float(np.clip(distance,abs(upper-lower)+.01,upper+lower-.01))
-    hand=np.array(shoulder)+direction*distance
-    along=(upper*upper-lower*lower+distance*distance)/(2*distance)
-    across=np.sqrt(max(0,upper*upper-along*along))
-    # Left-facing workers bend the elbow back/down. The other IK branch folds
-    # it toward the face and makes the forearm look attached backwards.
-    elbow=np.array(shoulder)+along*direction-across*np.array((-direction[1],direction[0]))
-    return np.array(shoulder),elbow,hand
+@lru_cache(maxsize=1)
+def harvest_landmarks():
+    return json.loads((HERE/'reference-assets'/'harvest-landmarks.json').read_text())
+
+
+@lru_cache(maxsize=2)
+def harvest_atlas(index):
+    value=cv2.imread(str(HERE/'reference-assets'/f'harvest-full-poses-{index}.webp'),-1)
+    assert value is not None and value.shape==(3200,3200,4)
+    return value
 
 
 def harvest_action(frame,index):
-    t=float(np.clip(frame-704+index*5,0,63))
-    foot=np.array(((590,811),(926,981))[index],dtype=float)
-    bend=np.interp(t,(0,20,26,45,63),(10,60,60,15,10))
-    hand=foot+np.array((np.interp(t,(0,20,26,45,51,63),(-45,-92,-92,55,55,-45)),
-        np.interp(t,(0,20,26,45,51,63),(-86,-36,-36,-86,-86,-86))))
-    return t,foot,float(bend),hand,26<=t<49,t>=49
+    t=int(np.clip(frame-704,0,63))
+    data=harvest_landmarks()[f'{index}-{t:02d}']
+    # Source foreground adults are about 270px tall when upright. The lettuce
+    # worker stands below/in front of the conveyor, never with hips on its rail.
+    foot=np.array(((650,905),(920,995))[index],dtype=float)
+    # The tomato picker faces the vine at screen-right, not the lettuce field.
+    direction=(-1,1)[index]
+    def position(point):
+        return foot+np.array(((point[0]-data['feet'][0])*direction,
+            point[1]-data['feet'][1]))
+    return data,foot,position(data['crop']),foot+(direction*60,-16)
+
+
+def harvest_worker(frame,index):
+    t=int(np.clip(frame-704,0,63));row,col=divmod(t,8)
+    cell=harvest_atlas(index)[row*400:(row+1)*400,col*400:(col+1)*400]
+    data,foot,_,_=harvest_action(frame,index)
+    fx,fy=data['feet']
+    if index==0:
+        cell=cell[:,::-1];fx=399-fx
+    return (cell[:,:,:3],cell[:,:,3],(0,0)),foot+(200-fx,200-fy)
 
 
 def picking(frame):
     canvas=plate('hand-harvest-empty.webp').copy()
-    # Feet stay planted. The torso bends at the hips, two rigid arm segments
-    # reach a crop, lift it and release it into a basket. No whole-person sway.
-    for index,height in enumerate((238,260)):
-        t,foot,bend,target,holding,deposited=harvest_action(frame,index)
-        body=harvest_piece(index,0,height=height)
-        rgb,alpha,_=body;h,w=alpha.shape
-        pivot=(w*.67,h*.53);hip=foot-np.array((0,h-pivot[1]))
-        legs=alpha.copy();legs[:round(pivot[1])]=0
-        R.place(canvas,(rgb,legs,(0,0)),foot+np.array((w/2-pivot[0],-h/2)))
-        torso=alpha.copy();torso[round(pivot[1]+h*.025):]=0
-        R.place(canvas,pivot_pose((rgb,torso,(0,0)),pivot,bend),hip)
-        shoulder=hip+rotate_point((w*.65,h*.29),pivot,bend)
-        joints=arm_joints(shoulder,target)
-        for col,(a,b),length in zip((1,2),zip(joints,joints[1:]),(65,68)):
-            limb=harvest_piece(index,col,height=length+10)
-            dx,dy=b-a;angle=np.degrees(np.arctan2(dx,dy))
-            R.place(canvas,similarity(limb,angle=angle),(a+b)/2)
+    shadow=canvas.copy()
+    for index in (0,1):
+        _,foot,_,basket=harvest_action(frame,index)
+        for center,axes in ((foot+(0,7),(28,5)),(basket+(0,23),(37,5))):
+            cv2.ellipse(shadow,tuple(np.rint(center).astype(int)),axes,0,0,360,
+                (45,66,54),-1,cv2.LINE_AA)
+    canvas=cv2.addWeighted(canvas,.79,shadow,.21,0)
+    for index in (0,1):
+        data,foot,crop_position,basket_position=harvest_action(frame,index)
         crop=harvest_piece(index,3,0,30)
-        if t<26:
-            R.place(canvas,crop,foot+(-92,-31))
-        elif holding:
-            R.place(canvas,crop,joints[-1]+(-5,9))
-        basket=harvest_piece(index,3,1,51)
-        R.place(canvas,basket,foot+(55,-40))
-        if deposited:
-            R.place(canvas,crop,foot+(55,-66))
+        if frame<728:
+            # Low lettuce grows on the ground; tomatoes already grow on vines.
+            if index==0:
+                _,_,pick_position,_=harvest_action(722,index)
+                R.place(canvas,crop,pick_position)
+        elif data['holding']:
+            R.place(canvas,crop,crop_position)
+        # A single complete rendered body, including continuous sleeves/waist.
+        worker,center=harvest_worker(frame,index)
+        R.place(canvas,worker,center)
+        if data['deposited']:
+            R.place(canvas,crop,basket_position+(0,-20))
+        basket=harvest_piece(index,3,1,45)
+        R.place(canvas,basket,basket_position)
     return canvas
 
 

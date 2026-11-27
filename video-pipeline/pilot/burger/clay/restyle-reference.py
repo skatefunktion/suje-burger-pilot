@@ -26,7 +26,7 @@ N = FILM['contract']['frames']
 FPS = FILM['contract']['fps']
 SIDE = FILM['contract']['width']
 FLOW_SIDE = 384
-FONT = str(HERE / 'fonts' / 'Gaegu-Bold.ttf')
+FONT = str(HERE / 'fonts' / 'NanumSquareRoundB.ttf')
 
 # Boxes refer to the supplied 1080-square film, not redesigned layouts.
 # English is removed before image editing. The same boxes carry Korean later.
@@ -220,8 +220,8 @@ def text_frame(bgr, frame, ink):
     text = Image.new('L', image.size)
     draw = ImageDraw.Draw(text)
     shown = type_text(caption['text'], ink_progress(ink, frame, end, 'caption'))
-    draw.multiline_text((60, 119 if caption['marker'] else 31), shown,
-        font=fit_font(caption['text'], 58 if caption['marker'] else 64, 964), fill=255, spacing=0)
+    draw.multiline_text((60, 115 if caption['marker'] else 31), shown,
+        font=fit_font(caption['text'], 54 if caption['marker'] else 64, 964), fill=255, spacing=18)
     if caption.get('subtitle') and len(shown)==len(caption['text']):
         draw.text((62,112),caption['subtitle'],font=font(38),fill=255)
     # A source-locked night/day wipe can cross a text line: choose ink per pixel.
@@ -394,8 +394,8 @@ def render(source, work, only_shot=None):
         'text': 'Korean translation of original English captions and labels',
         'numbers': 'Original values except owner-approved Hanwoo age (~30 months) and matching totals',
         'localization': FILM['localization'],
-        'font': 'Gaegu Bold handwritten Korean, warm brown ink; SIL Open Font License 1.1 (bundled)',
-        'motion': 'Fixed sets and intact rigid actors throughout production shots; whole cow sculpts with eyelid blinks (no split neck or sideways collision), eight authored calf-rise poses, dairy stage entries, flower/bee/cucumber, harvest, connected grinder output/press, pickers with backward/downward elbows, oven/tray, slicing and drive-in. 24fps object trajectories; calf-rise uses eight distinct sculpts. Only uniform physical growth/rise scaling. No optical flow, registration, anisotropic stretch, morphing or cross-fades. Source-timed reinterpretation, not an exact reconstruction of every original articulated pose or 3D rotation.',
+        'font': 'NanumSquareRound Bold rounded Korean sans, warm brown ink; SIL Open Font License 1.1 (bundled). Proof A, pending owner choice against Gowun Dodum.',
+        'motion': 'Fixed sets and intact actors throughout production shots; whole cow sculpts with eyelid blinks (no split neck or sideways collision), eight authored calf-rise poses, dairy stage entries, flower/bee/cucumber, harvest, connected grinder output/synchronized press, complete 3D pickers with continuous waists/sleeves and adult limb proportions, oven/tray, slicing and drive-in. Native 24fps harvest poses and object trajectories; calf-rise uses eight distinct sculpts. Only uniform physical growth/rise scaling. No optical flow, registration, anisotropic image stretch, image morphing or cross-fades. Source-timed reinterpretation, not an exact reconstruction of every original articulated pose or 3D rotation.',
         'full_decode': 'passed', 'video': str(output), 'bytes': output.stat().st_size,
         'streams': details['streams']}
     (work / 'export-review.json').write_text(json.dumps(review, indent=2))

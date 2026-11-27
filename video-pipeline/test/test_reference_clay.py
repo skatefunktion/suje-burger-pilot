@@ -66,28 +66,98 @@ class ReferenceClayChecks(unittest.TestCase):
         self.assertEqual(len(set(heights)),7)
         self.assertGreaterEqual(max(heights)-min(heights),35)
 
-    def test_harvesting_reaches_lifts_and_deposits_with_fixed_feet_and_limb_lengths(self):
-        for index in range(2):
-            actions=[self.processes.harvest_action(f,index) for f in (704,724,736,754,767)]
-            for action in actions:
-                self.assertTrue(np.array_equal(action[1],actions[0][1]),'Feet slid across the field')
-            self.assertGreater(actions[1][2]-actions[0][2],30,'No actual bend toward the crop')
-            self.assertTrue(actions[2][4],'The lifted crop must travel with the hand')
-            self.assertTrue(actions[-1][5],'The basket must receive the harvested crop')
-            self.assertGreater(np.linalg.norm(actions[3][3]-actions[1][3]),100)
-            height=(238,260)[index]
-            rgb,alpha,_=self.processes.harvest_piece(index,0,height=height)
-            h,w=alpha.shape;pivot=(w*.67,h*.53)
-            for _,foot,bend,target,_,_ in actions:
-                hip=foot-np.array((0,h-pivot[1]))
-                shoulder=hip+self.processes.rotate_point((w*.65,h*.29),pivot,bend)
-                joints=self.processes.arm_joints(shoulder,target)
-                self.assertAlmostEqual(np.linalg.norm(joints[1]-joints[0]),65,places=6)
-                self.assertAlmostEqual(np.linalg.norm(joints[2]-joints[1]),68,places=6)
-                reach=joints[2]-joints[0]
-                elbow=joints[1]-joints[0]
-                self.assertLess(reach[0]*elbow[1]-reach[1]*elbow[0],0,
-                    'The left-facing picker elbow bends toward the face')
+    def test_harvest_anatomy_has_adult_arm_proportions_and_no_open_waist(self):
+        import cv2
+        for index in (0,1):
+            baseline=None
+            for frame in range(704,768):
+                data,foot,crop,basket=self.processes.harvest_action(frame,index)
+                for shoulder,elbow,wrist in data['arms']:
+                    upper=np.linalg.norm(np.subtract(elbow,shoulder))
+                    lower=np.linalg.norm(np.subtract(wrist,elbow))
+                    # The former 133px arms were 56% of a 238px person.
+                    self.assertLess((upper+lower)/1.75,.4,'Arms exceed adult proportions')
+                    self.assertAlmostEqual(upper,.29,places=6)
+                    self.assertAlmostEqual(lower,.27,places=6)
+                sprite,center=self.processes.harvest_worker(frame,index)
+                alpha=sprite[1]
+                hx,hy=data['hip'];hx=399-hx if index==0 else hx
+                patch=alpha[round(hy)-5:round(hy)+6,round(hx)-5:round(hx)+6]
+                self.assertTrue(np.all(patch>240),f'Open waist in {index}/{frame}')
+                n,labels,stats,_=cv2.connectedComponentsWithStats(np.uint8(alpha>64))
+                self.assertGreater(stats[1:,4].max()/np.count_nonzero(alpha>64),.995,
+                    f'A limb or torso is detached in {index}/{frame}')
+                bottom=np.where(alpha>64)[0].max()
+                if baseline is None:baseline=bottom
+                self.assertLessEqual(abs(bottom-baseline),1,'Planted feet shifted')
+
+    def test_each_picker_faces_and_reaches_their_own_crop_then_deposits_it(self):
+        for index,direction in ((0,-1),(1,1)):
+            first=self.processes.harvest_action(704,index)
+            pick=self.processes.harvest_action(724,index)
+            lift=self.processes.harvest_action(739,index)
+            deposited=self.processes.harvest_action(760,index)
+            self.assertFalse(pick[0]['holding'])
+            self.assertTrue(lift[0]['holding'])
+            self.assertTrue(deposited[0]['deposited'])
+            self.assertGreater(pick[0]['bend']-first[0]['bend'],25)
+            self.assertGreater(first[0]['hip_z']-pick[0]['hip_z'],.2 if index==0 else .15)
+            self.assertGreater((pick[2][0]-pick[1][0])*direction,65)
+            self.assertGreater(pick[2][1]-lift[2][1],30,'Crop was not lifted')
+            # Direction derives from the rendered head/nose, not just the hand.
+            self.assertGreater(pick[0]['nose'][0]-pick[0]['head'][0],8)
+            self.assertGreater((pick[3][0]-pick[1][0])*direction,0)
+
+    def test_harvesters_and_baskets_are_grounded_clear_of_the_conveyor(self):
+        for index in (0,1):
+            for frame in range(704,768):
+                data,foot,_,basket=self.processes.harvest_action(frame,index)
+                sprite,center=self.processes.harvest_worker(frame,index)
+                rows=np.flatnonzero(np.any(sprite[1]>64,axis=1))
+                floor=center[1]-200+rows[-1]
+                self.assertAlmostEqual(basket[1]+22.5,floor,delta=3,
+                    msg='Basket floats above the planted boot soles')
+                if frame==704:
+                    self.assertGreater(rows[-1]-rows[0],260)
+                    self.assertLess(rows[-1]-rows[0],285)
+                if index==0:
+                    hip_y=foot[1]+data['hip'][1]-data['feet'][1]
+                    self.assertGreater(hip_y,760,'Worker sits on the conveyor rail')
+
+    def test_harvest_faces_have_lit_skin_and_visible_eyes(self):
+        for index in (0,1):
+            for frame in range(704,768):
+                data,*_=self.processes.harvest_action(frame,index)
+                sprite,_=self.processes.harvest_worker(frame,index)
+                rgb,alpha,_=sprite
+                def sample(name):
+                    x,y=data[name];x=399-x if index==0 else x
+                    x,y=round(x),round(y)
+                    self.assertGreater(alpha[y,x],240)
+                    return rgb[y-1:y+2,x-1:x+2].mean(axis=2)
+                cheek=sample('cheek');eye=sample('eye')
+                self.assertGreater(np.median(cheek),120,'Face is a dark patch')
+                self.assertLess(eye.min()+45,np.median(cheek),'Eye is buried/hidden')
+
+    def test_press_has_one_sculpt_per_portion_and_four_separated_final_patties(self):
+        import cv2
+        for frame in range(640,704):
+            items=self.processes.press_items(frame)
+            self.assertEqual(len({item[1] for item in items}),len(items),
+                'The same portion is drawn twice during the ball/patty swap')
+            self.assertLessEqual(sum(item[0]=='flat' for item in items),1)
+        final=self.processes.press_items(703)
+        self.assertEqual([item[0] for item in final],['stack']*4)
+        alpha=self.processes.opaque_patty()[1]
+        interior=cv2.erode(np.uint8(alpha>200),np.ones((5,5),np.uint8),
+            borderType=cv2.BORDER_CONSTANT,borderValue=0).astype(bool)
+        self.assertTrue(np.all(alpha[interior]==255),'Patty interiors are translucent')
+        image=self.processes.grinder(703)
+        # Three long cream separators remain visible between opaque discs.
+        paper=np.all(image[795:901,943:1008]==(209,223,231),axis=2)
+        bands=np.mean(paper,axis=1)>.35
+        starts=np.count_nonzero(bands&~np.r_[False,bands[:-1]])
+        self.assertGreaterEqual(starts,3,'Finished patties merge into overlapping copies')
 
     def test_pasture_uses_complete_necks_without_a_sideways_collision(self):
         # Compare actual neck/shoulder texels, not just a nonblank-frame check.
@@ -381,8 +451,8 @@ class ReferenceClayChecks(unittest.TestCase):
         for cap in REF.FILM['captions']:
             strings.extend([cap['text'], cap['marker']])
             marker = bool(cap['marker'])
-            f = REF.fit_font(cap['text'], 58 if marker else 64, 964)
-            box = draw.multiline_textbbox((60, 119 if marker else 31), cap['text'], font=f, spacing=0)
+            f = REF.fit_font(cap['text'], 54 if marker else 64, 964)
+            box = draw.multiline_textbbox((60, 115 if marker else 31), cap['text'], font=f, spacing=18)
             self.assertGreaterEqual(box[0], 40)
             self.assertLessEqual(box[2], 1040)
             self.assertLess(box[3], 238 if marker else 192)
@@ -397,6 +467,18 @@ class ReferenceClayChecks(unittest.TestCase):
                 self.assertNotEqual(bytes(REF.font(32).getmask(char)), missing, f'Missing glyph: {char}')
         self.assertIn('SIL OPEN FONT LICENSE Version 1.1', (ROOT / 'fonts' / 'OFL.txt').read_text())
         self.assertIn('SIL OPEN FONT LICENSE Version 1.1', (ROOT / 'fonts' / 'Gaegu-OFL.txt').read_text())
+        self.assertIn('SIL OPEN FONT LICENSE Version 1.1', (ROOT / 'fonts' / 'NanumSquareRound-OFL.txt').read_text())
+        self.assertIn('2017 NAVER Corporation', (ROOT / 'fonts' / 'NanumSquareRound-OFL.txt').read_text())
+
+    def test_actual_two_line_caption_has_clear_leading(self):
+        ink=[{'caption':1,'marker':1,'labels':[1]*8} for _ in range(REF.N)]
+        image=REF.text_frame(np.full((1080,1080,3),255,np.uint8),736,ink)
+        rows=np.any(image[119:238,:1040]!=255,axis=(1,2))
+        occupied=np.flatnonzero(rows)
+        gaps=np.diff(occupied)-1
+        self.assertGreaterEqual(gaps.max(),12,'Korean caption lines touch')
+        self.assertGreater(np.count_nonzero(rows[:60]),40)
+        self.assertGreater(np.count_nonzero(rows[60:]),40)
 
     def test_type_on_does_not_rewind_when_reference_ink_varies(self):
         rows = [{'caption': n, 'marker': n} for n in [0, 20, 18, 40, 39, 60]]

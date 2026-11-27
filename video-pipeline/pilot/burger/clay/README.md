@@ -31,8 +31,8 @@ only uniform authoring-time sizing and rigid translation are used. There is no
 per-frame shape stretching. `process-scenes.py` extends the fixed-set approach
 to the remaining production shots: complete cattle sculpts and eight distinct
 calf-rise sculpts, dairy stage entries, flower/bee/cucumber growth, grain delivery,
-grinder and press, articulated pickers bending/reaching/lifting vegetables into
-baskets with planted feet and fixed-length arms, oven door/tray/rising buns,
+grinder and press, complete 3D pickers squatting/reaching/lifting vegetables into
+baskets with planted feet and adult-length arms, oven door/tray/rising buns,
 fresh slicing and curbside lunch. Whole parts rotate at joints; only physical
 flower/fruit growth and dough rising use **uniform** scale, never changed aspect
 ratios. Vehicles follow frame-by-frame paths. The final bite switches once to a
@@ -41,18 +41,52 @@ This remains a source-timed clay reinterpretation, **not** an exact reconstructi
 of every original articulated pose or 3D patty rotation. `frame-exposures.json`
 records each frame's authored stage and motion mode.
 
+The harvesters no longer use a horizontally cut waist or detached arm images.
+`sculpt-harvest.py` renders 64 **complete** 3D poses for each worker: continuous
+jacket hems overlap a solid trouser seat, each bent sleeve is one smooth surface,
+and knees bend to reach the low crop instead of extending the arms. Upper arm and
+forearm lengths are 0.29 and 0.27 scene units against a roughly 1.75-unit adult.
+The tomato picker faces screen-right toward the tomato vines, while the lettuce
+picker faces screen-left. Projected hand/crop landmarks attach the intact produce
+sprite to the grip. Baskets stay beside the workers, not in the pickup location.
+Upright workers are about 270px tall, calibrated to the source foreground adult.
+The lettuce worker and basket stand on the crop rows below the conveyor; neither
+rests on its rail. Fixed ground shadows and brighter pose lighting keep their
+boots and baskets visibly grounded in the existing field.
+Short hair covers only the top/back of the head. Profile eyes and eyebrows sit
+outside the cheek surface, and a soft camera-side fill keeps faces readable
+under the hat brim rather than rendering as a featureless dark patch.
+
+Rebuild these native-frame poses with Blender 3.x, then pack them (Pillow):
+
+```sh
+blender -b -t 4 --python video-pipeline/pilot/burger/clay/sculpt-harvest.py -- /path/to/render-directory
+python3 video-pipeline/pilot/burger/clay/pack-harvest.py /path/to/render-directory
+```
+
+The grinder emits one portion per synchronized press stroke. A portion changes
+from ball to pressed disc **once**, behind the die, then travels onto the output.
+The finished stack uses opaque meat mattes and visible cream separator sheets,
+as in the source, rather than overlapping translucent copies of the same image.
+
 Visible headings, diagram labels, map labels and worker labels are typeset in
 Korean. The owner requested two source-style exceptions: the shop's **BURGERS**
 sign and the small **N** compass arrow, which also appears in the original map.
-The handwritten **Gaegu Bold** font uses warm brown ink rather than the previous
-heavy black Jua lettering, to better match the handmade clay. It is bundled in
-`fonts/` under the [SIL Open Font License 1.1](fonts/Gaegu-OFL.txt), permitting use
-in published videos. Source: [Google Fonts](https://fonts.google.com/specimen/Gaegu).
+The current type proof uses **NanumSquareRound Bold**, a restrained rounded
+Korean sans with warm brown ink, not the rejected Gaegu handwriting. It is
+bundled in `fonts/` under the [SIL Open Font License 1.1](fonts/NanumSquareRound-OFL.txt),
+permitting use in published videos. The unmodified font comes from
+[NAVER's official archive](https://campaign.naver.com/nanumsquare_neo/download/NaverNanumSquareRound.zip);
+the [official license](https://help.naver.com/service/30016/contents/18088?lang=ko&osType=PC)
+explicitly includes NanumSquareRound. This is proof A; owner selection against
+the lighter Gowun Dodum proof B remains open. Neither is claimed approved.
 Ingredient names follow two fixed columns: left labels end at x=350, right labels
 begin at x=865. Their visible glyphs are centered vertically on the eight layer
 centers; full-label bounds keep the type-on from sliding horizontally.
 The native type-on follows measured source-ink timing; the red underlined markers
 retain their original location.
+Two-line captions have an additional 18px of leading so full Korean glyphs do
+not touch; the heading remains above the miniature artwork.
 
 The opening reads **햄버거 하나가 만들어지는 과정**, with a short subtitle
 establishing that the story rewinds from lunchtime. The source's opening marker
@@ -124,9 +158,10 @@ their own alpha masks; they are not regenerated between frames. Legacy source
 anchors remain in the provenance archive, but these production shots use the new
 Korean sets and actors. Motion-asset hashes are checked **before encoding**.
 The hand-harvest field uses two spaced workers rather than the original seven.
-They reach for a lettuce/tomato, lift it and deposit it into a basket using rigid
-torso/arm joints, rather than rocking the whole person. Elbows use the backward/
-downward branch for left-facing workers, not the reversed bend toward the face.
+They reach for a lettuce/tomato, lift it and deposit it into a basket using
+complete 3D poses with continuous clothing and proportionate limbs, not a cut
+waist or detached 2D arm rods. Both face their own crops and squat through the
+knees rather than rocking the whole person or lengthening an arm to reach.
 The bakery clock's two
 hands share its actual center at (301, 338) on the 1080-square plate and keep the
 12:1 minute/hour rate. Shop lettering is centered by its visible glyph bounds.
