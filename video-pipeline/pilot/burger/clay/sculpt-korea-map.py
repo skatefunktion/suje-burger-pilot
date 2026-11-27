@@ -62,16 +62,50 @@ for index, polygon in enumerate(GEO['geometry']['coordinates']):
     bevel.width = .045
     bevel.segments = 4
 
-# Stylized eastern relief, not an elevation dataset. Terrain stays fixed.
-for i,(lon,lat) in enumerate([(128.5,38.1),(128.55,37.8),(128.6,37.5),
-        (128.7,37.1),(128.8,36.7),(128.7,36.25),(128.15,35.8),(127.75,35.5)]):
-    x,y = xy(lon,lat)
-    bpy.ops.mesh.primitive_uv_sphere_add(segments=32, ring_count=16, location=(x,y,.16))
-    obj=bpy.context.object
-    obj.name='Rounded eastern mountain'
-    obj.scale=(.16,.26,.13)
-    obj.data.materials.append(mountain)
-    for face in obj.data.polygons: face.use_smooth=True
+# Stylized Taebaek/Sobaek relief, not measured elevation. Connected angular
+# crest-and-slope meshes read as mountain ranges, not isolated oval shrubs.
+ridge_light=material('Lit clay ridge',(.39,.45,.26))
+ridge_shade=material('Clay ridge shadow',(.24,.33,.16))
+
+
+def mountain_range(name,coordinates,width=.14,height=.27):
+    points=[Vector((*xy(*p),0)) for p in coordinates]
+    verts=[]
+    for i,p in enumerate(points):
+        direction=(points[min(i+1,len(points)-1)]-points[max(i-1,0)]).normalized()
+        normal=Vector((-direction.y,direction.x,0))
+        taper=.14 if i in (0,len(points)-1) else 1
+        span=width*(1+.15*math.sin(i*2.3))*taper
+        crest=p+normal*(.025*math.sin(i*2.5))
+        for v in (p-normal*span,crest,p+normal*span):verts.append(tuple(v))
+        verts[-3]=(verts[-3][0],verts[-3][1],.195)
+        verts[-2]=(verts[-2][0],verts[-2][1],.195+height*taper*(.8+.2*math.cos(i*2.1)))
+        verts[-1]=(verts[-1][0],verts[-1][1],.195)
+    faces=[]
+    for i in range(len(points)-1):
+        a=i*3;b=a+3
+        faces.extend([(a,b,b+1,a+1),(a+1,b+1,b+2,a+2)])
+    mesh=bpy.data.meshes.new(name);mesh.from_pydata(verts,[],faces);mesh.update()
+    obj=bpy.data.objects.new(name,mesh);bpy.context.collection.objects.link(obj)
+    obj.data.materials.append(ridge_light);obj.data.materials.append(ridge_shade)
+    for i,face in enumerate(obj.data.polygons):face.material_index=i%2
+    bevel=obj.modifiers.new('Soft clay creases, not oval mounds','BEVEL')
+    bevel.width=.012;bevel.segments=2
+
+
+mountain_range('Taebaek connected crest',[(128.30,38.45),(128.46,38.17),
+    (128.62,37.92),(128.67,37.67),(128.82,37.43),(128.90,37.17),
+    (128.94,36.90),(129.02,36.62)],.13,.27)
+mountain_range('Sobaek connected crest',[(128.82,37.43),(128.50,37.08),
+    (128.30,36.90),(128.13,36.63),(127.98,36.40),(127.74,36.10),
+    (127.62,35.80),(127.63,35.50),(127.72,35.31)],.13,.24)
+for i,branch in enumerate([
+    [(128.46,38.17),(128.18,38.12),(127.96,37.95)],
+    [(128.67,37.67),(128.39,37.61),(128.18,37.42)],
+    [(128.90,37.17),(129.09,37.05),(129.17,36.86)],
+    [(128.13,36.63),(128.40,36.57),(128.56,36.37)],
+    [(127.74,36.10),(127.45,35.98),(127.31,35.76)],
+]):mountain_range(f'Connected spur {i}',branch,.075,.18)
 
 scene=bpy.context.scene
 scene.render.engine='BLENDER_EEVEE'

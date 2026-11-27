@@ -1,0 +1,381 @@
+"""Source-timed process miniatures, assembled from fixed sets and intact parts.
+
+No contour flow, correspondence field, image morph or frame cross-fade. Moving
+parts translate/rotate as whole objects. Uniform sizing represents actual flower
+growth and dough rising; it never changes an object's aspect ratio.
+"""
+from functools import lru_cache
+from pathlib import Path
+
+import cv2
+import numpy as np
+from PIL import Image
+
+HERE=Path(__file__).resolve().parent
+SIDE=1080
+R=None
+
+
+def configure(rigid, frames=None):
+    global R
+    R=rigid
+
+
+@lru_cache(maxsize=24)
+def plate(name):
+    value=cv2.imread(str(HERE/'reference-assets'/name))
+    assert value is not None, name
+    return cv2.resize(value,(SIDE,SIDE),interpolation=cv2.INTER_CUBIC)
+
+
+def cropped(rgb, alpha, position=(0,0), width=None):
+    x,y,w,h=cv2.boundingRect(np.uint8(alpha>=32))
+    assert w and h, 'Empty authored sprite'
+    rgb=rgb[y:y+h,x:x+w];alpha=alpha[y:y+h,x:x+w]
+    if width is not None:
+        size=(width,max(1,round(h*width/w)))
+        rgb=cv2.resize(rgb,size,interpolation=cv2.INTER_CUBIC)
+        alpha=cv2.resize(alpha,size,interpolation=cv2.INTER_CUBIC)
+    return rgb,alpha,position
+
+
+@lru_cache(maxsize=50)
+def part(name,index=0,cols=2,rows=2,width=150):
+    sheet=cv2.imread(str(HERE/'reference-assets'/name),cv2.IMREAD_UNCHANGED)
+    assert sheet is not None and sheet.shape[2]==4, name
+    h,w=sheet.shape[:2];row,col=divmod(index,cols)
+    cell=sheet[row*h//rows:(row+1)*h//rows,col*w//cols:(col+1)*w//cols]
+    alpha=cell[:,:,3]
+    if name.startswith('drive-in-') and name.endswith('actors.webp'):
+        # Ignore faint atlas-divider lines: they are not part of a car/person.
+        _,labels,stats,_=cv2.connectedComponentsWithStats(np.uint8(alpha>=32))
+        label=1+np.argmax(stats[1:,cv2.CC_STAT_AREA])
+        alpha=np.where(labels==label,alpha,0).astype(np.uint8)
+    return cropped(cell[:,:,:3],alpha,width=width)
+
+
+def similarity(sprite, scale=1, angle=0):
+    """A similarity pose preserves all lengths' ratios: no anisotropic stretch."""
+    rgb,alpha,position=sprite
+    rgba=Image.fromarray(np.dstack((rgb,alpha)))
+    if scale!=1:
+        rgba=rgba.resize((max(1,round(rgba.width*scale)),
+            max(1,round(rgba.height*scale))),Image.Resampling.BICUBIC)
+    if angle:
+        rgba=rgba.rotate(float(angle),resample=Image.Resampling.BICUBIC,expand=True)
+    result=np.array(rgba)
+    return result[:,:,:3],result[:,:,3],position
+
+
+def ease(value):
+    t=float(np.clip(value,0,1))
+    return t*t*(3-2*t)
+
+
+def path(frame, keys):
+    return tuple(np.interp(frame,[k[0] for k in keys],[k[i] for k in keys])
+        for i in (1,2))
+
+
+@lru_cache(maxsize=24)
+def cutout(key,rect):
+    pic=R.image(key);x0,y0,x1,y1=rect
+    cell=pic[y0:y1,x0:x1]
+    hsv=cv2.cvtColor(cell,cv2.COLOR_BGR2HSV)
+    mask=np.uint8((hsv[:,:,1]>58)|(hsv[:,:,2]<204))*255
+    mask=cv2.morphologyEx(mask,cv2.MORPH_CLOSE,np.ones((5,5),np.uint8))
+    solid=np.zeros_like(mask)
+    for contour in cv2.findContours(mask,cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_SIMPLE)[0]:
+        if cv2.contourArea(contour)>20:cv2.drawContours(solid,[contour],-1,255,-1)
+    x,y,w,h=cv2.boundingRect(solid)
+    return cropped(cell,solid,(x0+x+w/2,y0+y+h/2))
+
+
+def dairy(frame):
+    canvas=R.paper_plate(440).copy()
+    for start,rect in zip((384,398,414,428),
+            ((35,250,525,618),(540,250,1055,625),
+             (35,630,525,1020),(540,630,1060,1020))):
+        if frame<start:continue
+        x0,y0,x1,y1=rect
+        cell=R.image(440)[y0:y1,x0:x1]
+        # White cow legs and pale milk are part of the sculpt, not a chroma key.
+        alpha=np.full(cell.shape[:2],255,np.uint8)
+        alpha[:4]=0;alpha[-4:]=0;alpha[:,:4]=0;alpha[:,-4:]=0
+        alpha=cv2.GaussianBlur(alpha,(9,9),2)
+        sprite=cell,alpha,(0,0);x,y=(x0+x1)/2,(y0+y1)/2
+        R.place(canvas,sprite,(x,y+65*(1-ease((frame-start)/8))))
+    return canvas
+
+
+def garden(frame):
+    canvas=plate('flower-empty.webp').copy()
+    if frame<530:
+        flower=part('garden-actors.webp',0,width=310)
+        bloom=.32+.68*ease((frame-448)/25)
+        R.place(canvas,similarity(flower,bloom),(655,637))
+    else:
+        fruit=part('garden-actors.webp',1,width=320)
+        growth=.4+.6*ease((frame-530)/14)
+        R.place(canvas,similarity(fruit,growth),(606,649))
+    if 463<=frame<529:
+        bee=part('garden-actors.webp',2,width=115)
+        x,y=path(frame,[(463,1120,400),(476,620,675),(504,650,582),
+            (516,820,430),(529,1160,140)])
+        R.place(canvas,similarity(bee,angle=4*np.sin(frame*.3)),
+            (x+7*np.sin(frame*.8),y+4*np.cos(frame*.7)))
+    if frame>=550:
+        pickles=part('garden-actors.webp',3,width=252)
+        R.place(canvas,pickles,(900,368+45*(1-ease((frame-550)/8))))
+        cv2.arrowedLine(canvas,(735,590),(820,424),(71,100,170),3,cv2.LINE_AA,tipLength=.07)
+        for i in range(5):
+            cx,cy=548+i*30,590+i*30
+            cv2.line(canvas,(cx-37,cy+37),(cx+37,cy-37),(169,142,110),2,cv2.LINE_AA)
+    if frame>=558:
+        jar=cutout(568,(805,495,1000,737));x,y=jar[2]
+        R.place(canvas,jar,(x,y+55*(1-ease((frame-558)/8))))
+        cv2.arrowedLine(canvas,(907,487),(907,527),(71,100,170),3,cv2.LINE_AA,tipLength=.2)
+    return canvas
+
+
+def harvest(frame):
+    canvas=plate('harvest-empty.webp').copy()
+    truck=part('truck-korea-actor.webp',0,1,1,360)
+    x,y=path(frame,[(576,1210,851),(595,790,851),(613,790,851),(639,1230,851)])
+    if 592<=frame<617:
+        # Individual clay grain beads fall from the real pipe into the truck.
+        for i in range(22):
+            phase=((frame-592)*.085+i/22)%1
+            yy=318+phase*570
+            xx=778+5*np.sin(i*3.1)
+            cv2.ellipse(canvas,(round(xx),round(yy)),(3,5),12,0,360,(48,146,211),-1,cv2.LINE_AA)
+    R.place(canvas,truck,(x,y))
+    if frame>=624:
+        inset=R.image(632)[875:1080,855:1080]
+        sprite=inset,np.full(inset.shape[:2],255,np.uint8),(0,0)
+        R.place(canvas,sprite,(967,977+220*(1-ease((frame-624)/9))))
+    return canvas
+
+
+def grinder(frame):
+    canvas=plate('grinder-empty.webp').copy()
+    if frame<655:
+        strands=part('grinder-actors.webp',2,width=130)
+        R.place(canvas,strands,(535,700+4*np.sin(frame*.8)))
+    ball=part('grinder-actors.webp',0,width=45)
+    flat=part('grinder-actors.webp',1,width=90)
+    for i,start in enumerate((652,658,664,670)):
+        age=frame-start
+        if 0<=age<24:
+            R.place(canvas,similarity(ball,angle=-age*18),(470+age*14.3,846))
+        elif age>=24:
+            R.place(canvas,flat,(974,875-i*11))
+    # The moving cylinder/foot is independent of the fixed support beam.
+    cycle=(frame-668)%7
+    yy=705+145*(np.sin(cycle/7*np.pi)**2) if frame>=668 else 705
+    cv2.line(canvas,(815,round(yy-430)),(815,round(yy-15)),(125,132,134),7,cv2.LINE_AA)
+    cv2.line(canvas,(813,round(yy-430)),(813,round(yy-15)),(193,201,203),2,cv2.LINE_AA)
+    whole=part('grinder-actors.webp',3,width=110)
+    rgb,alpha,_=whole;h=alpha.shape[0]
+    foot=rgb[round(h*.75):],alpha[round(h*.75):],(0,0)
+    R.place(canvas,foot,(815,yy))
+    return canvas
+
+
+@lru_cache(maxsize=1)
+def workers():
+    rgba=cv2.imread(str(HERE/'reference-assets'/'harvest-korea-worker-actors.webp'),-1)
+    rgba=cv2.resize(rgba,(SIDE,SIDE),interpolation=cv2.INTER_CUBIC)
+    _,labels,stats,_=cv2.connectedComponentsWithStats(np.uint8(rgba[:,:,3]>=32))
+    out=[]
+    for label in sorted(range(1,len(stats)),key=lambda i:stats[i,0]):
+        x,y,w,h,area=stats[label]
+        if area<500:continue
+        mask=np.where(labels[y:y+h,x:x+w]==label,rgba[y:y+h,x:x+w,3],0)
+        out.append((rgba[y:y+h,x:x+w,:3],mask,(x+w/2,y+h)))
+    assert len(out)==7
+    return out
+
+
+def feet_pose(sprite, angle):
+    rgb,alpha,_=sprite;h,w=alpha.shape
+    side=2*max(h,w)+8
+    rgba=Image.new('RGBA',(side,side))
+    rgba.paste(Image.fromarray(np.dstack((rgb,alpha))),
+        (round(side/2-w/2),round(side/2-h)))
+    posed=np.array(rgba.rotate(float(angle),resample=Image.Resampling.BICUBIC))
+    return posed[:,:,:3],posed[:,:,3],(0,0)
+
+
+def picking(frame):
+    canvas=plate('hand-harvest-empty.webp').copy()
+    for i,sprite in enumerate(workers()):
+        amplitude=2 if i<2 else 4
+        angle=amplitude*np.sin((frame-704)*.12+i*1.7)
+        R.place(canvas,feet_pose(sprite,angle),sprite[2])
+    return canvas
+
+
+@lru_cache(maxsize=1)
+def door_bounds():
+    pic=plate('bakery-empty.webp');hsv=cv2.cvtColor(pic,cv2.COLOR_BGR2HSV)
+    mask=np.uint8((hsv[:,:,0]>9)&(hsv[:,:,0]<30)&
+        (hsv[:,:,1]>90)&(hsv[:,:,2]>70))*255
+    mask[:480]=0;mask[:,:570]=0;mask[850:]=0
+    cs=cv2.findContours(mask,cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_SIMPLE)[0]
+    return cv2.boundingRect(max(cs,key=cv2.contourArea))
+
+
+def bakery(frame):
+    canvas=plate('bakery-empty.webp').copy()
+    x,y,w,h=door_bounds()
+    opening=ease((frame-784)/6)*(1-ease((frame-807)/7))
+    if opening:
+        cv2.rectangle(canvas,(x,y),(x+w,y+h),(27,26,33),-1)
+        door=plate('bakery-empty.webp')[y:y+h,x:x+w]
+        R.place(canvas,(door,np.full((h,w),255,np.uint8),(0,0)),
+            (x+w/2,y+h/2+opening*560))
+    shift=550*ease((frame-790)/9)*(1-ease((frame-807)/9))
+    tray=np.array([(45,687),(505,687),(530,817),(22,817)],np.int32)
+    tray+=np.array([round(shift),round(-shift*.11)])
+    cv2.fillConvexPoly(canvas,tray,(102,113,123),cv2.LINE_AA)
+    cv2.polylines(canvas,[tray],True,(173,181,185),5,cv2.LINE_AA)
+    for row in range(3):
+        for col in range(4):
+            bun=R.burger_part(0,92)
+            rgb,alpha,_=bun
+            baked=ease((frame-799)/10)
+            pale=np.clip(rgb.astype(float)*.45+np.array([151,164,166]),0,255)
+            material=np.uint8(pale*(1-baked)+rgb*baked)
+            rise=.72+.28*ease((frame-768)/19)
+            R.place(canvas,similarity((material,alpha,(0,0)),rise),
+                (97+col*111+shift,708+row*37-shift*.11))
+    center=(256,336)
+    for length,angle,width in [(38,(frame-768)*.15,3),(26,(frame-768)*.025+1,4)]:
+        end=(round(center[0]+length*np.sin(angle)),round(center[1]-length*np.cos(angle)))
+        cv2.line(canvas,center,end,(57,58,64),width,cv2.LINE_AA)
+    return canvas
+
+
+@lru_cache(maxsize=12)
+def slice_piece(index,piece=0,width=140):
+    sheet=cv2.imread(str(HERE/'reference-assets'/'slicing-actors.webp'),-1)
+    h,w=sheet.shape[:2];row,col=divmod(index,2)
+    cell=sheet[row*h//3:(row+1)*h//3,col*w//2:(col+1)*w//2]
+    _,labels,stats,_=cv2.connectedComponentsWithStats(np.uint8(cell[:,:,3]>=32))
+    ids=sorted([i for i in range(1,len(stats)) if stats[i,4]>500],key=lambda i:stats[i,0])
+    label=ids[piece]
+    return cropped(cell[:,:,:3],np.where(labels==label,cell[:,:,3],0).astype(np.uint8),width=width)
+
+
+def slicing(frame):
+    canvas=plate('slicing-empty.webp').copy()
+    for i,sign in enumerate((-1,1)):
+        gap=38*ease((frame-1030)/10)
+        R.place(canvas,slice_piece(0,i,78),(300+sign*(39+gap),513))
+        gap=24*ease((frame-1050)/11)
+        R.place(canvas,slice_piece(2,i,74),(590+sign*(37+gap),513))
+    R.place(canvas,slice_piece(4,0,225),(836,513))
+    for i in range(4):
+        start=1038+i*3
+        if frame>=start:
+            R.place(canvas,slice_piece(1,0,155),(240+i*88,
+                715+i*10-140*(1-ease((frame-start)/8))))
+    if frame>=1061:
+        R.place(canvas,slice_piece(3,0,151),(662,726-120*(1-ease((frame-1061)/8))))
+    for i,start in enumerate((1070,1077)):
+        if frame>=start:
+            R.place(canvas,slice_piece(5,i,147),(800+i*100,
+                750+i*45-120*(1-ease((frame-start)/8))))
+    if frame<1041:
+        for i in range(3):
+            xx=278+i*20
+            cv2.line(canvas,(xx,425),(xx,600),(164,147,116),2,cv2.LINE_AA)
+    elif frame<1062:
+        for i in range(3):
+            xx=567+i*20
+            cv2.line(canvas,(xx,425),(xx,600),(164,147,116),2,cv2.LINE_AA)
+    return canvas
+
+
+def drive_in(frame):
+    canvas=plate('drive-in-korea-empty.webp').copy()
+    teal=part('drive-in-korea-actors.webp',0,width=680)
+    red=part('drive-in-korea-actors.webp',1,width=680)
+    server=part('drive-in-korea-actors.webp',2,width=125)
+    exit=ease((frame-1311)/13)
+    R.place(canvas,teal,(710-exit*1200,1045-teal[1].shape[0]/2))
+    enter=ease((frame-1320)/13)
+    R.place(canvas,red,(1600-enter*890,1045-red[1].shape[0]/2))
+    R.place(canvas,server,(531,1045-server[1].shape[0]/2))
+    return canvas
+
+
+def pivot_pose(sprite,pivot,angle):
+    rgb,alpha,_=sprite;h,w=alpha.shape
+    side=2*int(np.ceil(np.hypot(w,h)))+8
+    rgba=Image.new('RGBA',(side,side))
+    rgba.paste(Image.fromarray(np.dstack((rgb,alpha))),
+        (round(side/2-pivot[0]),round(side/2-pivot[1])))
+    posed=np.array(rgba.rotate(float(angle),resample=Image.Resampling.BICUBIC))
+    return posed[:,:,:3],posed[:,:,3],(0,0)
+
+
+def cow(canvas,sprite,position,angle,grazing=False):
+    rgb,alpha,_=sprite;h,w=alpha.shape
+    if grazing:
+        x0,y0,x1,y1=round(w*.76),round(h*.30),w,h
+        pivot=(round(w*.79),round(h*.40))
+        cut=(round(w*.79),round(h*.35),w,h)
+    else:
+        x0,y0,x1,y1=round(w*.74),0,w,round(h*.46)
+        pivot=(round(w*.74),round(h*.06))
+        cut=(round(w*.78),0,w,round(h*.39))
+    body=alpha.copy();cx0,cy0,cx1,cy1=cut;body[cy0:cy1,cx0:cx1]=0
+    R.place(canvas,(rgb,body,(0,0)),position)
+    head=rgb[y0:y1,x0:x1],alpha[y0:y1,x0:x1],(0,0)
+    global_pivot=(position[0]-w/2+pivot[0],position[1]-h/2+pivot[1])
+    R.place(canvas,pivot_pose(head,(pivot[0]-x0,pivot[1]-y0),angle),global_pivot)
+
+
+def pasture(frame):
+    canvas=plate('pasture-empty.webp').copy()
+    if frame<256:
+        mother=part('mother-cow-actor.webp',0,1,1,570)
+        angle=-28*ease((frame-198)/19)*(1-ease((frame-231)/20))
+        cow(canvas,mother,(357,690),angle)
+        pose=min(7,max(0,(frame-160)//3))
+        calf=part('calf-rise-poses.webp',pose,4,2,210)
+        R.place(canvas,calf,(733,871-calf[1].shape[0]/2))
+    else:
+        adult=part('grazing-cow-actor.webp',0,1,1,620)
+        # The original grazing view shifts to the grown animal in the center.
+        xx=385+155*ease((frame-263)/24)
+        cow(canvas,adult,(xx,710),3*np.sin((frame-256)*.13),True)
+        if frame<279:
+            calf=part('calf-actor.webp',0,1,1,255)
+            R.place(canvas,calf,(835,866-calf[1].shape[0]/2))
+        if frame>=298:
+            small=part('grazing-cow-actor.webp',0,1,1,150)
+            cow(canvas,small,(122,706),2*np.sin(frame*.15),True)
+            cow(canvas,small,(890,691),-2*np.sin(frame*.13),True)
+            # Deterministic weather motion; the terrain and cow bodies stay fixed.
+            for i in range(48):
+                x=(i*139+frame*2)%1080;y=310+(i*67+frame*9)%610
+                cv2.line(canvas,(x,y),(x-4,y+13),(197,191,170),1,cv2.LINE_AA)
+    return canvas
+
+
+def render(frame):
+    if 128<=frame<320:return pasture(frame)
+    if 384<=frame<448:return dairy(frame)
+    if 448<=frame<576:return garden(frame)
+    if 576<=frame<640:return harvest(frame)
+    if 640<=frame<704:return grinder(frame)
+    if 704<=frame<768:return picking(frame)
+    if 768<=frame<832:return bakery(frame)
+    if 1024<=frame<1088:return slicing(frame)
+    if 1280<=frame<1344:return drive_in(frame)
+    # One authored bite at its source frame; no later camera/texture jumps.
+    if 1472<=frame<1536:return R.image(1480 if frame<1488 else 1496).copy()
+    return None

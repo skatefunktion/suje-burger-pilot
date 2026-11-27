@@ -646,6 +646,111 @@
       "file": "people-actors.webp",
       "sha256": "3a7f04e17f2c5165644659f406e60caf56e06e1a34c2d4731756c2f64e8a092b",
       "authoring": "Source-derived generate_image edit; fixed background or isolated intact clay sculpt. Native alpha retained for loose actors. No fingerprints or finger dents."
+    },
+    {
+      "file": "harvest-empty.webp",
+      "sha256": "759285e0927d0417beb9648a760e0a007dedf8bcb7125a4b23d6e5663f497af4",
+      "authoring": "Source-derived generate_image fixed set, isolated complete clay actor, or eight authored calf-rise sculpts. True alpha retained for actors. No fingerprints/finger dents. Korean context approved by owner; natural hair/workwear, no exaggerated faces."
+    },
+    {
+      "file": "grinder-empty.webp",
+      "sha256": "141258091c28f7964a9e54438769e9d3f4a817e4abb2f38474cf144533abd219",
+      "authoring": "Source-derived generate_image fixed set, isolated complete clay actor, or eight authored calf-rise sculpts. True alpha retained for actors. No fingerprints/finger dents. Korean context approved by owner; natural hair/workwear, no exaggerated faces."
+    },
+    {
+      "file": "slicing-empty.webp",
+      "sha256": "326409649ba5d242d6413c6a3e27dc3b7da5ecf012872ab9fb4b9fa340991d5b",
+      "authoring": "Source-derived generate_image fixed set, isolated complete clay actor, or eight authored calf-rise sculpts. True alpha retained for actors. No fingerprints/finger dents. Korean context approved by owner; natural hair/workwear, no exaggerated faces."
+    },
+    {
+      "file": "bakery-empty.webp",
+      "sha256": "fbd57a24eed88281114b4bac0f2f9028d8e4077f9ff5bd9bdad6e0e0ea05ba99",
+      "authoring": "Source-derived generate_image fixed set, isolated complete clay actor, or eight authored calf-rise sculpts. True alpha retained for actors. No fingerprints/finger dents. Korean context approved by owner; natural hair/workwear, no exaggerated faces."
+    },
+    {
+      "file": "hand-harvest-empty.webp",
+      "sha256": "426730d64d4e2d029348ba31fb96e6d20ac9a00230e28598ec622fd6ee87efc4",
+      "authoring": "Source-derived generate_image fixed set, isolated complete clay actor, or eight authored calf-rise sculpts. True alpha retained for actors. No fingerprints/finger dents. Korean context approved by owner; natural hair/workwear, no exaggerated faces."
+    },
+    {
+      "file": "flower-empty.webp",
+      "sha256": "e47c9da29f76fe068694ae44e5cd8eff54831c64f3653da0444643dc6665099a",
+      "authoring": "Source-derived generate_image fixed set, isolated complete clay actor, or eight authored calf-rise sculpts. True alpha retained for actors. No fingerprints/finger dents. Korean context approved by owner; natural hair/workwear, no exaggerated faces."
+    },
+    {
+      "file": "garden-actors.webp",
+      "sha256": "f548aac4060eec034cd8bb759f7881c858706ccb4d1b67f6115d77d03899e28b",
+      "authoring": "Source-derived generate_image fixed set, isolated complete clay actor, or eight authored calf-rise sculpts. True alpha retained for actors. No fingerprints/finger dents. Korean context approved by owner; natural hair/workwear, no exaggerated faces."
+    },
+    {
+      "file": "grinder-actors.webp",
+      "sha256": "473a0d3dc2ab498556f34b74e8a2de8a41b2f35d4f62bbb358a27e68b0dd9075",
+      "authoring": "Source-derived generate_image fixed set, isolated complete clay actor, or eight authored calf-rise sculpts. True alpha retained for actors. No fingerprints/finger dents. Korean context approved by owner; natural hair/workwear, no exaggerated faces."
+    },
+    {
+      "file": "slicing-actors.webp",
+      "sha256": "938ec4f15f11bca40837c8d55b3d4edfef2431ea516f4c948c8b0d219b25ca3a",
+      "authoring": "Source-derived generate_image fixed set, isolated complete clay actor, or eight authored calf-rise sculpts. True alpha retained for actors. No fingerprints/finger dents. Korean context approved by owner; natural hair/workwear, no exaggerated faces."
+    },
+    {
+      "file": "pasture-empty.webp",
+      "sha256": "bda9865565ef2cc09b25099354b349c81fbe12a35612d3a8a6436d44d38ce871",
+      "authoring": "Source-derived generate_image fixed set, isolated complete clay actor, or eight authored calf-rise sculpts. True alpha retained for actors. No fingerprints/finger dents. Korean context approved by owner; natural hair/workwear, no exaggerated faces."
+    },
+    {
+      "file": "mother-cow-actor.webp",
+      "sha256": "c06ef83e1e22404267418a0e4dd6ea8304bc1d851c22b43de0c62cafcd57bc12",
+      "authoring": "Source-derived generate_image fixed set, isolated complete clay actor, or eight authored calf-rise sculpts. True alpha retained for actors. No fingerprints/finger dents. Korean context approved by owner; natural hair/workwear, no exaggerated faces."
+    },
+    {
+      "file": "calf-actor.webp",
+      "sha256": "9e24b1c91415f5fd792811464a22630db650973dfedc492f117b08cea2734b7e",
+      "authoring": "Source-derived generate_image fixed set, isolated complete clay actor, or eight authored calf-rise sculpts. True alpha retained for actors. No fingerprints/finger dents. Korean context approved by owner; natural hair/workwear, no exaggerated faces."
+    },
+    {
+      "file": "grazing-cow-actor.webp",
+      "sha256": "9eae0d3ee3192285ea5d8b6ac1c0375444641446ef9e0b31fd532471d158ed36",
+      "authoring": "Source-derived generate_image fixed set, isolated complete clay actor, or eight authored calf-rise sculpts. True alpha retained for actors. No fingerprints/finger dents. Korean context approved by owner; natural hair/workwear, no exaggerated faces."
+    },
+    {
+      "file": "calf-rise-poses.webp",
+      "sha256": "316dff73158e9eb634cabfd34fff8bd68bc244206ecb6759218a657044188dd6",
+      "authoring": "Source-derived generate_image fixed set, isolated complete clay actor, or eight authored calf-rise sculpts. True alpha retained for actors. No fingerprints/finger dents. Korean context approved by owner; natural hair/workwear, no exaggerated faces."
+    },
+    {
+      "file": "drive-in-korea-empty.webp",
+      "sha256": "f96a77685baa50758e41776d96ea77b8ba45ad1107a838894c41a7921e44f870",
+      "authoring": "Source-derived generate_image fixed set, isolated complete clay actor, or eight authored calf-rise sculpts. True alpha retained for actors. No fingerprints/finger dents. Korean context approved by owner; natural hair/workwear, no exaggerated faces."
+    },
+    {
+      "file": "drive-in-korea-actors.webp",
+      "sha256": "c119d32dda0eb1379aecca32bce4901bcd6deae5693f51206f07c7ba8498856d",
+      "authoring": "Source-derived generate_image fixed set, isolated complete clay actor, or eight authored calf-rise sculpts. True alpha retained for actors. No fingerprints/finger dents. Korean context approved by owner; natural hair/workwear, no exaggerated faces."
+    },
+    {
+      "file": "truck-korea-actor.webp",
+      "sha256": "d905aaa26b77cadd668e4a51a13383fb89d6daf4c2a222b0a1d21583d627a47a",
+      "authoring": "Source-derived generate_image fixed set, isolated complete clay actor, or eight authored calf-rise sculpts. True alpha retained for actors. No fingerprints/finger dents. Korean context approved by owner; natural hair/workwear, no exaggerated faces."
+    },
+    {
+      "file": "people-korea-actors.webp",
+      "sha256": "769458153865e08939e8d5467d08a85ecfd7aa773773497d625d4d6889c39bb2",
+      "authoring": "Source-derived generate_image fixed set, isolated complete clay actor, or eight authored calf-rise sculpts. True alpha retained for actors. No fingerprints/finger dents. Korean context approved by owner; natural hair/workwear, no exaggerated faces."
+    },
+    {
+      "file": "harvest-korea-worker-actors.webp",
+      "sha256": "a2552050dbac979f0642df8d3d5726e3bf28655e0f21b50d71f6a2b79e4d8f07",
+      "authoring": "Source-derived generate_image fixed set, isolated complete clay actor, or eight authored calf-rise sculpts. True alpha retained for actors. No fingerprints/finger dents. Korean context approved by owner; natural hair/workwear, no exaggerated faces."
+    },
+    {
+      "file": "tractor-korea-actor.webp",
+      "sha256": "5969c57da637463a4960b85194c14cd6a98d72c0654783bb6b1721ccc8b732ad",
+      "authoring": "Source-derived generate_image fixed set, isolated complete clay actor, or eight authored calf-rise sculpts. True alpha retained for actors. No fingerprints/finger dents. Korean context approved by owner; natural hair/workwear, no exaggerated faces."
+    },
+    {
+      "file": "korea-terrain.png",
+      "sha256": "81bbc057820d8baba09cc753716dfbb8006625ea0e7567eea594fcef82176267",
+      "authoring": "Procedural Blender sculpt from Natural Earth coastline; connected stylized Taebaek/Sobaek crests, not measured elevation. No sun."
     }
   ]
 }

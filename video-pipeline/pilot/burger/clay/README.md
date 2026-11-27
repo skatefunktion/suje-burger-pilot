@@ -28,10 +28,17 @@ diagram, sowing tractor, griddle, burger assembly and worker lineup/bee. Tractor
 and griddle positions come from complete-object source measurements, not a pixel
 displacement field. Newly sculpted loose ingredients and people have real alpha;
 only uniform authoring-time sizing and rigid translation are used. There is no
-per-frame shape stretching. Remaining articulated/industrial shots still hold
-their authored poses: this is **not** a claim that every original in-between or
-3D patty rotation has been reconstructed. `frame-exposures.json` records each
-frame's pose and motion mode.
+per-frame shape stretching. `process-scenes.py` extends the fixed-set approach
+to the remaining production shots: articulated cattle necks and eight distinct
+calf-rise sculpts, dairy stage entries, flower/bee/cucumber growth, grain delivery,
+grinder and press, whole pickers pivoted at their feet, oven door/tray/rising buns,
+fresh slicing and curbside lunch. Whole parts rotate at joints; only physical
+flower/fruit growth and dough rising use **uniform** scale, never changed aspect
+ratios. Vehicles follow frame-by-frame paths. The final bite switches once to a
+single fixed bitten sculpt instead of changing camera/texture afterward.
+This remains a source-timed clay reinterpretation, **not** an exact reconstruction
+of every original articulated pose or 3D patty rotation. `frame-exposures.json`
+records each frame's authored stage and motion mode.
 
 All visible headings, diagram labels, map labels, worker labels and restaurant
 lettering are typeset in Korean. The rounded **Jua Regular** font is bundled in
@@ -59,6 +66,9 @@ country outline comes from public-domain [Natural Earth](https://www.naturaleart
 geometry in `korea-map-geography.json`. It is sculpted once by
 `sculpt-korea-map.py`; `reference-assets/korea-terrain.png` is the committed,
 fixed-geometry render. No Blender dependency is needed to export the video.
+The eastern relief now uses connected, creased **Taebaek/Sobaek mountain ridges**,
+not oval mounds. This is stylized relief, not measured elevation. The original
+day-map sun decoration is deliberately removed at the owner's request.
 
 `korea-map.py` draws native Korean labels, road paths and intact truck
 glyphs moving at **24 poses per second**. Trucks advance by arc length, including
@@ -86,6 +96,17 @@ documents wheat in Jeonbuk Buan and Jeonnam, including the bread-making cultivar
 lists Jeonbuk 4,618ha and Jeonnam 4,572ha out of 11,600ha nationally. These dated
 figures support the localization but are not put on screen as current statistics.
 No claim is made that this particular burger or supplier uses domestic wheat.
+
+### Approved Korean shop, vehicles and people
+
+The lunch scene now uses a **Seoul neighborhood burger storefront**, native
+`수제버거` lettering and compact Korean-style hatchbacks, without palm trees or
+American diner decor. The grain vehicle is a Korean-style cab-over **1-ton truck**.
+Korean farmers, drivers and shopkeepers use natural dark hair and practical local
+workwear, with no exaggerated facial features. All moving bodies/vehicles have
+their own alpha masks; they are not regenerated between frames. Legacy source
+anchors remain in the provenance archive, but these production shots use the new
+Korean sets and actors. Motion-asset hashes are checked **before encoding**.
 
 To rebuild only the fixed terrain (Blender 3.x):
 

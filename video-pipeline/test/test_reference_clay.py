@@ -17,6 +17,75 @@ SPEC.loader.exec_module(REF)
 
 
 class ReferenceClayChecks(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        mods=[]
+        for name in ('rigid-scenes','process-scenes'):
+            spec=importlib.util.spec_from_file_location(name,ROOT/f'{name}.py')
+            module=importlib.util.module_from_spec(spec);spec.loader.exec_module(module)
+            mods.append(module)
+        cls.rigid,cls.processes=mods
+        cls.processes.configure(cls.rigid)
+
+    def test_process_motion_changes_objects_without_boiling_the_background(self):
+        for frame in (201,271,400,466,536,597,678,731,795,1045,1317):
+            first=self.processes.render(frame);second=self.processes.render(frame+1)
+            self.assertEqual(first.shape,(1080,1080,3))
+            self.assertEqual(first.dtype,np.uint8)
+            self.assertFalse(np.array_equal(first,second),f'Held motion at {frame}')
+            self.assertTrue(np.array_equal(first[:238,:950],second[:238,:950]),
+                f'Background/header boiling at {frame}')
+            self.assertTrue(np.array_equal(first,self.processes.render(frame)),
+                f'Non-deterministic process frame {frame}')
+
+    def test_all_process_boundaries_render_and_dairy_stages_are_not_premature(self):
+        for start,end in ((128,320),(384,576),(576,640),(640,704),(704,768),
+                (768,832),(1024,1088),(1280,1344),(1472,1536)):
+            for frame in (start,start+1,end-2,end-1):
+                self.assertIsNotNone(self.processes.render(frame),frame)
+        early=self.processes.dairy(390);late=self.processes.dairy(440)
+        blank=self.rigid.paper_plate(440)
+        self.assertTrue(np.array_equal(early[635:,540:],blank[635:,540:]))
+        self.assertGreater(np.count_nonzero(late[635:,540:]!=blank[635:,540:]),50000)
+
+    def test_korean_actors_are_complete_and_do_not_include_atlas_boundaries(self):
+        server=self.processes.part('drive-in-korea-actors.webp',2,width=125)
+        self.assertGreater(server[1].shape[0]/server[1].shape[1],2.2)
+        self.assertLess(server[1].shape[0]/server[1].shape[1],4.5)
+        for i in range(2):
+            car=self.processes.part('drive-in-korea-actors.webp',i,width=680)
+            self.assertGreater(car[1].shape[1]/car[1].shape[0],1.7)
+            self.assertLess(car[1].shape[1]/car[1].shape[0],3.5)
+        self.assertEqual(len(self.processes.workers()),7)
+        for i in range(7):
+            _,alpha,(_,cy)=self.rigid.person(i)
+            self.assertEqual(alpha.shape[0],344)
+            self.assertLess(cy+alpha.shape[0]/2,809)
+
+    def test_rigid_joint_rotation_preserves_area_and_object_proportions(self):
+        rgb=np.full((41,79,3),170,np.uint8);alpha=np.full((41,79),255,np.uint8)
+        for angle in (-28,0,19):
+            posed=self.processes.similarity((rgb,alpha,(0,0)),angle=angle)
+            points=self.rigid.cv2.findNonZero(np.uint8(posed[1]>127))
+            _,(w,h),_=self.rigid.cv2.minAreaRect(points)
+            self.assertAlmostEqual(max(w,h)/min(w,h),78/40,delta=.12)
+            self.assertAlmostEqual(np.count_nonzero(posed[1]>127)/alpha.size,1,delta=.06)
+
+    def test_final_bite_keeps_a_single_fixed_post_bite_sculpt(self):
+        self.assertFalse(np.array_equal(self.processes.render(1487),self.processes.render(1488)))
+        self.assertTrue(np.array_equal(self.processes.render(1488),self.processes.render(1535)))
+
+    def test_falling_burger_layers_never_cover_the_native_heading(self):
+        header=self.rigid.assembly_plate()[:238]
+        for frame in range(1216,1280):
+            self.assertTrue(np.array_equal(self.rigid.assembly(frame)[:238],header),frame)
+
+    def test_day_map_has_no_sun_decoration_over_the_east_sea(self):
+        spec=importlib.util.spec_from_file_location('korea_map',ROOT/'korea-map.py')
+        korea=importlib.util.module_from_spec(spec);spec.loader.exec_module(korea)
+        self.assertTrue(np.array_equal(korea.map_pose(1008,False)[275:321,955:1002],
+            np.asarray(korea.background(False))[275:321,955:1002]))
+
     def test_pose_schedule_preserves_stages_without_flickering_backwards(self):
         frames = np.zeros((8,100,8,3),np.uint8)
         frames[3:,84:] = 255

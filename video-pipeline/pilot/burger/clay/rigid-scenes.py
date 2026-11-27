@@ -137,18 +137,13 @@ def griddle(frame):
 
 @lru_cache(maxsize=1)
 def tractor_actor():
-    picture=image(328)
-    hsv=cv2.cvtColor(picture,cv2.COLOR_BGR2HSV)
-    mask=np.zeros((SIDE,SIDE),np.uint8)
-    crop=hsv[500:820,160:665]
-    seed=((crop[:,:,0]<10)|(crop[:,:,0]>172))&(crop[:,:,1]>90)
-    seed|=(crop[:,:,2]<80)|(crop[:,:,1]<50)
-    mask[500:820,160:665]=np.uint8(seed)*255
-    mask=cv2.morphologyEx(mask,cv2.MORPH_CLOSE,np.ones((9,9),np.uint8))
-    cs=cv2.findContours(mask,cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_SIMPLE)[0]
-    c=max(cs,key=cv2.contourArea);mask[:]=0;cv2.drawContours(mask,[c],-1,255,-1)
-    x,y,w,h=cv2.boundingRect(mask)
-    return picture[y:y+h,x:x+w],mask[y:y+h,x:x+w],(x+w/2,y+h/2)
+    rgba=cv2.imread(str(HERE/'reference-assets'/'tractor-korea-actor.webp'),-1)
+    # The authored vehicle faces right; sowing in the source travels left.
+    rgba=cv2.flip(rgba,1)
+    x,y,w,h=cv2.boundingRect(np.uint8(rgba[:,:,3]>=32))
+    cell=rgba[y:y+h,x:x+w]
+    cell=cv2.resize(cell,(505,round(h*505/w)),interpolation=cv2.INTER_CUBIC)
+    return cell[:,:,:3],cell[:,:,3],(413,660)
 
 
 @lru_cache(maxsize=1)
@@ -207,6 +202,8 @@ def assembly(frame):
         # Whole clay objects enter from the top and settle, with no reshaping.
         y=bottom-height/2-remaining*remaining*900
         place(canvas,sprite,(540,y))
+    # Ingredients enter the artwork below the native heading, never over it.
+    canvas[:238]=assembly_plate()[:238]
     return canvas
 
 
@@ -228,12 +225,17 @@ def exploded(frame):
 @lru_cache(maxsize=8)
 def person(index):
     rgba=people_sheet()
-    edges=(0,174,332,479,630,773,929,1080)
-    x0,x1=edges[index:index+2]
-    cell=rgba[440:810,x0:x1]
-    mask=np.where(cell[:,:,3]>=32,cell[:,:,3],0).astype(np.uint8)
-    x,y,w,h=cv2.boundingRect(mask)
-    return cell[y:y+h,x:x+w,:3],mask[y:y+h,x:x+w],(x0+x+w/2,440+y+h/2)
+    _,labels,stats,_=cv2.connectedComponentsWithStats(np.uint8(rgba[:,:,3]>=32))
+    ids=sorted([i for i in range(1,len(stats)) if stats[i,3]>140 and stats[i,4]>1200],
+        key=lambda i:stats[i,0])
+    assert len(ids)==7,'Expected seven complete Korean workers'
+    label=ids[index];x,y,w,h=stats[label,:4]
+    cell=rgba[y:y+h,x:x+w,:3]
+    mask=np.where(labels[y:y+h,x:x+w]==label,rgba[y:y+h,x:x+w,3],0).astype(np.uint8)
+    size=(round(w*344/h),344)
+    return cv2.resize(cell,size,interpolation=cv2.INTER_CUBIC),\
+        cv2.resize(mask,size,interpolation=cv2.INTER_LINEAR),\
+        ((92,251,401,552,702,853,1003)[index],795-344/2)
 
 
 @lru_cache(maxsize=2)
@@ -245,7 +247,7 @@ def paper_plate(key):
 
 @lru_cache(maxsize=1)
 def people_sheet():
-    rgba=cv2.imread(str(HERE/'reference-assets'/'people-actors.webp'),cv2.IMREAD_UNCHANGED)
+    rgba=cv2.imread(str(HERE/'reference-assets'/'people-korea-actors.webp'),cv2.IMREAD_UNCHANGED)
     return cv2.resize(rgba,(SIDE,SIDE),interpolation=cv2.INTER_CUBIC)
 
 

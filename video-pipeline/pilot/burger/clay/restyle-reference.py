@@ -58,7 +58,7 @@ LABELS = {
     'flour': [('밀가루', (958, 967, 1057, 1009), 24)],
     'bakery': [('밀가루', (289, 850, 405, 902), 28)],
     'map': [],  # Native Korean geography/labels belong to korea-map.py.
-    'restaurant': [('버거', (185, 370, 643, 467), 60)],
+    'restaurant': [('수제버거', (170, 337, 646, 425), 60)],
     'people': [
         ('목장주', (16, 809, 166, 856), 29),
         ('농부', (176, 809, 325, 856), 29),
@@ -309,8 +309,12 @@ def render(source, work, only_shot=None):
             asset_paths[key] = path
     output = work / ('motion-study.mp4' if only_shot is not None else 'kevin-burger-clay-ko-64s.mp4')
     raw = work / 'clay-picture.mp4'
-    for name in ('griddle-empty.webp','wheat-empty.webp','assembly-empty.webp','burger-actors.webp','people-actors.webp'):
-        assert (HERE/'reference-assets'/name).is_file(), f'Missing authored motion asset: {name}'
+    manifest=json.loads((HERE/'reference-assets'/'manifest.json').read_text())
+    for asset in manifest['motion_assets']:
+        path=HERE/'reference-assets'/asset['file']
+        assert path.is_file(), f'Missing authored motion asset: {path.name}'
+        assert hashlib.sha256(path.read_bytes()).hexdigest()==asset['sha256'], \
+            f'Motion asset changed without authoring provenance: {path.name}'
     process = subprocess.Popen(['ffmpeg', '-v', 'error', '-y', '-f', 'rawvideo',
         '-pixel_format', 'bgr24', '-video_size', f'{SIDE}x{SIDE}', '-framerate', str(FPS),
         '-i', 'pipe:0', '-an', '-c:v', 'libx264', '-pix_fmt', 'yuv420p', '-crf', '18',
@@ -327,6 +331,9 @@ def render(source, work, only_shot=None):
     # Whole-object trajectories do not transfer the source drawing's contours.
     if only_shot is None or selected[0]['id'] in ('wheat-sowing','griddle-patties','griddle-buns-cheese'):
         rigid.configure(frames)
+    spec = spec_from_file_location('process_scenes', HERE/'process-scenes.py')
+    processes = module_from_spec(spec); spec.loader.exec_module(processes)
+    processes.configure(rigid,frames)
     for shot in selected:
         keys = shot['anchors']
         styles = {}
@@ -340,8 +347,12 @@ def render(source, work, only_shot=None):
         for n in range(start, end):
             key = schedule[n-start]
             posed = rigid.render(n)
+            mode='rigid-actor'
+            if posed is None:
+                posed = processes.render(n)
+                mode='intact-process' if posed is not None else 'authored-pose'
             painted = korea.render(n) if shot.get('labels') == 'map' else posed if posed is not None else styles[key].copy()
-            mode='korea-road-map' if shot.get('labels') == 'map' else 'rigid-actor' if posed is not None else 'authored-pose'
+            if shot.get('labels') == 'map':mode='korea-road-map'
             exposures.append({'frame': n, 'exposure': key, 'motion': mode})
             painted = text_frame(painted, n, ink)
             process.stdin.write(painted.tobytes())
@@ -367,7 +378,7 @@ def render(source, work, only_shot=None):
         'numbers': 'Original values except owner-approved Hanwoo age (~30 months) and matching totals',
         'localization': FILM['localization'],
         'font': 'Jua Regular, SIL Open Font License 1.1 (bundled)',
-        'motion': '24fps rigid clay actors for exploded burger, sowing, griddle, assembly, workers/bee, and road-following trucks. Other articulated/process shots retain authored exposures. No optical flow, contour registration, morphing or cross-fades; not a complete recreation of all source in-betweens.',
+        'motion': 'Fixed sets and intact rigid actors throughout production shots; neck joints and eight authored calf-rise poses, dairy stage entries, flower/bee/cucumber, harvest, grinder/press, pickers, oven/tray, slicing and drive-in. 24fps object trajectories; calf-rise uses eight distinct sculpts. Only uniform physical growth/rise scaling. No optical flow, registration, anisotropic stretch, morphing or cross-fades. Source-timed reinterpretation, not an exact reconstruction of every original articulated pose or 3D rotation.',
         'full_decode': 'passed', 'video': str(output), 'bytes': output.stat().st_size,
         'streams': details['streams']}
     (work / 'export-review.json').write_text(json.dumps(review, indent=2))

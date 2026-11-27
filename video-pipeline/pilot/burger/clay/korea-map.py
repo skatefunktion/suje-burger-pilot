@@ -128,8 +128,6 @@ def map_pose(step,night):
     draw.text((94,998),'100 km',font=font(23),fill=ink)
     draw.text((690,1017),'산지와 배송 경로 예시',font=font(25),fill=ink)
     draw.text((690,1050),'도로 © OpenStreetMap 기여자',font=font(18),fill=ink)
-    if not night:
-        draw.ellipse((958,278,998,318),fill='#f0c85e',outline='#d8b455',width=2)
     return np.asarray(image)
 
 
