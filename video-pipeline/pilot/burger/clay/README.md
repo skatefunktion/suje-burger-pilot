@@ -72,21 +72,22 @@ as in the source, rather than overlapping translucent copies of the same image.
 Visible headings, diagram labels, map labels and worker labels are typeset in
 Korean. The owner requested two source-style exceptions: the shop's **BURGERS**
 sign and the small **N** compass arrow, which also appears in the original map.
-The current type proof uses **NanumSquareRound Bold**, a restrained rounded
-Korean sans with warm brown ink, not the rejected Gaegu handwriting. It is
-bundled in `fonts/` under the [SIL Open Font License 1.1](fonts/NanumSquareRound-OFL.txt),
-permitting use in published videos. The unmodified font comes from
-[NAVER's official archive](https://campaign.naver.com/nanumsquare_neo/download/NaverNanumSquareRound.zip);
-the [official license](https://help.naver.com/service/30016/contents/18088?lang=ko&osType=PC)
-explicitly includes NanumSquareRound. This is proof A; owner selection against
-the lighter Gowun Dodum proof B remains open. Neither is claimed approved.
+The owner selected **Gowun Dodum Regular**, the lighter sans from proof B,
+replacing provisional NanumSquareRound Bold (A) and the rejected Gaegu
+handwriting. Warm brown ink remains. The unmodified font is bundled in `fonts/`
+under the [SIL Open Font License 1.1](fonts/GowunDodum-OFL.txt), permitting use in
+published videos. It comes from the
+[Google Fonts Gowun Dodum distribution](https://github.com/google/fonts/tree/main/ofl/gowundodum),
+and its SHA-256 matches the B comparison proof's font:
+`a6e457933227483a11758fd0947bc74422a106d46f0bf057fdaa5af94a30067d`.
 Ingredient names follow two fixed columns: left labels end at x=350, right labels
 begin at x=865. Their visible glyphs are centered vertically on the eight layer
 centers; full-label bounds keep the type-on from sliding horizontally.
 The native type-on follows measured source-ink timing; the red underlined markers
 retain their original location.
-Two-line captions have an additional 18px of leading so full Korean glyphs do
-not touch; the heading remains above the miniature artwork.
+Caption origins use visible glyph bounds rather than font-specific vertical
+padding, with 18px clear leading between full Korean lines. Markers remain
+above their underline, and the heading remains above the miniature artwork.
 
 The opening reads **햄버거 하나가 만들어지는 과정**, with a short subtitle
 establishing that the story rewinds from lunchtime. The source's opening marker

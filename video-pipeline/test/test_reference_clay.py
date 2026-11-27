@@ -451,11 +451,12 @@ class ReferenceClayChecks(unittest.TestCase):
         for cap in REF.FILM['captions']:
             strings.extend([cap['text'], cap['marker']])
             marker = bool(cap['marker'])
-            f = REF.fit_font(cap['text'], 54 if marker else 64, 964)
-            box = draw.multiline_textbbox((60, 115 if marker else 31), cap['text'], font=f, spacing=18)
-            self.assertGreaterEqual(box[0], 40)
-            self.assertLessEqual(box[2], 1040)
-            self.assertLess(box[3], 238 if marker else 192)
+            f, origins = REF.caption_layout(cap)
+            for line, origin in zip(cap['text'].split('\n'), origins):
+                box = draw.textbbox(origin, line, font=f)
+                self.assertGreaterEqual(box[0], 40)
+                self.assertLessEqual(box[2], 1040)
+                self.assertLess(box[3], 238 if marker else 192)
         for group in REF.LABELS.values():
             for value, (x0, y0, x1, y1), size in group:
                 strings.append(value)
@@ -467,8 +468,9 @@ class ReferenceClayChecks(unittest.TestCase):
                 self.assertNotEqual(bytes(REF.font(32).getmask(char)), missing, f'Missing glyph: {char}')
         self.assertIn('SIL OPEN FONT LICENSE Version 1.1', (ROOT / 'fonts' / 'OFL.txt').read_text())
         self.assertIn('SIL OPEN FONT LICENSE Version 1.1', (ROOT / 'fonts' / 'Gaegu-OFL.txt').read_text())
-        self.assertIn('SIL OPEN FONT LICENSE Version 1.1', (ROOT / 'fonts' / 'NanumSquareRound-OFL.txt').read_text())
-        self.assertIn('2017 NAVER Corporation', (ROOT / 'fonts' / 'NanumSquareRound-OFL.txt').read_text())
+        self.assertIn('GowunDodum-Regular.ttf', REF.FONT)
+        self.assertIn('SIL OPEN FONT LICENSE Version 1.1', (ROOT / 'fonts' / 'GowunDodum-OFL.txt').read_text())
+        self.assertIn('The Gowun Dodum Project Authors', (ROOT / 'fonts' / 'GowunDodum-OFL.txt').read_text())
 
     def test_actual_two_line_caption_has_clear_leading(self):
         ink=[{'caption':1,'marker':1,'labels':[1]*8} for _ in range(REF.N)]

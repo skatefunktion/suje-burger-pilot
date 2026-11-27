@@ -26,7 +26,7 @@ N = FILM['contract']['frames']
 FPS = FILM['contract']['fps']
 SIDE = FILM['contract']['width']
 FLOW_SIDE = 384
-FONT = str(HERE / 'fonts' / 'NanumSquareRoundB.ttf')
+FONT = str(HERE / 'fonts' / 'GowunDodum-Regular.ttf')
 
 # Boxes refer to the supplied 1080-square film, not redesigned layouts.
 # English is removed before image editing. The same boxes carry Korean later.
@@ -203,12 +203,33 @@ def label_origin(label, face, box, group):
     """Align full visible glyph bounds so type-on never shifts a label."""
     x0,y0,x1,y1=box
     bx0,by0,bx1,by1=face.getbbox(label)
+    if group=='restaurant':
+        # Gowun's Latin bounds include unpainted side/bottom padding. Center
+        # the BURGERS ink itself in the source sign, not that padded box.
+        mask,(dx,dy)=face.getmask2(label)
+        left,top,right,bottom=mask.getbbox()
+        bx0,by0,bx1,by1=left+dx,top+dy,right+dx,bottom+dy
     y=y0+(y1-y0-(by1-by0))/2-by0
     if group=='burger':
         x=x1-bx1 if x0<540 else x0-bx0
     else:
         x=x0+(x1-x0-(bx1-bx0))/2-bx0
     return x,y
+
+
+def caption_layout(caption):
+    """Place visible glyphs, not font-specific ascender/descender padding.
+
+    Use complete lines for stable type-on positions. Gowun Dodum's larger
+    vertical metrics must not push the second line into the miniature set.
+    """
+    face = fit_font(caption['text'], 54 if caption['marker'] else 64, 964)
+    boxes = [face.getbbox(line) for line in caption['text'].split('\n')]
+    height = max(box[3] - box[1] for box in boxes)
+    top = 113 if caption['marker'] else 31
+    origins = [(60 - box[0], top + i * (height + 18) - box[1])
+               for i, box in enumerate(boxes)]
+    return face, origins
 
 
 def text_frame(bgr, frame, ink):
@@ -220,8 +241,9 @@ def text_frame(bgr, frame, ink):
     text = Image.new('L', image.size)
     draw = ImageDraw.Draw(text)
     shown = type_text(caption['text'], ink_progress(ink, frame, end, 'caption'))
-    draw.multiline_text((60, 115 if caption['marker'] else 31), shown,
-        font=fit_font(caption['text'], 54 if caption['marker'] else 64, 964), fill=255, spacing=18)
+    face, origins = caption_layout(caption)
+    for line, origin in zip(shown.split('\n'), origins):
+        draw.text(origin, line, font=face, fill=255)
     if caption.get('subtitle') and len(shown)==len(caption['text']):
         draw.text((62,112),caption['subtitle'],font=font(38),fill=255)
     # A source-locked night/day wipe can cross a text line: choose ink per pixel.
@@ -236,7 +258,8 @@ def text_frame(bgr, frame, ink):
         mf = font(47)
         dark = np.asarray(image)[20:40, 60:800].mean() < 120
         red = '#d99479' if dark else '#a9573e'
-        draw.text((60, 47), marker, font=mf, fill=red)
+        bx0, by0, _, _ = mf.getbbox(caption['marker'])
+        draw.text((60-bx0, 49-by0), marker, font=mf, fill=red)
         if marker:
             draw.line((54, 104, 60+mf.getlength(marker), 104), fill=red, width=2)
     # Localized-map labels are part of its fixed native composition. Never
@@ -394,7 +417,7 @@ def render(source, work, only_shot=None):
         'text': 'Korean translation of original English captions and labels',
         'numbers': 'Original values except owner-approved Hanwoo age (~30 months) and matching totals',
         'localization': FILM['localization'],
-        'font': 'NanumSquareRound Bold rounded Korean sans, warm brown ink; SIL Open Font License 1.1 (bundled). Proof A, pending owner choice against Gowun Dodum.',
+        'font': 'Gowun Dodum Regular, owner-selected proof B; warm brown ink; SIL Open Font License 1.1 (bundled). Visible-glyph caption alignment with 18px leading.',
         'motion': 'Fixed sets and intact actors throughout production shots; whole cow sculpts with eyelid blinks (no split neck or sideways collision), eight authored calf-rise poses, dairy stage entries, flower/bee/cucumber, harvest, connected grinder output/synchronized press, complete 3D pickers with continuous waists/sleeves and adult limb proportions, oven/tray, slicing and drive-in. Native 24fps harvest poses and object trajectories; calf-rise uses eight distinct sculpts. Only uniform physical growth/rise scaling. No optical flow, registration, anisotropic image stretch, image morphing or cross-fades. Source-timed reinterpretation, not an exact reconstruction of every original articulated pose or 3D rotation.',
         'full_decode': 'passed', 'video': str(output), 'bytes': output.stat().st_size,
         'streams': details['streams']}

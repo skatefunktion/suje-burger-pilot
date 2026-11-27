@@ -36,7 +36,14 @@ NODES = [
 
 @lru_cache(maxsize=12)
 def font(size):
-    return ImageFont.truetype(str(HERE/'fonts'/'NanumSquareRoundB.ttf'),size)
+    return ImageFont.truetype(str(HERE/'fonts'/'GowunDodum-Regular.ttf'),size)
+
+
+def draw_label(draw,xy,value,size,ink):
+    """Keep visible text above its leader, independent of font ascenders."""
+    face=font(size)
+    bx,by,_,_=draw.multiline_textbbox((0,0),value,font=face,spacing=4,align='center')
+    draw.multiline_text((xy[0]-bx,xy[1]-by),value,font=face,fill=ink,spacing=4,align='center')
 
 
 @lru_cache(maxsize=2)
@@ -107,7 +114,7 @@ def map_pose(step,night):
         draw.ellipse((x-10,y-10,x+10,y+10),fill='#566f62')
         draw.ellipse((x-8,y-9,x+8,y+7),fill=colour)
         draw.arc((x-5,y-7,x+6,y+3),180,285,fill='#fff1cd',width=2)
-        draw.multiline_text((lx,ly),label,font=font(29),fill=ink,spacing=4,align='center')
+        draw_label(draw,(lx,ly),label,29,ink)
     x,y=DESTINATION
     star=[]
     for i in range(10):
@@ -116,24 +123,24 @@ def map_pose(step,night):
         star.append((x+radius*math.cos(angle),y+radius*math.sin(angle)))
     draw.polygon(star,fill='#f7d06b')
     draw.line(((444,381),(x-22,y-3)),fill=leader,width=2)
-    draw.text((300,330),'서울',font=font(37),fill=ink)
-    draw.text((255,377),'제빵소 / 패티 / 점심',font=font(25),fill=ink)
+    draw_label(draw,(300,330),'서울',37,ink)
+    draw_label(draw,(255,377),'제빵소 / 패티 / 점심',25,ink)
     # The original map has a small N arrow; retain that unobtrusive convention.
     draw.line((90,905,90,867),fill=ink,width=2)
     draw.polygon(((90,861),(86,870),(94,870)),fill=ink)
-    draw.text((83,832),'N',font=font(20),fill=ink)
+    draw_label(draw,(83,832),'N',20,ink)
     # Natural Earth's eastern polygon spans 130.81–130.93E, 37.45–37.55N:
     # Ulleungdo, not an invented offshore decoration.
     island=project(130.872,37.501)
     draw.line(((1011,441),(island[0],island[1]+8)),fill=leader,width=1)
-    draw.text((962,443),'울릉도',font=font(25),fill=ink)
+    draw_label(draw,(962,443),'울릉도',25,ink)
     # Equirectangular projection: ~111.32 km/latitude degree, 150 px/degree.
     bar=100/111.32*150
     draw.line((75,987,75+bar,987),fill=ink,width=2)
     for xx in (75,75+bar):draw.line((xx,980,xx,994),fill=ink,width=2)
-    draw.text((94,998),'100 km',font=font(23),fill=ink)
-    draw.text((690,1017),'산지와 배송 경로 예시',font=font(25),fill=ink)
-    draw.text((690,1050),'도로 © OpenStreetMap 기여자',font=font(18),fill=ink)
+    draw_label(draw,(94,998),'100 km',23,ink)
+    draw_label(draw,(690,1017),'산지와 배송 경로 예시',25,ink)
+    draw_label(draw,(690,1050),'도로 © OpenStreetMap 기여자',18,ink)
     return np.asarray(image)
 
 
