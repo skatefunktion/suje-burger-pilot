@@ -36,7 +36,7 @@ NODES = [
 
 @lru_cache(maxsize=12)
 def font(size):
-    return ImageFont.truetype(str(HERE/'fonts'/'Jua-Regular.ttf'),size)
+    return ImageFont.truetype(str(HERE/'fonts'/'Gaegu-Bold.ttf'),round(size*1.2))
 
 
 @lru_cache(maxsize=2)

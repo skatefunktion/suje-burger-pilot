@@ -84,6 +84,58 @@ class ReferenceClayChecks(unittest.TestCase):
                 joints=self.processes.arm_joints(shoulder,target)
                 self.assertAlmostEqual(np.linalg.norm(joints[1]-joints[0]),65,places=6)
                 self.assertAlmostEqual(np.linalg.norm(joints[2]-joints[1]),68,places=6)
+                reach=joints[2]-joints[0]
+                elbow=joints[1]-joints[0]
+                self.assertLess(reach[0]*elbow[1]-reach[1]*elbow[0],0,
+                    'The left-facing picker elbow bends toward the face')
+
+    def test_pasture_uses_complete_necks_without_a_sideways_collision(self):
+        # Compare actual neck/shoulder texels, not just a nonblank-frame check.
+        for frame,name,width,center in ((190,'mother-cow-actor.webp',570,(357,690)),
+                (260,'grazing-cow-actor.webp',620,(385,710)),
+                (280,'grazing-cow-actor.webp',620,(385,710))):
+            sprite=self.processes.part(name,0,1,1,width)
+            rgb,alpha,_=sprite;h,w=alpha.shape
+            x,y=round(center[0]-w/2),round(center[1]-h/2)
+            actual=self.processes.pasture(frame)[y:y+h,x:x+w]
+            self.assertTrue(np.array_equal(actual[alpha==255],rgb[alpha==255]),
+                f'The intact cow silhouette or neck texture changed at {frame}')
+        # At the old newborn position there is now only the fixed pasture.
+        blank=self.processes.plate('pasture-empty.webp')
+        for frame in (256,264,272,278):
+            self.assertTrue(np.array_equal(self.processes.pasture(frame)[700:890,730:960],
+                blank[700:890,730:960]),'A newborn overlaps the grazing cow')
+
+    def test_background_cattle_hooves_are_on_grass_not_the_tree(self):
+        with patch.object(self.rigid,'place',wraps=self.rigid.place) as place:
+            self.processes.pasture(300)
+        small=[call.args for call in place.call_args_list if call.args[1][1].shape[1]==150]
+        self.assertEqual(len(small),2)
+        for _,sprite,(x,y) in small:
+            floor=y+sprite[1].shape[0]/2
+            self.assertGreaterEqual(floor,830)
+            if x>800:self.assertGreaterEqual(floor,900)
+
+    def test_minced_beef_is_a_connected_component_from_the_machine_lip(self):
+        import cv2
+        for frame in (640,654,659,680,703):
+            image=self.processes.grinder(frame).astype(float)
+            meat=np.uint8((image[:,:,2]>image[:,:,0]*1.6)&
+                (image[:,:,2]>image[:,:,1]*1.4)&(image[:,:,2]>120))
+            _,labels=cv2.connectedComponents(meat)
+            lip=set(labels[620:634,480:494].ravel())-{0}
+            hanging=set(labels[750:790,500:605].ravel())-{0}
+            self.assertTrue(lip&hanging,f'Meat is detached from the outlet at {frame}')
+
+    def test_ingredient_glyphs_follow_two_columns_and_their_layer_centers(self):
+        centers=(314,454,544,632,728,809,894,986)
+        for (label,box,size),center in zip(REF.LABELS['burger'],centers):
+            face=REF.fit_font(label,size,box[2]-box[0])
+            x,y=REF.label_origin(label,face,box,'burger')
+            bx0,by0,bx1,by1=face.getbbox(label)
+            if box[0]<540:self.assertEqual(x+bx1,350)
+            else:self.assertEqual(x+bx0,865)
+            self.assertLessEqual(abs(y+(by0+by1)/2-center),1)
 
     def test_clock_hands_share_the_physical_dial_center_and_stay_inside_it(self):
         cx,cy=301,338
@@ -329,8 +381,8 @@ class ReferenceClayChecks(unittest.TestCase):
         for cap in REF.FILM['captions']:
             strings.extend([cap['text'], cap['marker']])
             marker = bool(cap['marker'])
-            f = REF.fit_font(cap['text'], 49 if marker else 54, 964)
-            box = draw.multiline_textbbox((60, 119 if marker else 31), cap['text'], font=f, spacing=3)
+            f = REF.fit_font(cap['text'], 58 if marker else 64, 964)
+            box = draw.multiline_textbbox((60, 119 if marker else 31), cap['text'], font=f, spacing=0)
             self.assertGreaterEqual(box[0], 40)
             self.assertLessEqual(box[2], 1040)
             self.assertLess(box[3], 238 if marker else 192)
@@ -344,6 +396,7 @@ class ReferenceClayChecks(unittest.TestCase):
             if not char.isspace():
                 self.assertNotEqual(bytes(REF.font(32).getmask(char)), missing, f'Missing glyph: {char}')
         self.assertIn('SIL OPEN FONT LICENSE Version 1.1', (ROOT / 'fonts' / 'OFL.txt').read_text())
+        self.assertIn('SIL OPEN FONT LICENSE Version 1.1', (ROOT / 'fonts' / 'Gaegu-OFL.txt').read_text())
 
     def test_type_on_does_not_rewind_when_reference_ink_varies(self):
         rows = [{'caption': n, 'marker': n} for n in [0, 20, 18, 40, 39, 60]]

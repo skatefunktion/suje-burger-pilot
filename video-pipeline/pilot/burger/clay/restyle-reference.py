@@ -26,21 +26,21 @@ N = FILM['contract']['frames']
 FPS = FILM['contract']['fps']
 SIDE = FILM['contract']['width']
 FLOW_SIDE = 384
-FONT = str(HERE / 'fonts' / 'Jua-Regular.ttf')
+FONT = str(HERE / 'fonts' / 'Gaegu-Bold.ttf')
 
 # Boxes refer to the supplied 1080-square film, not redesigned layouts.
 # English is removed before image editing. The same boxes carry Korean later.
 # Each entry is (Korean text, box, font size, optional original-ink colour).
 LABELS = {
     'burger': [
-        ('번', (865, 289, 1068, 338), 34),
-        ('소고기 + 치즈', (45, 430, 354, 478), 34),
-        ('양파', (865, 520, 1074, 567), 34),
-        ('소고기 + 치즈', (45, 608, 354, 656), 34),
-        ('양상추', (865, 700, 1075, 755), 34),
-        ('토마토', (200, 786, 354, 832), 34),
-        ('소스', (865, 865, 1076, 922), 32),
-        ('번', (200, 961, 354, 1009), 34),
+        ('번', (865, 289, 1040, 338), 42),
+        ('소고기 + 치즈', (45, 430, 350, 478), 42),
+        ('양파', (865, 520, 1040, 567), 42),
+        ('소고기 + 치즈', (45, 608, 350, 656), 42),
+        ('양상추', (865, 700, 1040, 755), 42),
+        ('토마토', (45, 786, 350, 832), 42),
+        ('소스', (865, 865, 1040, 922), 42),
+        ('번', (45, 961, 350, 1009), 42),
     ],
     'cheese': [
         ('1', (48, 266, 88, 305), 28),
@@ -199,6 +199,18 @@ def type_text(text, progress):
     return text[:int(len(text) * min(1, progress * 1.03))]
 
 
+def label_origin(label, face, box, group):
+    """Align full visible glyph bounds so type-on never shifts a label."""
+    x0,y0,x1,y1=box
+    bx0,by0,bx1,by1=face.getbbox(label)
+    y=y0+(y1-y0-(by1-by0))/2-by0
+    if group=='burger':
+        x=x1-bx1 if x0<540 else x0-bx0
+    else:
+        x=x0+(x1-x0-(bx1-bx0))/2-bx0
+    return x,y
+
+
 def text_frame(bgr, frame, ink):
     shot = shot_for(frame)
     caption = caption_for(frame)
@@ -209,21 +221,21 @@ def text_frame(bgr, frame, ink):
     draw = ImageDraw.Draw(text)
     shown = type_text(caption['text'], ink_progress(ink, frame, end, 'caption'))
     draw.multiline_text((60, 119 if caption['marker'] else 31), shown,
-        font=fit_font(caption['text'], 49 if caption['marker'] else 54, 964), fill=255, spacing=3)
+        font=fit_font(caption['text'], 58 if caption['marker'] else 64, 964), fill=255, spacing=0)
     if caption.get('subtitle') and len(shown)==len(caption['text']):
-        draw.text((62,112),caption['subtitle'],font=font(32),fill=255)
+        draw.text((62,112),caption['subtitle'],font=font(38),fill=255)
     # A source-locked night/day wipe can cross a text line: choose ink per pixel.
     colours = np.asarray(image).copy()
     light = colours.mean(axis=2) > 125
-    colours[light] = (31, 29, 33)
+    colours[light] = (76, 56, 41)
     colours[~light] = (242, 236, 218)
     image.paste(Image.fromarray(colours), (0, 0), text)
     draw = ImageDraw.Draw(image)
     if caption['marker']:
         marker = type_text(caption['marker'], ink_progress(ink, frame, end, 'marker'))
-        mf = font(39)
+        mf = font(47)
         dark = np.asarray(image)[20:40, 60:800].mean() < 120
-        red = '#d67c66' if dark else '#b84c3f'
+        red = '#d99479' if dark else '#a9573e'
         draw.text((60, 47), marker, font=mf, fill=red)
         if marker:
             draw.line((54, 104, 60+mf.getlength(marker), 104), fill=red, width=2)
@@ -238,24 +250,18 @@ def text_frame(bgr, frame, ink):
             ratio = current / maximum if maximum else 0
             if ratio < .12:
                 continue
-            lf = fit_font(label, size, x1-x0)
+            group_name=shot.get('labels')
+            lf = fit_font(label, size if group_name in ('burger','restaurant') else round(size*1.2), x1-x0)
+            position=label_origin(label,lf,(x0,y0,x1,y1),group_name)
             label = type_text(label, min(1, ratio*1.4))
             patch = np.asarray(image)[y0:y1, x0:x1]
-            colour = '#b6c1d6' if patch.mean() < 110 else '#2b292d'
+            colour = '#d4c5ad' if patch.mean() < 110 else '#594333'
             if shot.get('labels') == 'map':
                 colour = '#adbad3' if patch.mean() < 110 else '#53728f'
             if shot.get('labels') == 'restaurant':
                 colour = '#fff4d9'
                 draw.rounded_rectangle((162,329,654,429),radius=8,
                     outline=colour,width=3)
-            width = lf.getlength(label)
-            if shot.get('labels') == 'restaurant':
-                # Center the visible glyphs, not the font's ascender box.
-                bx0,by0,bx1,by1=draw.textbbox((0,0),label,font=lf)
-                position=(x0+(x1-x0-(bx1-bx0))/2-bx0,
-                    y0+(y1-y0-(by1-by0))/2-by0)
-            else:
-                position=(x0+(x1-x0-width)/2,y0-2)
             draw.text(position, label, font=lf, fill=colour)
     return cv2.cvtColor(np.asarray(image), cv2.COLOR_RGB2BGR)
 
@@ -388,8 +394,8 @@ def render(source, work, only_shot=None):
         'text': 'Korean translation of original English captions and labels',
         'numbers': 'Original values except owner-approved Hanwoo age (~30 months) and matching totals',
         'localization': FILM['localization'],
-        'font': 'Jua Regular, SIL Open Font License 1.1 (bundled)',
-        'motion': 'Fixed sets and intact rigid actors throughout production shots; neck joints and eight authored calf-rise poses, dairy stage entries, flower/bee/cucumber, harvest, grinder/press, pickers, oven/tray, slicing and drive-in. 24fps object trajectories; calf-rise uses eight distinct sculpts. Only uniform physical growth/rise scaling. No optical flow, registration, anisotropic stretch, morphing or cross-fades. Source-timed reinterpretation, not an exact reconstruction of every original articulated pose or 3D rotation.',
+        'font': 'Gaegu Bold handwritten Korean, warm brown ink; SIL Open Font License 1.1 (bundled)',
+        'motion': 'Fixed sets and intact rigid actors throughout production shots; whole cow sculpts with eyelid blinks (no split neck or sideways collision), eight authored calf-rise poses, dairy stage entries, flower/bee/cucumber, harvest, connected grinder output/press, pickers with backward/downward elbows, oven/tray, slicing and drive-in. 24fps object trajectories; calf-rise uses eight distinct sculpts. Only uniform physical growth/rise scaling. No optical flow, registration, anisotropic stretch, morphing or cross-fades. Source-timed reinterpretation, not an exact reconstruction of every original articulated pose or 3D rotation.',
         'full_decode': 'passed', 'video': str(output), 'bytes': output.stat().st_size,
         'streams': details['streams']}
     (work / 'export-review.json').write_text(json.dumps(review, indent=2))

@@ -29,7 +29,7 @@ and griddle positions come from complete-object source measurements, not a pixel
 displacement field. Newly sculpted loose ingredients and people have real alpha;
 only uniform authoring-time sizing and rigid translation are used. There is no
 per-frame shape stretching. `process-scenes.py` extends the fixed-set approach
-to the remaining production shots: articulated cattle necks and eight distinct
+to the remaining production shots: complete cattle sculpts and eight distinct
 calf-rise sculpts, dairy stage entries, flower/bee/cucumber growth, grain delivery,
 grinder and press, articulated pickers bending/reaching/lifting vegetables into
 baskets with planted feet and fixed-length arms, oven door/tray/rising buns,
@@ -44,9 +44,13 @@ records each frame's authored stage and motion mode.
 Visible headings, diagram labels, map labels and worker labels are typeset in
 Korean. The owner requested two source-style exceptions: the shop's **BURGERS**
 sign and the small **N** compass arrow, which also appears in the original map.
-The rounded **Jua Regular** font is bundled in
-`fonts/` under the [SIL Open Font License 1.1](fonts/OFL.txt), permitting use in
-published videos. Source: [Google Fonts](https://fonts.google.com/specimen/Jua).
+The handwritten **Gaegu Bold** font uses warm brown ink rather than the previous
+heavy black Jua lettering, to better match the handmade clay. It is bundled in
+`fonts/` under the [SIL Open Font License 1.1](fonts/Gaegu-OFL.txt), permitting use
+in published videos. Source: [Google Fonts](https://fonts.google.com/specimen/Gaegu).
+Ingredient names follow two fixed columns: left labels end at x=350, right labels
+begin at x=865. Their visible glyphs are centered vertically on the eight layer
+centers; full-label bounds keep the type-on from sliding horizontally.
 The native type-on follows measured source-ink timing; the red underlined markers
 retain their original location.
 
@@ -121,11 +125,21 @@ anchors remain in the provenance archive, but these production shots use the new
 Korean sets and actors. Motion-asset hashes are checked **before encoding**.
 The hand-harvest field uses two spaced workers rather than the original seven.
 They reach for a lettuce/tomato, lift it and deposit it into a basket using rigid
-torso/arm joints, rather than rocking the whole person. The bakery clock's two
+torso/arm joints, rather than rocking the whole person. Elbows use the backward/
+downward branch for left-facing workers, not the reversed bend toward the face.
+The bakery clock's two
 hands share its actual center at (301, 338) on the 1080-square plate and keep the
 12:1 minute/hour rate. Shop lettering is centered by its visible glyph bounds.
 The closing cast has individual uniform height sizing with aligned feet; the
 rancher wears a brown vest and the dairy worker an ivory apron/light-blue shirt.
+
+Cattle retain their complete authored silhouette; only eyelid blinks are added.
+The rectangular neck cut and head rotation are removed, as is the grazing cow's
+sideways slide into a stationary calf. The newborn belongs only to the birth/
+standing scenes. Distant grazing cattle are anchored by hoof level on the grass,
+not by their sprite center over the tree. The grinder's meat strands connect
+continuously through a shaded clay outlet bend to the machine's actual lip,
+rather than bobbing as a detached clump in empty space.
 
 To rebuild only the fixed terrain (Blender 3.x):
 

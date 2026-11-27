@@ -157,11 +157,34 @@ def harvest(frame):
     return canvas
 
 
+GRINDER_OUTLET=(486,626)
+
+
+def grinder_flow(canvas):
+    """Attach authored meat strands to the actual outlet, not empty air."""
+    strands=part('grinder-actors.webp',2,width=130)
+    rgb,alpha,_=strands;h,w=alpha.shape
+    origin=np.array((485,647))
+    # Each clay rope starts inside the metal lip and joins an opaque texel of
+    # the fan. The source asset supplies its surface and constant silhouette.
+    for i,x in enumerate(np.linspace(w*.23,w*.57,7)):
+        column=round(x);ys=np.flatnonzero(alpha[:,column]>180)
+        if not len(ys):continue
+        end=origin+np.array((column,int(ys[0])+8))
+        start=np.array(GRINDER_OUTLET)+np.array((-6,(i-3)*3))
+        control=np.array((end[0],GRINDER_OUTLET[1]-2))
+        t=np.linspace(0,1,30)[:,None]
+        curve=np.int32((1-t)**2*start+2*(1-t)*t*control+t*t*end)
+        cv2.polylines(canvas,[curve],False,(61,64,167),8,cv2.LINE_AA)
+        cv2.polylines(canvas,[curve],False,(86,90,211),4,cv2.LINE_AA)
+        for px,py in curve[4+i%3::7]:
+            cv2.circle(canvas,(int(px),int(py)),1,(139,144,233),-1,cv2.LINE_AA)
+    R.place(canvas,strands,origin+np.array((w/2,h/2)))
+
+
 def grinder(frame):
     canvas=plate('grinder-empty.webp').copy()
-    if frame<655:
-        strands=part('grinder-actors.webp',2,width=130)
-        R.place(canvas,strands,(535,700+4*np.sin(frame*.8)))
+    grinder_flow(canvas)
     ball=part('grinder-actors.webp',0,width=45)
     flat=part('grinder-actors.webp',1,width=90)
     for i,start in enumerate((652,658,664,670)):
@@ -234,7 +257,9 @@ def arm_joints(shoulder,hand,upper=65,lower=68):
     hand=np.array(shoulder)+direction*distance
     along=(upper*upper-lower*lower+distance*distance)/(2*distance)
     across=np.sqrt(max(0,upper*upper-along*along))
-    elbow=np.array(shoulder)+along*direction+across*np.array((-direction[1],direction[0]))
+    # Left-facing workers bend the elbow back/down. The other IK branch folds
+    # it toward the face and makes the forearm look attached backwards.
+    elbow=np.array(shoulder)+along*direction-across*np.array((-direction[1],direction[0]))
     return np.array(shoulder),elbow,hand
 
 
@@ -390,44 +415,48 @@ def pivot_pose(sprite,pivot,angle):
     return posed[:,:,:3],posed[:,:,3],(0,0)
 
 
-def cow(canvas,sprite,position,angle,grazing=False):
+def cow(canvas,sprite,position,frame):
+    # This sculpt has no separately authored neck joint. Never cut a rectangle
+    # out of it and rotate the head: that exposes a hole through the shoulder.
+    R.place(canvas,sprite,position)
     rgb,alpha,_=sprite;h,w=alpha.shape
-    if grazing:
-        x0,y0,x1,y1=round(w*.76),round(h*.30),w,h
-        pivot=(round(w*.79),round(h*.40))
-        cut=(round(w*.79),round(h*.35),w,h)
-    else:
-        x0,y0,x1,y1=round(w*.74),0,w,round(h*.46)
-        pivot=(round(w*.74),round(h*.06))
-        cut=(round(w*.78),0,w,round(h*.39))
-    body=alpha.copy();cx0,cy0,cx1,cy1=cut;body[cy0:cy1,cx0:cx1]=0
-    R.place(canvas,(rgb,body,(0,0)),position)
-    head=rgb[y0:y1,x0:x1],alpha[y0:y1,x0:x1],(0,0)
-    global_pivot=(position[0]-w/2+pivot[0],position[1]-h/2+pivot[1])
-    R.place(canvas,pivot_pose(head,(pivot[0]-x0,pivot[1]-y0),angle),global_pivot)
+    blink=max(0,1-abs(frame%71-59)/3)
+    if not blink:return
+    yy,xx=np.indices(alpha.shape)
+    pupils=np.uint8((rgb.max(axis=2)<75)&(alpha>220)&(xx>w*.7)&(yy<h*.87))
+    count,labels,stats,centers=cv2.connectedComponentsWithStats(pupils)
+    if count<2:return
+    label=1+np.argmax(stats[1:,cv2.CC_STAT_AREA])
+    ex,ey=centers[label];ew,eh=stats[label,2:4]
+    if not .35<ew/max(eh,1)<2.5:return
+    colour=tuple(int(v) for v in rgb[max(0,round(ey)-eh-2),round(ex)])
+    center=(round(position[0]-w/2+ex),round(position[1]-h/2+ey))
+    cv2.ellipse(canvas,center,(max(1,round(ew/2)),max(1,round(eh/2*blink))),
+        0,0,360,colour,-1,cv2.LINE_AA)
+
+
+def grounded_cow(canvas,sprite,x,ground_y,frame):
+    cow(canvas,sprite,(x,ground_y-sprite[1].shape[0]/2),frame)
 
 
 def pasture(frame):
     canvas=plate('pasture-empty.webp').copy()
     if frame<256:
         mother=part('mother-cow-actor.webp',0,1,1,570)
-        angle=-28*ease((frame-198)/19)*(1-ease((frame-231)/20))
-        cow(canvas,mother,(357,690),angle)
+        cow(canvas,mother,(357,690),frame)
         pose=min(7,max(0,(frame-160)//3))
         calf=part('calf-rise-poses.webp',pose,4,2,210)
         R.place(canvas,calf,(733,871-calf[1].shape[0]/2))
     else:
         adult=part('grazing-cow-actor.webp',0,1,1,620)
-        # The original grazing view shifts to the grown animal in the center.
-        xx=385+155*ease((frame-263)/24)
-        cow(canvas,adult,(xx,710),3*np.sin((frame-256)*.13),True)
-        if frame<279:
-            calf=part('calf-actor.webp',0,1,1,255)
-            R.place(canvas,calf,(835,866-calf[1].shape[0]/2))
+        # This is the grown-animal shot, not a mother nudging a newborn.
+        # Keep its complete pose fixed: the old sideways slide hit the calf.
         if frame>=298:
             small=part('grazing-cow-actor.webp',0,1,1,150)
-            cow(canvas,small,(122,706),2*np.sin(frame*.15),True)
-            cow(canvas,small,(890,691),-2*np.sin(frame*.13),True)
+            grounded_cow(canvas,small,112,836,frame+13)
+            grounded_cow(canvas,small,900,916,frame+31)
+        cow(canvas,adult,(385,710),frame)
+        if frame>=298:
             # Deterministic weather motion; the terrain and cow bodies stay fixed.
             for i in range(48):
                 x=(i*139+frame*2)%1080;y=310+(i*67+frame*9)%610
