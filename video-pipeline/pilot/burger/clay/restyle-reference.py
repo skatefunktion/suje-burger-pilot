@@ -58,7 +58,7 @@ LABELS = {
     'flour': [('밀가루', (958, 967, 1057, 1009), 24)],
     'bakery': [('밀가루', (289, 850, 405, 902), 28)],
     'map': [],  # Native Korean geography/labels belong to korea-map.py.
-    'restaurant': [('BURGERS', (170, 337, 646, 425), 64)],
+    'restaurant': [('handmade burgers', (170, 337, 646, 425), 64)],
     'people': [
         ('목장주', (16, 809, 166, 856), 29),
         ('농부', (176, 809, 325, 856), 29),
@@ -205,7 +205,7 @@ def label_origin(label, face, box, group):
     bx0,by0,bx1,by1=face.getbbox(label)
     if group=='restaurant':
         # Gowun's Latin bounds include unpainted side/bottom padding. Center
-        # the BURGERS ink itself in the source sign, not that padded box.
+        # the sign's ink itself in the source frame, not that padded box.
         mask,(dx,dy)=face.getmask2(label)
         left,top,right,bottom=mask.getbbox()
         bx0,by0,bx1,by1=left+dx,top+dy,right+dx,bottom+dy
@@ -394,6 +394,8 @@ def render(source, work, only_shot=None):
             painted = korea.render(n) if shot.get('labels') == 'map' else posed if posed is not None else styles[key].copy()
             if shot.get('labels') == 'map':mode='korea-road-map'
             exposures.append({'frame': n, 'exposure': key, 'motion': mode})
+            if n == N-1:
+                cv2.imwrite(str(work/'lesson-ending-clean.png'), painted)
             painted = text_frame(painted, n, ink)
             process.stdin.write(painted.tobytes())
             if n == start+32:

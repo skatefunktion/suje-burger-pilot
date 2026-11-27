@@ -1,9 +1,11 @@
 # Clay burger review exports (unmerged)
 
-## Current request: 64-second square reference remake
+## Current request: square reference remake with food-value ending
 
 `restyle-reference.py` follows the confirmed [Kevin Ngo film](https://x.com/kevin_t_ngo/status/2111569193347018977)
 itself, not the earlier Korean pilot: **1080×1080, 24fps, 1,536 frames, 64 seconds**.
+An owner-approved eight-second lesson coda makes the current review deliverable
+**72 seconds / 1,728 frames**, without changing the first 64 seconds' picture timing.
 `reference-film.json` records 24 source-timed sections, 88 clay anchors, Korean
 captions and the approved localization. The original video is supplied locally;
 it is not committed. This remains a draft visual-review export, not a queue
@@ -70,7 +72,7 @@ The finished stack uses opaque meat mattes and visible cream separator sheets,
 as in the source, rather than overlapping translucent copies of the same image.
 
 Visible headings, diagram labels, map labels and worker labels are typeset in
-Korean. The owner requested two source-style exceptions: the shop's **BURGERS**
+Korean. The owner requested two English exceptions: the shop's **handmade burgers**
 sign and the small **N** compass arrow, which also appears in the original map.
 The owner selected **Gowun Dodum Regular**, the lighter sans from proof B,
 replacing provisional NanumSquareRound Bold (A) and the rejected Gaegu
@@ -89,8 +91,9 @@ Caption origins use visible glyph bounds rather than font-specific vertical
 padding, with 18px clear leading between full Korean lines. Markers remain
 above their underline, and the heading remains above the miniature artwork.
 
-The opening reads **햄버거 하나가 만들어지는 과정**, with a short subtitle
-establishing that the story rewinds from lunchtime. The source's opening marker
+The opening reads **햄버거 하나가 만들어지는 과정**, without the removed
+rewind/lunchtime subtitle. The ingredient heading is **재료 하나씩 살펴보기**;
+the noon caption is **주문 들어온 버거가 만들어져요**. The source's opening marker
 is **~2 YEARS TO LUNCH**. Its approved Hanwoo equivalent is now **약 2년 6개월 전**;
 other countdowns use time-only Korean labels such as **6시간 전**, not the awkward
 literal **점심까지**. The grazing duration is explicitly **약 30개월 동안**, distinct
@@ -151,7 +154,7 @@ No claim is made that this particular burger or supplier uses domestic wheat.
 ### Approved Korean shop, vehicles and people
 
 The lunch scene now uses a **Seoul neighborhood burger storefront**, native
-**BURGERS** lettering like the original and compact Korean-style hatchbacks, without palm trees or
+**handmade burgers** lettering and compact Korean-style hatchbacks, without palm trees or
 American diner decor. The grain vehicle is a Korean-style cab-over **1-ton truck**.
 Korean farmers, drivers and shopkeepers use natural dark hair and practical local
 workwear, with no exaggerated facial features. All moving bodies/vehicles have
@@ -175,7 +178,29 @@ sideways slide into a stationary calf. The newborn belongs only to the birth/
 standing scenes. Distant grazing cattle are anchored by hoof level on the grass,
 not by their sprite center over the tree. The grinder's meat strands connect
 continuously through a shaded clay outlet bend to the machine's actual lip,
-rather than bobbing as a detached clump in empty space.
+rather than bobbing as a detached clump in empty space. The bend samples the
+red meat sculpt's actual colors instead of using a differently colored connector.
+The sowing tractor's nose points right, matching the measured source trajectory
+(proxy x=168 at frame 328 to x=280 at 370). The grain truck faces left on arrival
+and waits under the pipe, rather than reversing away in the last second.
+
+### Approved eight-second lesson coda
+
+`lesson-ending.py` holds the final intact burger, dissolves only the caption into
+the selected Gowun Dodum text, then fades the picture to warm paper in the last
+second. The lesson reads:
+
+> 한 끼에 담긴 시간과 정성<br>
+> 음식은 소중한 자원이에요.<br>
+> 먹을 만큼만 덜어 먹어요.
+
+The 64s base export still copies and verifies the complete original AAC payload.
+For the **72s review deliverable**, the owner approved changing the final source
+music second: a crossfade at 63–64s joins an eight-second fading reprise. The
+lossless music mix is checked against the source through 63s before encoding
+to AAC. This deliverable does **not** claim byte-identical source audio.
+Its first 1,536 decoded frames and timestamps are verified against the base
+export, preserving the first 64s picture timing and all revised scene information.
 
 To rebuild only the fixed terrain (Blender 3.x):
 
@@ -191,6 +216,7 @@ From the repository root, with ffmpeg and Python 3 installed:
 python3 -m pip install numpy==1.26.4 Pillow==11.3.0 opencv-python-headless==4.10.0.84
 python3 video-pipeline/pilot/burger/clay/restyle-reference.py prepare /path/to/confirmed-reference.mp4 /path/to/work
 python3 video-pipeline/pilot/burger/clay/restyle-reference.py render /path/to/confirmed-reference.mp4 /path/to/work
+python3 video-pipeline/pilot/burger/clay/lesson-ending.py /path/to/confirmed-reference.mp4 /path/to/work
 ```
 
 The source must match the committed anchors' source hash, and the prepared source
@@ -201,6 +227,9 @@ The full export copies the source AAC payload, verifies square dimensions,
 frame rate and frame count, compares audio hashes, and fully decodes both streams.
 Output: `kevin-burger-clay-ko-64s.mp4`, `export-review.json`, and one review frame
 per section. Generated outputs and the original MP4 remain outside Git.
+The ending command additionally produces `kevin-burger-clay-ko-72s.mp4`,
+`lesson-export-review.json` and a lesson review frame; it checks packet-preserved
+picture/timestamps, pre-crossfade lossless audio, duration/frame count, and full decode.
 
 Run authoring checks with `python3 -m unittest discover -s video-pipeline/test -p 'test_reference_clay.py'`.
 

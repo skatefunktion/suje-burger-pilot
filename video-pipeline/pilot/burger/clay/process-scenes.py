@@ -142,7 +142,11 @@ def garden(frame):
 def harvest(frame):
     canvas=plate('harvest-empty.webp').copy()
     truck=part('truck-korea-actor.webp',0,1,1,360)
-    x,y=path(frame,[(576,1210,851),(595,790,851),(613,790,851),(639,1230,851)])
+    # The source grain truck arrives facing left and waits under the pipe;
+    # it neither backs in nose-first to the right nor reverses away afterward.
+    rgb,alpha,origin=truck
+    truck=rgb[:,::-1],alpha[:,::-1],origin
+    x,y=path(frame,[(576,1210,851),(595,790,851),(639,790,851)])
     if 592<=frame<617:
         # Individual clay grain beads fall from the real pipe into the truck.
         for i in range(22):
@@ -176,10 +180,17 @@ def grinder_flow(canvas):
         control=np.array((end[0],GRINDER_OUTLET[1]-2))
         t=np.linspace(0,1,30)[:,None]
         curve=np.int32((1-t)**2*start+2*(1-t)*t*control+t*t*end)
-        cv2.polylines(canvas,[curve],False,(61,64,167),8,cv2.LINE_AA)
-        cv2.polylines(canvas,[curve],False,(86,90,211),4,cv2.LINE_AA)
-        for px,py in curve[4+i%3::7]:
-            cv2.circle(canvas,(int(px),int(py)),1,(139,144,233),-1,cv2.LINE_AA)
+        # Sample the same sculpt at the join. The old hard-coded salmon
+        # connector looked like a second kind of meat beside the red fan.
+        patch=rgb[max(0,int(ys[0])):int(ys[0])+16,max(0,column-3):column+4]
+        matte=alpha[max(0,int(ys[0])):int(ys[0])+16,max(0,column-3):column+4]
+        colour=np.median(patch[matte>180],axis=0)
+        shade=tuple(int(v) for v in colour*.76)
+        body=tuple(int(v) for v in colour)
+        light=tuple(int(v) for v in np.minimum(255,colour*1.06))
+        cv2.polylines(canvas,[curve],False,shade,8,cv2.LINE_AA)
+        cv2.polylines(canvas,[curve],False,body,6,cv2.LINE_AA)
+        cv2.polylines(canvas,[curve],False,light,2,cv2.LINE_AA)
     R.place(canvas,strands,origin+np.array((w/2,h/2)))
 
 

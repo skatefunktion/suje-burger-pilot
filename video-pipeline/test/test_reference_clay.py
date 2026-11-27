@@ -3,6 +3,7 @@ import hashlib
 import importlib.util
 import json
 from pathlib import Path
+import subprocess
 import tempfile
 import unittest
 from unittest.mock import patch
@@ -231,7 +232,7 @@ class ReferenceClayChecks(unittest.TestCase):
 
     def test_localized_wording_uses_time_only_countdowns_and_plain_sauce(self):
         self.assertEqual(REF.caption_for(0)['text'],'햄버거 하나가 만들어지는 과정')
-        self.assertIn('점심',REF.caption_for(0)['subtitle'])
+        self.assertNotIn('subtitle',REF.caption_for(0))
         self.assertEqual(REF.caption_for(236)['marker'],'약 2년 6개월 전')
         for caption in REF.FILM['captions']:
             self.assertNotIn('점심',caption['marker'])
@@ -447,7 +448,7 @@ class ReferenceClayChecks(unittest.TestCase):
     def test_rounded_korean_type_has_all_glyphs_and_fits_safe_areas(self):
         draw = ImageDraw.Draw(Image.new('RGB', (1080, 1080)))
         missing = bytes(REF.font(32).getmask(chr(0x10FFFF)))
-        strings = []
+        strings = [REF.FILM['ending']['text']]
         for cap in REF.FILM['captions']:
             strings.extend([cap['text'], cap['marker']])
             marker = bool(cap['marker'])
@@ -489,6 +490,41 @@ class ReferenceClayChecks(unittest.TestCase):
         self.assertEqual(shown[-1], 1)
         self.assertEqual(REF.type_text('한국어 자막', 1), '한국어 자막')
         self.assertEqual(REF.type_text('1일', .97), '1일')
+
+    def test_coda_holds_the_intact_picture_and_then_fades_to_paper(self):
+        spec=importlib.util.spec_from_file_location('ending',ROOT/'lesson-ending.py')
+        ending=importlib.util.module_from_spec(spec);spec.loader.exec_module(ending)
+        clean=np.full((1080,1080,3),235,np.uint8)
+        ink=[{'caption':1,'marker':1,'labels':[1]*8} for _ in range(REF.N)]
+        previous=REF.text_frame(clean,REF.N-1,ink)
+        clean=ending.coda_plate(clean,ink)
+        self.assertTrue(np.array_equal(ending.frame(clean,0),previous),'Jump at 64s')
+        held=ending.frame(clean,48)
+        self.assertTrue(np.array_equal(held[238:],clean[238:]),'Coda warps the burger')
+        bounds=ending.caption_mask(ending.TEXT).getbbox()
+        self.assertGreaterEqual(bounds[0],40)
+        self.assertLessEqual(bounds[2],1040)
+        self.assertLess(bounds[3],238,'Lesson overlaps the picture')
+        final=ending.frame(clean,ending.SECONDS*REF.FPS-1)
+        self.assertTrue(np.all(final==np.array((222,241,248),np.uint8)))
+
+    def test_coda_music_preserves_63s_before_crossfade_and_fades_to_silence(self):
+        spec=importlib.util.spec_from_file_location('ending',ROOT/'lesson-ending.py')
+        ending=importlib.util.module_from_spec(spec);spec.loader.exec_module(ending)
+        with tempfile.TemporaryDirectory() as directory:
+            work=Path(directory)
+            source=work/'source.wav'
+            subprocess.run(['ffmpeg','-v','error','-y','-f','lavfi','-i',
+                'sine=frequency=440:sample_rate=48000:duration=64',
+                '-ac','2',str(source)],check=True)
+            music,prefix=ending.build_music(source,work)
+            self.assertEqual(prefix,hashlib.sha256(ending.pcm_prefix(source)).hexdigest())
+            pcm=np.frombuffer(subprocess.check_output(['ffmpeg','-v','error','-i',
+                str(music),'-f','s16le','-']),np.int16).reshape(-1,2).astype(float)
+            self.assertEqual(len(pcm),72*48000)
+            rms=lambda data:float(np.sqrt(np.mean(data*data)))
+            self.assertLess(rms(pcm[-4800:]),rms(pcm[64*48000:65*48000])*.02)
+            self.assertGreater(rms(pcm[63*48000:64*48000]),100,'Gap at the join')
 
 
 if __name__ == '__main__':

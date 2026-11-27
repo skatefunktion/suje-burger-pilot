@@ -139,8 +139,8 @@ def griddle(frame):
 @lru_cache(maxsize=1)
 def tractor_actor():
     rgba=cv2.imread(str(HERE/'reference-assets'/'tractor-korea-actor.webp'),-1)
-    # The authored vehicle faces right; sowing in the source travels left.
-    rgba=cv2.flip(rgba,1)
+    # Both the authored nose and the measured source trajectory face right.
+    # Mirroring this actor made it reverse through the field.
     x,y,w,h=cv2.boundingRect(np.uint8(rgba[:,:,3]>=32))
     cell=rgba[y:y+h,x:x+w]
     cell=cv2.resize(cell,(505,round(h*505/w)),interpolation=cv2.INTER_CUBIC)
