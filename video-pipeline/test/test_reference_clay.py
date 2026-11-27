@@ -5,6 +5,7 @@ import json
 from pathlib import Path
 import tempfile
 import unittest
+from unittest.mock import patch
 
 from PIL import Image, ImageDraw
 import numpy as np
@@ -16,6 +17,73 @@ SPEC.loader.exec_module(REF)
 
 
 class ReferenceClayChecks(unittest.TestCase):
+    def test_pose_schedule_preserves_stages_without_flickering_backwards(self):
+        frames = np.zeros((8,100,8,3),np.uint8)
+        frames[3:,84:] = 255
+        frames[5,84:] = 110  # A one-frame redraw must not revisit an old sculpt.
+        schedule = REF.exposure_schedule(frames,[0,7],0,8)
+        self.assertEqual(schedule,sorted(schedule))
+        self.assertEqual(schedule[3],7)  # New stage well before timestamp midpoint.
+        self.assertEqual(set(schedule),{0,7})
+
+    def test_export_preserves_the_whole_sculpt_instead_of_warping_its_pixels(self):
+        # Exercise the real frame-rendering path; only text and encoder I/O are
+        # replaced. A dense-registration/remap regression corrupts these textures.
+        with tempfile.TemporaryDirectory() as directory:
+            work=Path(directory)
+            frames=np.zeros((64,96,96,3),np.uint8)
+            frames[32:,84:]=255
+            np.save(work/'source-proxy.npy',frames)
+            (work/'source-sha256.txt').write_text('checked')
+            (work/'source-ink.json').write_text(json.dumps([{}]*64))
+            rng=np.random.default_rng(42)
+            poses=[rng.integers(0,255,(128,128,3),dtype=np.uint8) for _ in range(2)]
+            for key,pose in zip([0,63],poses):
+                REF.cv2.imwrite(str(work/f'clay-{key:04d}.png'),pose)
+            captured=[]
+            class Encoder:
+                def __init__(self,*args,**kwargs):
+                    self.stdin=self
+                    (work/'clay-picture.mp4').touch()
+                def write(self,data):
+                    captured.append(np.frombuffer(data,np.uint8).reshape(128,128,3).copy())
+                def close(self):pass
+                def wait(self):return 0
+            film={'shots':[{'id':'fixture','start':0,'anchors':[0,63]}]}
+            with patch.object(REF,'FILM',film),patch.object(REF,'N',64),\
+                    patch.object(REF,'SIDE',128),patch.object(REF,'FLOW_SIDE',96),\
+                    patch.object(REF,'probe'),patch.object(REF,'checked_source_hash',return_value='checked'),\
+                    patch.object(REF,'text_frame',side_effect=lambda picture,*_:picture),\
+                    patch.object(REF.subprocess,'Popen',Encoder):
+                REF.render(work/'source.mp4',work,0)
+            self.assertEqual(len(captured),64)
+            for picture in captured:
+                self.assertTrue(any(np.array_equal(picture,pose) for pose in poses),
+                    'A sculpt was deformed, partly masked or cross-faded')
+
+    def test_korean_map_is_fixed_geography_with_readable_native_labels(self):
+        spec=importlib.util.spec_from_file_location('korea_map',ROOT/'korea-map.py')
+        korea=importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(korea)
+        geo=json.loads((ROOT/'korea-map-geography.json').read_text())
+        self.assertEqual(geo['geometry']['type'],'MultiPolygon')
+        self.assertIn('naturalearthdata.com',geo['license_url'])
+        self.assertEqual(geo['license'],'Public domain')
+        # All named map text, including separators, must exist in the video font.
+        missing=bytes(korea.font(29).getmask(chr(0x10FFFF)))
+        labels=''.join(n[0] for n in korea.NODES)+'서울제빵소 / 패티 / 점심산지와 배송 경로 예시북100 km'
+        for char in set(labels):
+            if not char.isspace():
+                self.assertNotEqual(bytes(korea.font(29).getmask(char)),missing,char)
+        with Image.open(korea.TERRAIN) as image:
+            self.assertEqual(image.size,(1080,1080))
+            self.assertEqual(image.mode,'RGBA')
+        self.assertTrue(np.array_equal(korea.render(880),korea.render(883)),
+            'A held truck pose must not boil')
+        # Stationary coastline is identical across different delivery exposures.
+        self.assertTrue(np.array_equal(korea.render(864)[890:960,650:800],
+            korea.render(904)[890:960,650:800]))
+
     def test_abrupt_stage_changes_use_content_not_nearest_timestamp(self):
         frames = np.zeros((5, 100, 8, 3), dtype=np.uint8)
         frames[4, 84:] = 255

@@ -9,7 +9,8 @@
     "source": "https://www.ekape.or.kr/webjin/202409/resource/sub01-01.html",
     "source_title": "축산물품질평가원, 축산 유통에 대한 이해 (2024-09)",
     "source_quote": "한우 수소는 대부분이 생후 약 30개월령(거세우 기준)에 시장에 출하된다.",
-    "scope": "Illustrative Daegwallyeong/Hanwoo pasture localization only; not a claim that a traced farm grazes cattle for the full 30 months. Opening and closing totals agree with the approximate age. All other numerical labels retain source values."
+    "scope": "Illustrative Daegwallyeong/Hanwoo pasture and Korean delivery-map localization, not traced suppliers or actual road routes. No claim of pasture-only feeding for the full 30 months. Opening/closing totals agree with the approximate age. Other time labels retain source values; the map scale is recomputed in kilometres.",
+    "map": {"country": "South Korea", "destination": "Seoul", "source": "https://www.naturalearthdata.com/", "license": "Public domain", "route_scope": "Illustrative ingredient origins and delivery paths, labelled on screen"}
   },
   "captions": [
     {"start": 0, "marker": "", "text": "이 햄버거는 이렇게 만들어졌어요."},
@@ -25,7 +26,7 @@
     {"start": 704, "marker": "2일", "text": "양상추와 토마토는\n손으로 수확합니다."},
     {"start": 768, "marker": "1일", "text": "동트기 전, 번을 발효하고 구워요."},
     {"start": 832, "marker": "점심까지 6시간", "text": "동트기 전, 트럭들이 출발합니다."},
-    {"start": 928, "marker": "점심까지 6시간", "text": "수백 마일을 달려, 하나의 철판으로."},
+    {"start": 928, "marker": "점심까지 6시간", "text": "각지에서 모인 재료가, 하나의 철판으로."},
     {"start": 1024, "marker": "1시간", "text": "신선하게 썰고, 손으로 잎을 떼요."},
     {"start": 1088, "marker": "정오", "text": "주문하신 버거 나왔습니다."},
     {"start": 1280, "marker": "오후 12시 1분", "text": "점심시간."},
@@ -47,9 +48,9 @@
     {"id": "grind-and-press", "start": 640, "anchors": [648, 672, 696], "subject": "The exact industrial meat-grinder diagram and patty press: silver hopper at left feeding red ground beef onto the black conveyor, round press at right and raw patties at their current positions. Keep the entire machine layout and current action."},
     {"id": "hand-harvest", "start": 704, "anchors": [712, 736, 760], "subject": "The exact wide view of farm workers hand-harvesting lettuce and tomatoes, with the harvesting conveyor tractor at left, people across the middle and the same green crop rows, sunset sky, mountains and sun. Preserve the number and positions of all people."},
     {"id": "bakery-before-dawn", "start": 768, "anchors": [776, 792, 808, 824], "labels": "bakery", "subject": "The exact dark pre-dawn bakery scene: clock on dark brown wall at left, wooden table with flour sack below and tray of buns, silver oven at right with its actual door and tray state. Preserve whether buns are pale rising dough or baked golden, and the tray's actual position. Keep the dark background dark, including the blank header."},
-    {"id": "night-delivery-map", "start": 832, "anchors": [840, 864, 888], "labels": "map", "subject": "The exact California map on a deep navy night background, with its same coast, mountains, food-source icons, colored routes and tiny trucks in the exact current positions. Rebuild the map as raised matte clay terrain and the routes as thin colored clay cords, preserving exact geography, route paths and star destination. No new routes or destinations. Keep the entire background deep navy."},
-    {"id": "night-map-and-dawn", "start": 896, "anchors": [904, 928, 952], "labels": "map", "subject": "The same California delivery map at its exact current night-to-day stage. Preserve the geometry of the diagonal night/day paper wipe if visible: navy at left, cream daylight at right. Keep the exact coastline, icons, colored route lines and current tiny truck positions. Raised matte clay terrain and thin colored clay cords, without changing the map."},
-    {"id": "day-delivery-map", "start": 960, "anchors": [968, 992, 1016], "labels": "map", "subject": "The exact California delivery map in daylight, including any remaining diagonal wipe at far left. Preserve geography, food-source icons, mountains, sun, route paths, trucks and star destination in their exact positions. A raised matte clay map on the same warm cream backdrop."},
+    {"id": "night-delivery-map", "start": 832, "anchors": [840, 864, 888], "labels": "map", "subject": "Owner-approved Korean clay map on a navy night background: one fixed Natural Earth terrain sculpt, Daegwallyeong pasture and Seoul destination, native Korean ingredient labels, illustrative coloured routes and rigid truck glyphs. Legacy anchors are archived, not rendered."},
+    {"id": "night-map-and-dawn", "start": 896, "anchors": [904, 928, 952], "labels": "map", "subject": "The same fixed Korean delivery map across the diagonal night/day reveal, with rigid trucks and native Korean labels. No geography morphing or regenerated terrain; legacy California anchors are archived, not rendered."},
+    {"id": "day-delivery-map", "start": 960, "anchors": [968, 992, 1016], "labels": "map", "subject": "The same fixed Korean delivery map in daylight. Complete the dawn reveal and delivery to Seoul without deforming the terrain or truck glyphs. All paths are illustrative and labelled as examples; legacy California anchors are archived, not rendered."},
     {"id": "fresh-slicing", "start": 1024, "anchors": [1032, 1056, 1080], "subject": "The exact top-down wooden cutting board on a silver countertop: red tomato halves and slices, purple onion and onion ring, green lettuce and separated leaves, and the horizontal knife near the bottom, in the exact current slicing state. Preserve the overhead view and every object's position."},
     {"id": "griddle-patties", "start": 1088, "anchors": [1096, 1112, 1120, 1128, 1144], "subject": "The exact front/overhead griddle shot: two beef patties at their current flipping, raw or browned stage, dark rectangular steel cooking surface, silver backsplash, same rows of blue/orange gas flames and black burner knobs below. No buns or cheese before they appear in the source."},
     {"id": "griddle-buns-cheese", "start": 1152, "anchors": [1160, 1176, 1192, 1208], "subject": "The exact same griddle with two beef patties, melting yellow cheese and two plain bun halves in their current airborne or resting positions. Preserve their exact positions and cooking stages, flames, knobs, griddle and backsplash. No sesame or extra ingredients."},

@@ -15,13 +15,17 @@ meat-textured patties, and no fingerprints or finger dents. Faint construction
 outlines remain outlines until their objects appear. Asset hashes and authoring
 provenance are in `reference-assets/manifest.json`. These new anchors are AI-assisted
 image edits, **not** the procedural Blender assets described below. The renderer
-registers them against their source poses before applying source-derived optical
-flow; it does not reuse the old pilot's 12-exposure wiggle or scene layouts.
-Each frame uses one registered clay exposure, not a dissolve between different
-sculpts; this avoids transparent doubled edges during motion.
-Exposures match the source's illustrated content rather than the nearest timestamp,
-so abrupt ingredient, dairy, oven-tray and worker stages do not switch half an
-anchor interval early or late.
+holds **intact clay exposures**: no registration warp, optical flow, morphing,
+partial motion masks or dissolves. The former registration flattened dimensional
+clay into the source drawing's silhouettes, and subsequent flow made it wobble.
+Both passes are removed, not merely reduced in strength.
+
+Exposures match source illustrated content in monotonically advancing order,
+not just nearest timestamps; this preserves ingredient, dairy, oven and worker
+stages without flickering back to earlier sculpts. The tradeoff is visibly stepped
+motion: **1–8 authored poses per 64-frame section**, not smooth original-frame
+motion. No claim is made that all original in-betweens have been re-created.
+`frame-exposures.json` records the pose used for each output frame.
 
 All visible headings, diagram labels, map labels, worker labels and restaurant
 lettering are typeset in Korean. The rounded **Jua Regular** font is bundled in
@@ -38,8 +42,32 @@ the opening countdown and closing total agree at **약 2년 6개월**. The
 [Korea Institute for Animal Products Quality Evaluation, September 2024](https://www.ekape.or.kr/webjin/202409/resource/sub01-01.html)
 describes most Hanwoo steers being marketed at approximately 30 months of age.
 This is an illustrative localization, not farm traceability or a claim of
-exclusive grazing throughout that period. All other numbers, the California
-delivery map, source order, compositions and audio remain source-based.
+exclusive grazing throughout that period. Other time labels, source order and
+audio remain source-based.
+
+### Approved Korean delivery-map exception
+
+The three delivery sections use a **South Korean clay map**, including Jeju and
+offshore islands, with a Daegwallyeong pasture pin and Seoul destination. The
+country outline comes from public-domain [Natural Earth](https://www.naturalearthdata.com/about/terms-of-use/)
+geometry in `korea-map-geography.json`. It is sculpted once by
+`sculpt-korea-map.py`; `reference-assets/korea-terrain.png` is the committed,
+fixed-geometry render. No Blender dependency is needed to export the video.
+
+`korea-map.py` draws native Korean labels, coloured diagram cords and intact truck
+glyphs moving at six poses per second. The night/day wipe reveals the **same
+terrain**, never a regenerated or warped map. The scale is recomputed as 100 km
+for the local equirectangular projection, not translated from California miles.
+The caption no longer claims a journey of hundreds of miles. Ingredient origins
+and curves are **illustrative**, labelled on screen as `산지와 배송 경로 예시`;
+they are not invented traced suppliers or measured road routes. The nine legacy
+California anchor edits remain in the provenance archive but are never rendered.
+
+To rebuild only the fixed terrain (Blender 3.x):
+
+```sh
+blender -b -t 4 --python video-pipeline/pilot/burger/clay/sculpt-korea-map.py -- video-pipeline/pilot/burger/clay/reference-assets/korea-terrain.png
+```
 
 ### Rebuild and QC
 

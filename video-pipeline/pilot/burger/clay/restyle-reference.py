@@ -5,8 +5,8 @@ Prepare source-frame image-edit jobs, then render their checked-in clay anchors:
   python3 restyle-reference.py prepare /path/to/reference.mp4 /path/to/work
   python3 restyle-reference.py render /path/to/reference.mp4 /path/to/work
 
-The source supplies shot timing, optical-flow motion and its unchanged audio.
-Clay anchor images supply the material; native Korean typesetting supplies text.
+The source supplies shot/pose timing and its unchanged audio. Clay exposures
+are photographed poses, never optical-flow-warped material. Korean type is native.
 The original reference video is intentionally not bundled in the repository.
 """
 import argparse
@@ -57,21 +57,7 @@ LABELS = {
     ],
     'flour': [('밀가루', (958, 967, 1057, 1009), 24)],
     'bakery': [('밀가루', (289, 850, 405, 902), 28)],
-    'map': [
-        ('밀', (394, 438, 469, 465), 24),
-        ('토마토', (365, 500, 473, 529), 24),
-        ('오이', (542, 588, 665, 618), 24),
-        ('목장', (668, 660, 754, 690), 24),
-        ('낙농장', (662, 727, 749, 756), 24),
-        ('양상추', (378, 695, 474, 726), 24),
-        ('제빵소', (616, 927, 715, 955), 23),
-        ('패티', (765, 943, 858, 971), 23),
-        ('점심', (801, 911, 898, 940), 24),
-        ('로스앤젤레스', (528, 958, 674, 985), 22),
-        ('샌디에이고', (676, 1023, 796, 1057), 22),
-        ('북', (139, 824, 166, 854), 23),
-        ('100마일', (228, 976, 340, 1006), 23),
-    ],
+    'map': [],  # Native Korean geography/labels belong to korea-map.py.
     'restaurant': [('버거', (185, 370, 643, 467), 60)],
     'people': [
         ('목장주', (16, 809, 166, 856), 29),
@@ -173,6 +159,8 @@ def prepare(source, work):
     (work / 'source-ink.json').write_text(json.dumps(ink))
     jobs = []
     for shot in FILM['shots']:
+        if shot.get('labels') == 'map':
+            continue  # Fixed Korean terrain is procedural, not an image edit.
         for frame in shot['anchors']:
             jobs.append({
                 'frame': frame, 'shot': shot['id'], 'first': frame == shot['anchors'][0],
@@ -237,7 +225,9 @@ def text_frame(bgr, frame, ink):
         draw.text((60, 47), marker, font=mf, fill=red)
         if marker:
             draw.line((54, 104, 60+mf.getlength(marker), 104), fill=red, width=2)
-    group = LABELS.get(shot.get('labels'), [])
+    # Localized-map labels are part of its fixed native composition. Never
+    # overlay California's old label positions or mile scale on Korean terrain.
+    group = [] if shot.get('labels') == 'map' else LABELS.get(shot.get('labels'), [])
     if group:
         start, stop = shot['start'], min(N, shot['start']+64)
         for index, (label, (x0, y0, x1, y1), size) in enumerate(group):
@@ -272,6 +262,34 @@ def source_exposure(frames, keys, frame):
         target-frames[key, 84:].astype(np.float32))))
 
 
+def exposure_schedule(frames, keys, start, end):
+    """Match illustrated stages in order; never flicker back to an earlier sculpt.
+
+    Dense motion transfer between a flat drawing and a dimensional clay object
+    destroys its volume, even at an anchor. Hold intact exposures instead. The
+    small time tie-breaker only resolves visually identical reference stages.
+    """
+    references = frames[keys, 84:].astype(np.float32)
+    costs = np.array([[np.mean((frames[n, 84:].astype(np.float32)-ref)**2)
+        + .01*(n-key)**2 for key, ref in zip(keys, references)] for n in range(start, end)])
+    score = np.full_like(costs, np.inf)
+    previous = np.zeros(costs.shape, dtype=int)
+    score[0, 0] = costs[0, 0]
+    for n in range(1, len(costs)):
+        for k in range(len(keys)):
+            # Staying or advancing one exposure preserves every authored pose.
+            choices = [k] if k == 0 else [k-1, k]
+            p = min(choices, key=lambda j: score[n-1, j])
+            previous[n, k] = p
+            score[n, k] = score[n-1, p]+costs[n, k]
+    k = len(keys)-1
+    result = []
+    for n in reversed(range(len(costs))):
+        result.append(keys[k])
+        k = previous[n, k]
+    return list(reversed(result))
+
+
 def render(source, work, only_shot=None):
     probe(source)
     assert checked_source_hash(source) == (work/'source-sha256.txt').read_text().strip(), \
@@ -295,8 +313,12 @@ def render(source, work, only_shot=None):
         '-pixel_format', 'bgr24', '-video_size', f'{SIDE}x{SIDE}', '-framerate', str(FPS),
         '-i', 'pipe:0', '-an', '-c:v', 'libx264', '-pix_fmt', 'yuv420p', '-crf', '18',
         '-preset', 'veryfast', '-threads', '4', str(raw)], stdin=subprocess.PIPE)
-    grid_x, grid_y = np.meshgrid(np.arange(SIDE, dtype=np.float32), np.arange(SIDE, dtype=np.float32))
-    flow = cv2.DISOpticalFlow_create(cv2.DISOPTICAL_FLOW_PRESET_MEDIUM)
+    exposures = []
+    # The localized map has fixed terrain, native Korean labels and rigid trucks.
+    from importlib.util import spec_from_file_location, module_from_spec
+    spec = spec_from_file_location('korea_map', HERE/'korea-map.py')
+    korea = module_from_spec(spec)
+    spec.loader.exec_module(korea)
     for shot in selected:
         keys = shot['anchors']
         styles = {}
@@ -306,43 +328,11 @@ def render(source, work, only_shot=None):
             assert image is not None, f'Missing checked clay anchor {key}'
             styles[key] = cv2.resize(image, (SIDE, SIDE), interpolation=cv2.INTER_CUBIC)
         start, end = shot['start'], shot['start']+64
-        anchor_grey = {key: cv2.cvtColor(frames[key], cv2.COLOR_BGR2GRAY) for key in keys}
-        clay_grey = {key: cv2.cvtColor(cv2.resize(styles[key], (FLOW_SIDE, FLOW_SIDE)),
-            cv2.COLOR_BGR2GRAY) for key in keys}
-        for key in keys:
-            # Align the clay edit to its actual reference pose before transferring
-            # motion. This limits jumps between independently edited silhouettes.
-            alignment = flow.calc(anchor_grey[key], clay_grey[key], None)
-            alignment[:84] = 0
-            alignment = cv2.resize(alignment, (SIDE, SIDE))*SIDE/FLOW_SIDE
-            styles[key] = cv2.remap(styles[key], grid_x+alignment[:, :, 0],
-                grid_y+alignment[:, :, 1], cv2.INTER_CUBIC, borderMode=cv2.BORDER_REFLECT)
-        # Keep stationary clay scenery truly stationary. Only source-moving areas
-        # may change clay exposures; this prevents whole-frame texture boil.
-        delta = np.abs(frames[start:end].astype(np.int16)-frames[keys[0]].astype(np.int16))
-        moving = (np.max(delta, axis=(0, 3)) > 24).astype(np.uint8)*255
-        moving[:80] = 0  # Native header typography is drawn after motion transfer.
-        if shot.get('labels') == 'map' and shot['start'] >= 896:
-            moving[:] = 255  # Preserve the reference's full-frame dawn wipe.
-        moving = cv2.dilate(moving, np.ones((13, 13), np.uint8))
-        moving = cv2.GaussianBlur(moving, (31, 31), 0)
-        moving = cv2.resize(moving, (SIDE, SIDE)).astype(np.float32)[:, :, None]/255
+        schedule = exposure_schedule(frames, keys, start, end)
         for n in range(start, end):
-            # One source-warped material exposure, never a dissolve between
-            # independently sculpted contours (which creates transparent doubles).
-            # Match the actual source stage, not just elapsed time: a hand-drawn
-            # stage can change abruptly halfway between two anchor timestamps.
-            nearest = source_exposure(frames, keys, n)
-            weights = [(nearest, 1)]
-            target = cv2.cvtColor(frames[n], cv2.COLOR_BGR2GRAY)
-            painted = np.zeros((SIDE, SIDE, 3), np.float32)
-            for key, weight in weights:
-                field = flow.calc(target, anchor_grey[key], None)
-                field = cv2.resize(field, (SIDE, SIDE))*SIDE/FLOW_SIDE
-                warped = cv2.remap(styles[key], grid_x+field[:, :, 0], grid_y+field[:, :, 1],
-                    cv2.INTER_CUBIC, borderMode=cv2.BORDER_REFLECT)
-                painted += warped*weight
-            painted = np.clip(painted*moving+styles[keys[0]]*(1-moving), 0, 255).astype(np.uint8)
+            key = schedule[n-start]
+            painted = korea.render(n) if shot.get('labels') == 'map' else styles[key].copy()
+            exposures.append({'frame': n, 'exposure': 'korea-map' if shot.get('labels') == 'map' else key})
             painted = text_frame(painted, n, ink)
             process.stdin.write(painted.tobytes())
             if n == start+32:
@@ -350,6 +340,7 @@ def render(source, work, only_shot=None):
         print(f"Rendered {shot['id']}: {start/FPS:.3f}–{end/FPS:.3f}s", flush=True)
     process.stdin.close()
     assert process.wait() == 0, 'Picture encoder failed'
+    (work/'frame-exposures.json').write_text(json.dumps(exposures))
     if only_shot is not None:
         raw.replace(output)
         print(output, flush=True)
@@ -366,7 +357,7 @@ def render(source, work, only_shot=None):
         'numbers': 'Original values except owner-approved Hanwoo age (~30 months) and matching totals',
         'localization': FILM['localization'],
         'font': 'Jua Regular, SIL Open Font License 1.1 (bundled)',
-        'motion': 'Source-derived optical flow; one source-stage-matched registered clay exposure, no material cross-fades',
+        'motion': 'Intact clay stop-motion exposures, source-stage-matched in monotone order; no optical flow, registration, morphing or cross-fades. Rigid trucks on one Korean terrain sculpt.',
         'full_decode': 'passed', 'video': str(output), 'bytes': output.stat().st_size,
         'streams': details['streams']}
     (work / 'export-review.json').write_text(json.dumps(review, indent=2))
