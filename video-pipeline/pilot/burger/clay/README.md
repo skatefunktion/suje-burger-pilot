@@ -31,7 +31,8 @@ only uniform authoring-time sizing and rigid translation are used. There is no
 per-frame shape stretching. `process-scenes.py` extends the fixed-set approach
 to the remaining production shots: articulated cattle necks and eight distinct
 calf-rise sculpts, dairy stage entries, flower/bee/cucumber growth, grain delivery,
-grinder and press, whole pickers pivoted at their feet, oven door/tray/rising buns,
+grinder and press, articulated pickers bending/reaching/lifting vegetables into
+baskets with planted feet and fixed-length arms, oven door/tray/rising buns,
 fresh slicing and curbside lunch. Whole parts rotate at joints; only physical
 flower/fruit growth and dough rising use **uniform** scale, never changed aspect
 ratios. Vehicles follow frame-by-frame paths. The final bite switches once to a
@@ -49,10 +50,17 @@ published videos. Source: [Google Fonts](https://fonts.google.com/specimen/Jua).
 The native type-on follows measured source-ink timing; the red underlined markers
 retain their original location.
 
+The opening reads **햄버거 하나가 만들어지는 과정**, with a short subtitle
+establishing that the story rewinds from lunchtime. The source's opening marker
+is **~2 YEARS TO LUNCH**. Its approved Hanwoo equivalent is now **약 2년 6개월 전**;
+other countdowns use time-only Korean labels such as **6시간 전**, not the awkward
+literal **점심까지**. The grazing duration is explicitly **약 30개월 동안**, distinct
+from a countdown. **소스** replaces the less familiar **스프레드** throughout.
+
 ### Approved Daegwallyeong exception
 
 The cattle sequences use tawny Hanwoo and green Daegwallyeong mountain pasture,
-instead of California Herefords and golden hills. Their marker is **약 30개월**;
+instead of California Herefords and golden hills. Their marker is **약 30개월 동안**;
 the opening countdown and closing total agree at **약 2년 6개월**. The
 [Korea Institute for Animal Products Quality Evaluation, September 2024](https://www.ekape.or.kr/webjin/202409/resource/sub01-01.html)
 describes most Hanwoo steers being marketed at approximately 30 months of age.
@@ -112,6 +120,12 @@ their own alpha masks; they are not regenerated between frames. Legacy source
 anchors remain in the provenance archive, but these production shots use the new
 Korean sets and actors. Motion-asset hashes are checked **before encoding**.
 The hand-harvest field uses two spaced workers rather than the original seven.
+They reach for a lettuce/tomato, lift it and deposit it into a basket using rigid
+torso/arm joints, rather than rocking the whole person. The bakery clock's two
+hands share its actual center at (301, 338) on the 1080-square plate and keep the
+12:1 minute/hour rate. Shop lettering is centered by its visible glyph bounds.
+The closing cast has individual uniform height sizing with aligned feet; the
+rancher wears a brown vest and the dairy worker an ivory apron/light-blue shirt.
 
 To rebuild only the fixed terrain (Blender 3.x):
 

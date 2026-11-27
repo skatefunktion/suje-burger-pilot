@@ -48,7 +48,9 @@
     {
       "start": 0,
       "marker": "",
-      "text": "이 햄버거는 이렇게 만들어졌어요."
+      "text": "햄버거 하나가 만들어지는 과정",
+      "subtitle": "점심에 먹기까지, 시간을 거슬러",
+      "context": "Time markers count backwards from the finished burger at lunchtime; stated once, not repeated in each marker."
     },
     {
       "start": 64,
@@ -57,67 +59,67 @@
     },
     {
       "start": 128,
-      "marker": "점심까지 약 2년 6개월",
+      "marker": "약 2년 6개월 전",
       "text": "대관령의 한 목장에서\n송아지가 태어납니다."
     },
     {
       "start": 256,
-      "marker": "약 30개월",
+      "marker": "약 30개월 동안",
       "text": "대관령의 푸른 목초지에서\n한우가 자랍니다."
     },
     {
       "start": 320,
-      "marker": "9개월",
+      "marker": "9개월 전",
       "text": "전라도의 우리밀 밭에\n번을 만들 밀을 심습니다."
     },
     {
       "start": 384,
-      "marker": "4개월",
+      "marker": "4개월 전",
       "text": "우유는 체더치즈가 되어\n버거에 들어갑니다."
     },
     {
       "start": 448,
-      "marker": "2개월",
+      "marker": "2개월 전",
       "text": "오이꽃은 단 하루 동안\n피어납니다."
     },
     {
       "start": 512,
-      "marker": "2개월",
-      "text": "벌이 없으면 피클도,\n피클이 없으면 스프레드도 없어요."
+      "marker": "2개월 전",
+      "text": "벌이 없으면 피클도,\n피클이 없으면 소스도 없어요."
     },
     {
       "start": 576,
-      "marker": "1개월",
+      "marker": "1개월 전",
       "text": "우리밀을 베어 수확하고\n가루로 빻습니다."
     },
     {
       "start": 640,
-      "marker": "1주",
+      "marker": "1주 전",
       "text": "소고기를 갈아\n패티 모양으로 누릅니다."
     },
     {
       "start": 704,
-      "marker": "2일",
+      "marker": "2일 전",
       "text": "양상추와 토마토는\n손으로 수확합니다."
     },
     {
       "start": 768,
-      "marker": "1일",
+      "marker": "1일 전",
       "text": "동트기 전, 번을 발효하고 구워요."
     },
     {
       "start": 832,
-      "marker": "점심까지 6시간",
+      "marker": "6시간 전",
       "text": "동트기 전, 트럭들이 출발합니다."
     },
     {
       "start": 928,
-      "marker": "점심까지 6시간",
+      "marker": "6시간 전",
       "text": "각지에서 모인 재료가, 하나의 철판으로."
     },
     {
       "start": 1024,
-      "marker": "1시간",
+      "marker": "1시간 전",
       "text": "신선하게 썰고, 손으로 잎을 떼요."
     },
     {

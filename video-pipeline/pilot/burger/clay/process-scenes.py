@@ -207,14 +207,74 @@ def feet_pose(sprite, angle):
     return posed[:,:,:3],posed[:,:,3],(0,0)
 
 
+@lru_cache(maxsize=20)
+def harvest_piece(row,col,component=0,height=100):
+    sheet=cv2.imread(str(HERE/'reference-assets'/'harvest-puppet-parts.webp'),-1)
+    h,w=sheet.shape[:2]
+    cell=sheet[row*h//2:(row+1)*h//2,col*w//4:(col+1)*w//4]
+    _,labels,stats,_=cv2.connectedComponentsWithStats(np.uint8(cell[:,:,3]>=32))
+    ids=sorted((i for i in range(1,len(stats)) if stats[i,4]>500),key=lambda i:stats[i,1])
+    label=ids[component]
+    rgb,alpha,_=cropped(cell[:,:,:3],np.where(labels==label,cell[:,:,3],0).astype(np.uint8))
+    size=(round(rgb.shape[1]*height/rgb.shape[0]),height)
+    return cv2.resize(rgb,size,interpolation=cv2.INTER_CUBIC),\
+        cv2.resize(alpha,size,interpolation=cv2.INTER_LINEAR),(0,0)
+
+
+def rotate_point(point,pivot,angle):
+    dx,dy=np.subtract(point,pivot);a=np.deg2rad(angle)
+    return np.array((np.cos(a)*dx+np.sin(a)*dy,-np.sin(a)*dx+np.cos(a)*dy))
+
+
+def arm_joints(shoulder,hand,upper=65,lower=68):
+    """Two fixed-length limbs reach the hand target without scaling a sculpt."""
+    delta=np.subtract(hand,shoulder);distance=np.linalg.norm(delta)
+    direction=delta/max(distance,.001)
+    distance=float(np.clip(distance,abs(upper-lower)+.01,upper+lower-.01))
+    hand=np.array(shoulder)+direction*distance
+    along=(upper*upper-lower*lower+distance*distance)/(2*distance)
+    across=np.sqrt(max(0,upper*upper-along*along))
+    elbow=np.array(shoulder)+along*direction+across*np.array((-direction[1],direction[0]))
+    return np.array(shoulder),elbow,hand
+
+
+def harvest_action(frame,index):
+    t=float(np.clip(frame-704+index*5,0,63))
+    foot=np.array(((590,811),(926,981))[index],dtype=float)
+    bend=np.interp(t,(0,20,26,45,63),(10,60,60,15,10))
+    hand=foot+np.array((np.interp(t,(0,20,26,45,51,63),(-45,-92,-92,55,55,-45)),
+        np.interp(t,(0,20,26,45,51,63),(-86,-36,-36,-86,-86,-86))))
+    return t,foot,float(bend),hand,26<=t<49,t>=49
+
+
 def picking(frame):
     canvas=plate('hand-harvest-empty.webp').copy()
-    # Two spaced workers are enough to communicate hand harvesting.
-    for i in (3,6):
-        sprite=workers()[i]
-        amplitude=2 if i<2 else 4
-        angle=amplitude*np.sin((frame-704)*.12+i*1.7)
-        R.place(canvas,feet_pose(sprite,angle),sprite[2])
+    # Feet stay planted. The torso bends at the hips, two rigid arm segments
+    # reach a crop, lift it and release it into a basket. No whole-person sway.
+    for index,height in enumerate((238,260)):
+        t,foot,bend,target,holding,deposited=harvest_action(frame,index)
+        body=harvest_piece(index,0,height=height)
+        rgb,alpha,_=body;h,w=alpha.shape
+        pivot=(w*.67,h*.53);hip=foot-np.array((0,h-pivot[1]))
+        legs=alpha.copy();legs[:round(pivot[1])]=0
+        R.place(canvas,(rgb,legs,(0,0)),foot+np.array((w/2-pivot[0],-h/2)))
+        torso=alpha.copy();torso[round(pivot[1]+h*.025):]=0
+        R.place(canvas,pivot_pose((rgb,torso,(0,0)),pivot,bend),hip)
+        shoulder=hip+rotate_point((w*.65,h*.29),pivot,bend)
+        joints=arm_joints(shoulder,target)
+        for col,(a,b),length in zip((1,2),zip(joints,joints[1:]),(65,68)):
+            limb=harvest_piece(index,col,height=length+10)
+            dx,dy=b-a;angle=np.degrees(np.arctan2(dx,dy))
+            R.place(canvas,similarity(limb,angle=angle),(a+b)/2)
+        crop=harvest_piece(index,3,0,30)
+        if t<26:
+            R.place(canvas,crop,foot+(-92,-31))
+        elif holding:
+            R.place(canvas,crop,joints[-1]+(-5,9))
+        basket=harvest_piece(index,3,1,51)
+        R.place(canvas,basket,foot+(55,-40))
+        if deposited:
+            R.place(canvas,crop,foot+(55,-66))
     return canvas
 
 
@@ -252,11 +312,18 @@ def bakery(frame):
             rise=.72+.28*ease((frame-768)/19)
             R.place(canvas,similarity((material,alpha,(0,0)),rise),
                 (97+col*111+shift,708+row*37-shift*.11))
-    center=(256,336)
-    for length,angle,width in [(38,(frame-768)*.15,3),(26,(frame-768)*.025+1,4)]:
+    # Coordinates are on the resized 1080 plate: the previous x=256 was a
+    # detached pivot, left of the physical clock's center at (301,338).
+    center=CLOCK_CENTER
+    minutes=210+75*(frame-768)/63  # 03:30 to 04:45, minute:hour rate 12:1.
+    for length,angle,width in [(44,minutes*np.pi/30,3),(30,minutes*np.pi/360,4)]:
         end=(round(center[0]+length*np.sin(angle)),round(center[1]-length*np.cos(angle)))
         cv2.line(canvas,center,end,(57,58,64),width,cv2.LINE_AA)
+    cv2.circle(canvas,center,5,(57,58,64),-1,cv2.LINE_AA)
     return canvas
+
+
+CLOCK_CENTER=(301,338)
 
 
 @lru_cache(maxsize=12)

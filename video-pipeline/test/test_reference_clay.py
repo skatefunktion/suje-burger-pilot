@@ -57,10 +57,64 @@ class ReferenceClayChecks(unittest.TestCase):
             self.assertGreater(car[1].shape[1]/car[1].shape[0],1.7)
             self.assertLess(car[1].shape[1]/car[1].shape[0],3.5)
         self.assertEqual(len(self.processes.workers()),7)
+        heights=[]
         for i in range(7):
             _,alpha,(_,cy)=self.rigid.person(i)
-            self.assertEqual(alpha.shape[0],344)
+            heights.append(alpha.shape[0])
             self.assertLess(cy+alpha.shape[0]/2,809)
+            self.assertEqual(cy+alpha.shape[0]/2,795)
+        self.assertEqual(len(set(heights)),7)
+        self.assertGreaterEqual(max(heights)-min(heights),35)
+
+    def test_harvesting_reaches_lifts_and_deposits_with_fixed_feet_and_limb_lengths(self):
+        for index in range(2):
+            actions=[self.processes.harvest_action(f,index) for f in (704,724,736,754,767)]
+            for action in actions:
+                self.assertTrue(np.array_equal(action[1],actions[0][1]),'Feet slid across the field')
+            self.assertGreater(actions[1][2]-actions[0][2],30,'No actual bend toward the crop')
+            self.assertTrue(actions[2][4],'The lifted crop must travel with the hand')
+            self.assertTrue(actions[-1][5],'The basket must receive the harvested crop')
+            self.assertGreater(np.linalg.norm(actions[3][3]-actions[1][3]),100)
+            height=(238,260)[index]
+            rgb,alpha,_=self.processes.harvest_piece(index,0,height=height)
+            h,w=alpha.shape;pivot=(w*.67,h*.53)
+            for _,foot,bend,target,_,_ in actions:
+                hip=foot-np.array((0,h-pivot[1]))
+                shoulder=hip+self.processes.rotate_point((w*.65,h*.29),pivot,bend)
+                joints=self.processes.arm_joints(shoulder,target)
+                self.assertAlmostEqual(np.linalg.norm(joints[1]-joints[0]),65,places=6)
+                self.assertAlmostEqual(np.linalg.norm(joints[2]-joints[1]),68,places=6)
+
+    def test_clock_hands_share_the_physical_dial_center_and_stay_inside_it(self):
+        cx,cy=301,338
+        yy,xx=np.indices((1080,1080))
+        dial=(xx-cx)**2+(yy-cy)**2<65**2
+        hand_area=(xx-cx)**2+(yy-cy)**2<=48**2
+        blank=self.processes.plate('bakery-empty.webp')
+        for frame in (768,784,799,815,831):
+            picture=self.processes.bakery(frame)
+            changed=np.any(picture!=blank,axis=2)&dial
+            self.assertGreater(np.count_nonzero(changed),100)
+            self.assertFalse(np.any(changed&~hand_area),'A hand extends beyond the dial')
+            self.assertTrue(np.array_equal(picture[cy,cx],(57,58,64)))
+
+    def test_shop_visible_lettering_is_centered_in_the_red_sign(self):
+        ink=[{'caption':1,'marker':1,'labels':[1]} for _ in range(REF.N)]
+        picture=REF.text_frame(self.processes.drive_in(1312),1312,ink)
+        patch=picture[337:425,170:646]
+        yy,xx=np.where(np.all(patch>210,axis=2))
+        self.assertGreater(len(xx),1000)
+        self.assertAlmostEqual((int(xx.min())+int(xx.max()))/2,patch.shape[1]/2,delta=2)
+        self.assertAlmostEqual((int(yy.min())+int(yy.max()))/2,patch.shape[0]/2,delta=2)
+
+    def test_localized_wording_uses_time_only_countdowns_and_plain_sauce(self):
+        self.assertEqual(REF.caption_for(0)['text'],'햄버거 하나가 만들어지는 과정')
+        self.assertIn('점심',REF.caption_for(0)['subtitle'])
+        self.assertEqual(REF.caption_for(236)['marker'],'약 2년 6개월 전')
+        for caption in REF.FILM['captions']:
+            self.assertNotIn('점심',caption['marker'])
+            self.assertNotIn('스프레드',caption['text'])
+        self.assertEqual(REF.LABELS['burger'][-2][0],'소스')
 
     def test_rigid_joint_rotation_preserves_area_and_object_proportions(self):
         rgb=np.full((41,79,3),170,np.uint8);alpha=np.full((41,79),255,np.uint8)
@@ -263,7 +317,7 @@ class ReferenceClayChecks(unittest.TestCase):
         self.assertIn('ekape.or.kr', local['source'])
         self.assertIn('약 30개월', local['source_quote'])
         self.assertIn('대관령', REF.caption_for(200)['text'])
-        self.assertEqual(REF.caption_for(300)['marker'], '약 30개월')
+        self.assertEqual(REF.caption_for(300)['marker'], '약 30개월 동안')
         self.assertIn('약 2년 6개월', REF.caption_for(200)['marker'])
         self.assertIn('약 2년 6개월', REF.caption_for(1500)['text'])
         self.assertNotIn('18개월', str(data['captions']))

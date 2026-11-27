@@ -734,8 +734,8 @@
     },
     {
       "file": "people-korea-actors.webp",
-      "sha256": "769458153865e08939e8d5467d08a85ecfd7aa773773497d625d4d6889c39bb2",
-      "authoring": "Source-derived generate_image fixed set, isolated complete clay actor, or eight authored calf-rise sculpts. True alpha retained for actors. No fingerprints/finger dents. Korean context approved by owner; natural hair/workwear, no exaggerated faces."
+      "sha256": "7e0fea0bca1ae6b90e4ee9b3d396bdf3369daa0629dbf8eeb4139bae3fcfdc03",
+      "authoring": "Source-derived generate_image edit: rancher in brown quilted vest and olive shirt; dairy worker in pale blue shirt, ivory waterproof apron and cream cap. Seven complete separated Korean clay actors with true alpha; no fingerprints/dents. Heights are uniformly authored per character."
     },
     {
       "file": "harvest-korea-worker-actors.webp",
@@ -751,6 +751,11 @@
       "file": "korea-terrain.png",
       "sha256": "81bbc057820d8baba09cc753716dfbb8006625ea0e7567eea594fcef82176267",
       "authoring": "Procedural Blender sculpt from Natural Earth coastline; connected stylized Taebaek/Sobaek crests, not measured elevation. No sun."
+    },
+    {
+      "file": "harvest-puppet-parts.webp",
+      "sha256": "52747a17c938319f046f7e97de8c26ee2453f8300e4b7fca0a089b286f861437",
+      "authoring": "Source-derived generate_image atlas: two Korean side-view farm workers with armless full bodies, detached upper arms and forearms/gloved hands, lettuce/tomato and baskets. True alpha. Fixed sculpts rotate only at hips/shoulder/elbow; feet remain planted. No fingerprints or dents."
     }
   ]
 }

@@ -39,7 +39,7 @@ LABELS = {
         ('소고기 + 치즈', (45, 608, 354, 656), 34),
         ('양상추', (865, 700, 1075, 755), 34),
         ('토마토', (200, 786, 354, 832), 34),
-        ('스프레드', (865, 865, 1076, 922), 32),
+        ('소스', (865, 865, 1076, 922), 32),
         ('번', (200, 961, 354, 1009), 34),
     ],
     'cheese': [
@@ -210,6 +210,8 @@ def text_frame(bgr, frame, ink):
     shown = type_text(caption['text'], ink_progress(ink, frame, end, 'caption'))
     draw.multiline_text((60, 119 if caption['marker'] else 31), shown,
         font=fit_font(caption['text'], 49 if caption['marker'] else 54, 964), fill=255, spacing=3)
+    if caption.get('subtitle') and len(shown)==len(caption['text']):
+        draw.text((62,112),caption['subtitle'],font=font(32),fill=255)
     # A source-locked night/day wipe can cross a text line: choose ink per pixel.
     colours = np.asarray(image).copy()
     light = colours.mean(axis=2) > 125
@@ -247,7 +249,14 @@ def text_frame(bgr, frame, ink):
                 draw.rounded_rectangle((162,329,654,429),radius=8,
                     outline=colour,width=3)
             width = lf.getlength(label)
-            draw.text((x0+(x1-x0-width)/2, y0-2), label, font=lf, fill=colour)
+            if shot.get('labels') == 'restaurant':
+                # Center the visible glyphs, not the font's ascender box.
+                bx0,by0,bx1,by1=draw.textbbox((0,0),label,font=lf)
+                position=(x0+(x1-x0-(bx1-bx0))/2-bx0,
+                    y0+(y1-y0-(by1-by0))/2-by0)
+            else:
+                position=(x0+(x1-x0-width)/2,y0-2)
+            draw.text(position, label, font=lf, fill=colour)
     return cv2.cvtColor(np.asarray(image), cv2.COLOR_RGB2BGR)
 
 

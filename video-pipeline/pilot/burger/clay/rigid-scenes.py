@@ -1,6 +1,7 @@
 """24fps rigid poses of intact clay cut-outs on a fixed miniature set.
 
-Only translations are used. No flow, registration, contour interpolation,
+Only translations are used at runtime. Character heights are uniformly sized
+once when the cast is authored. No flow, registration, contour interpolation,
 anisotropic scaling or dissolves between separately generated sculpts.
 """
 from functools import lru_cache
@@ -232,10 +233,15 @@ def person(index):
     label=ids[index];x,y,w,h=stats[label,:4]
     cell=rgba[y:y+h,x:x+w,:3]
     mask=np.where(labels[y:y+h,x:x+w]==label,rgba[y:y+h,x:x+w,3],0).astype(np.uint8)
-    size=(round(w*344/h),344)
+    height=PERSON_HEIGHTS[index]
+    size=(round(w*height/h),height)
     return cv2.resize(cell,size,interpolation=cv2.INTER_CUBIC),\
         cv2.resize(mask,size,interpolation=cv2.INTER_LINEAR),\
-        ((92,251,401,552,702,853,1003)[index],795-344/2)
+        ((92,251,401,552,702,853,1003)[index],795-height/2)
+
+
+# Natural cast variation, preserving every individual's sculpt proportions.
+PERSON_HEIGHTS=(362,334,348,322,343,354,330)
 
 
 @lru_cache(maxsize=2)
