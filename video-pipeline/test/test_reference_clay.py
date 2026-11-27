@@ -78,11 +78,64 @@ class ReferenceClayChecks(unittest.TestCase):
         with Image.open(korea.TERRAIN) as image:
             self.assertEqual(image.size,(1080,1080))
             self.assertEqual(image.mode,'RGBA')
-        self.assertTrue(np.array_equal(korea.render(880),korea.render(883)),
-            'A held truck pose must not boil')
+        self.assertFalse(np.array_equal(korea.render(880),korea.render(883)),
+            'Road-following trucks must advance rather than hold four frames')
         # Stationary coastline is identical across different delivery exposures.
         self.assertTrue(np.array_equal(korea.render(864)[890:960,650:800],
             korea.render(904)[890:960,650:800]))
+
+    def test_deliveries_use_attributed_road_geometry_and_constant_speed(self):
+        spec=importlib.util.spec_from_file_location('korea_map',ROOT/'korea-map.py')
+        korea=importlib.util.module_from_spec(spec);spec.loader.exec_module(korea)
+        data=korea.ROADS
+        self.assertEqual(data['license'],'Open Database License 1.0 (ODbL)')
+        self.assertEqual(len(data['routes']),6)
+        self.assertIn('영동고속도로',data['routes'][3]['roads'])
+        self.assertIn('광주원주고속도로',data['routes'][3]['roads'])
+        for i in range(6):
+            path=korea.route(i)
+            self.assertGreater(len(path),100)
+            self.assertLess(np.linalg.norm(path[0]-korea.project(*korea.NODES[i][1])),5)
+            self.assertLess(np.linalg.norm(path[-1]-korea.DESTINATION),2)
+            lengths=[]
+            for progress in (.2,.4,.6):
+                prefix=korea.route_prefix(i,progress)
+                lengths.append(np.linalg.norm(np.diff(prefix,axis=0),axis=1).sum())
+            self.assertAlmostEqual(lengths[1]/lengths[0],2,places=6)
+            self.assertAlmostEqual(lengths[2]/lengths[0],3,places=6)
+
+    def test_wheat_localization_has_official_jeolla_and_bread_evidence(self):
+        wheat=REF.FILM['localization']['wheat']
+        self.assertIn('mafra.go.kr',wheat['source'])
+        self.assertIn('전남',wheat['source_quote'])
+        self.assertIn('제빵',wheat['source_quote'])
+        self.assertIn('전라도',REF.caption_for(320)['text'])
+        self.assertIn('우리밀',REF.caption_for(576)['text'])
+
+    def test_rigid_translation_preserves_shape_and_interior_texture(self):
+        spec=importlib.util.spec_from_file_location('rigid',ROOT/'rigid-scenes.py')
+        rigid=importlib.util.module_from_spec(spec);spec.loader.exec_module(rigid)
+        rng=np.random.default_rng(4)
+        rgb=rng.integers(30,220,(21,31,3),dtype=np.uint8)
+        alpha=np.full((21,31),255,np.uint8)
+        sprite=(rgb,alpha,(0,0))
+        for position in [(100.5,200.5),(239.5,120.5),(301.5,600.5)]:
+            canvas=np.zeros((1080,1080,3),np.uint8)
+            rigid.place(canvas,sprite,position)
+            x,y=[round(a-b/2) for a,b in zip(position,(31,21))]
+            self.assertTrue(np.array_equal(canvas[y:y+21,x:x+31],rgb))
+            self.assertEqual(np.count_nonzero(canvas),rgb.size)
+
+    def test_loose_clay_parts_use_real_alpha_and_keep_the_onion_hole(self):
+        spec=importlib.util.spec_from_file_location('rigid',ROOT/'rigid-scenes.py')
+        rigid=importlib.util.module_from_spec(spec);spec.loader.exec_module(rigid)
+        for i in range(8):
+            rgb,mask,_=rigid.burger_part(i)
+            self.assertEqual(rgb.shape[1],650)
+            self.assertLess(mask.shape[0],350)
+            self.assertGreater(mask.max(),240)
+        _,ring,_=rigid.burger_part(2)
+        self.assertEqual(ring[ring.shape[0]//2,ring.shape[1]//2],0)
 
     def test_abrupt_stage_changes_use_content_not_nearest_timestamp(self):
         frames = np.zeros((5, 100, 8, 3), dtype=np.uint8)
@@ -94,6 +147,14 @@ class ReferenceClayChecks(unittest.TestCase):
         frames[3, 84:] = 5   # Old stage late, nearer new anchor in time.
         frames[3, :84] = 255
         self.assertEqual(REF.source_exposure(frames, [0, 4], 3), 0)
+
+    def test_entering_workers_do_not_cross_the_native_name_labels(self):
+        spec=importlib.util.spec_from_file_location('rigid',ROOT/'rigid-scenes.py')
+        rigid=importlib.util.module_from_spec(spec);spec.loader.exec_module(rigid)
+        plate=rigid.paper_plate(1416)
+        for frame in range(1344,1472,4):
+            self.assertTrue(np.array_equal(rigid.render(frame)[810:],plate[810:]),
+                f'Worker entered the caption strip at frame {frame}')
 
     def test_different_reference_is_rejected_before_preparation(self):
         with tempfile.TemporaryDirectory() as directory:
@@ -120,6 +181,9 @@ class ReferenceClayChecks(unittest.TestCase):
                     image.verify()
         self.assertEqual(covered, list(range(1536)))
         self.assertEqual(len(hashes), 88)
+        for row in manifest['motion_assets']:
+            asset=ROOT/'reference-assets'/row['file']
+            self.assertEqual(hashlib.sha256(asset.read_bytes()).hexdigest(),row['sha256'])
         self.assertEqual(REF.FPS, 24)
         self.assertEqual(REF.SIDE, 1080)
 

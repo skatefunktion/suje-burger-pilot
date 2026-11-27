@@ -15,17 +15,23 @@ meat-textured patties, and no fingerprints or finger dents. Faint construction
 outlines remain outlines until their objects appear. Asset hashes and authoring
 provenance are in `reference-assets/manifest.json`. These new anchors are AI-assisted
 image edits, **not** the procedural Blender assets described below. The renderer
-holds **intact clay exposures**: no registration warp, optical flow, morphing,
-partial motion masks or dissolves. The former registration flattened dimensional
+uses **intact clay sculpts**: no registration warp, optical flow, contour morphing
+or dissolves. The former registration flattened dimensional
 clay into the source drawing's silhouettes, and subsequent flow made it wobble.
 Both passes are removed, not merely reduced in strength.
 
 Exposures match source illustrated content in monotonically advancing order,
 not just nearest timestamps; this preserves ingredient, dairy, oven and worker
-stages without flickering back to earlier sculpts. The tradeoff is visibly stepped
-motion: **1–8 authored poses per 64-frame section**, not smooth original-frame
-motion. No claim is made that all original in-betweens have been re-created.
-`frame-exposures.json` records the pose used for each output frame.
+stages without flickering back to earlier sculpts. `rigid-scenes.py` now poses
+separate whole clay objects on fixed backgrounds at **24fps** for the exploded
+diagram, sowing tractor, griddle, burger assembly and worker lineup/bee. Tractor
+and griddle positions come from complete-object source measurements, not a pixel
+displacement field. Newly sculpted loose ingredients and people have real alpha;
+only uniform authoring-time sizing and rigid translation are used. There is no
+per-frame shape stretching. Remaining articulated/industrial shots still hold
+their authored poses: this is **not** a claim that every original in-between or
+3D patty rotation has been reconstructed. `frame-exposures.json` records each
+frame's pose and motion mode.
 
 All visible headings, diagram labels, map labels, worker labels and restaurant
 lettering are typeset in Korean. The rounded **Jua Regular** font is bundled in
@@ -54,14 +60,32 @@ geometry in `korea-map-geography.json`. It is sculpted once by
 `sculpt-korea-map.py`; `reference-assets/korea-terrain.png` is the committed,
 fixed-geometry render. No Blender dependency is needed to export the video.
 
-`korea-map.py` draws native Korean labels, coloured diagram cords and intact truck
-glyphs moving at six poses per second. The night/day wipe reveals the **same
+`korea-map.py` draws native Korean labels, road paths and intact truck
+glyphs moving at **24 poses per second**. Trucks advance by arc length, including
+positions inside a road segment, rather than hopping between sparse waypoints.
+The night/day wipe reveals the **same
 terrain**, never a regenerated or warped map. The scale is recomputed as 100 km
 for the local equirectangular projection, not translated from California miles.
 The caption no longer claims a journey of hundreds of miles. Ingredient origins
-and curves are **illustrative**, labelled on screen as `산지와 배송 경로 예시`;
-they are not invented traced suppliers or measured road routes. The nine legacy
+are **illustrative**, labelled on screen as `산지와 배송 경로 예시`;
+they are not traced suppliers. All six paths in `korea-road-routes.json` follow
+the OpenStreetMap road network, retrieved via OSRM and simplified within
+0.00015 degrees. Daegwallyeong to Seoul uses **영동고속도로 → 광주원주고속도로**
+and connecting roads. These are example routes, not live navigation or a supplier
+trip. Road data is ODbL-licensed with `© OpenStreetMap 기여자` visible on screen;
+see [OpenStreetMap attribution](https://www.openstreetmap.org/copyright).
+The nine legacy
 California anchor edits remain in the provenance archive but are never rendered.
+
+### Verified Jeolla wheat example
+
+The sowing/harvest captions and map name an illustrative **전라도 우리밀** field.
+[MAFRA's 2023 production-district casebook](https://www.mafra.go.kr/bbs/home/792/565281/artclView.do)
+documents wheat in Jeonbuk Buan and Jeonnam, including the bread-making cultivar
+백강. Its [2023 area release](https://www.mafra.go.kr/bbs/home/792/569098/download.do)
+lists Jeonbuk 4,618ha and Jeonnam 4,572ha out of 11,600ha nationally. These dated
+figures support the localization but are not put on screen as current statistics.
+No claim is made that this particular burger or supplier uses domestic wheat.
 
 To rebuild only the fixed terrain (Blender 3.x):
 

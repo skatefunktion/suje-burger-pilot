@@ -1,9 +1,10 @@
 """Fixed Korean clay geography; rigid, stepped delivery animation, never warps.
 
 Ingredient locations/routes are illustrative, explicitly labelled on screen.
-Only Daegwallyeong and the Seoul destination are named, not invented suppliers.
+Regional origins are illustrative; the delivery paths follow attributed roads.
 """
 from functools import lru_cache
+import json
 import math
 from pathlib import Path
 
@@ -14,6 +15,7 @@ from PIL import Image, ImageDraw, ImageFilter, ImageFont
 HERE = Path(__file__).resolve().parent
 SIDE = 1080
 TERRAIN = HERE/'reference-assets'/'korea-terrain.png'
+ROADS = json.loads((HERE/'korea-road-routes.json').read_text())
 
 
 def project(lon, lat):
@@ -23,7 +25,7 @@ def project(lon, lat):
 DESTINATION = project(126.9780, 37.5665)  # Seoul
 # Approximate regional diagram pins, not claimed farm/supplier coordinates.
 NODES = [
-    ('밀', (126.6,34.75), (285,810), '#e7bb59'),
+    ('전라도\n우리밀', (126.6,34.75), (260,810), '#e7bb59'),
     ('토마토', (126.9,36.28), (260,615), '#dc7063'),
     ('오이', (127.2,36.83), (275,540), '#79b86f'),
     ('대관령\n한우 목장', (128.71,37.68), (835,348), '#c69b75'),
@@ -57,13 +59,21 @@ def background(night):
     return plate.convert('RGB')
 
 
+@lru_cache(maxsize=6)
 def route(index):
-    start=project(*NODES[index][1])
-    end=DESTINATION
-    # Curved diagram cords, not a claim to follow real roads.
-    control=((start[0]+end[0])/2+(index-2)*10,(start[1]+end[1])/2+40)
-    return np.array([((1-t)**2*start[0]+2*(1-t)*t*control[0]+t*t*end[0],
-        (1-t)**2*start[1]+2*(1-t)*t*control[1]+t*t*end[1]) for t in np.linspace(0,1,100)])
+    """Project stored road-network geometry; never replace it with a chord."""
+    return np.array([project(*p) for p in ROADS['routes'][index]['coordinates']])
+
+
+def route_prefix(index, progress):
+    """Constant-speed arc-length travel, including a sub-segment truck pose."""
+    points=route(index)
+    distance=np.r_[0,np.cumsum(np.linalg.norm(np.diff(points,axis=0),axis=1))]
+    travelled=float(np.clip(progress,0,1))*distance[-1]
+    segment=min(np.searchsorted(distance,travelled,side='right')-1,len(points)-2)
+    fraction=(travelled-distance[segment])/(distance[segment+1]-distance[segment])
+    tip=points[segment]+fraction*(points[segment+1]-points[segment])
+    return np.vstack((points[:segment+1],tip))
 
 
 def truck(draw,x,y,colour):
@@ -87,7 +97,7 @@ def map_pose(step,night):
     progress=np.clip((step-840)/120,0,1)
     for i,(label,location,(lx,ly),colour) in enumerate(NODES):
         x,y=project(*location)
-        points=route(i)[:max(1,int(1+progress*98))]
+        points=route_prefix(i,progress)
         if len(points)>1:
             p=[tuple(v) for v in points]
             draw.line([(a+2,b+3) for a,b in p],fill='#23343a' if night else '#7a8e6f',width=9)
@@ -117,13 +127,14 @@ def map_pose(step,night):
     for xx in (75,75+bar):draw.line((xx,980,xx,994),fill=ink,width=2)
     draw.text((94,998),'100 km',font=font(23),fill=ink)
     draw.text((690,1017),'산지와 배송 경로 예시',font=font(25),fill=ink)
+    draw.text((690,1050),'도로 © OpenStreetMap 기여자',font=font(18),fill=ink)
     if not night:
         draw.ellipse((958,278,998,318),fill='#f0c85e',outline='#d8b455',width=2)
     return np.asarray(image)
 
 
 def render(frame):
-    step=(frame//4)*4  # Six intact truck poses/second in a 24fps container.
+    step=frame  # Rigid trucks advance every frame, not in four-frame jumps.
     if frame<=924:
         rgb=map_pose(step,True)
     elif frame>=988:

@@ -620,5 +620,32 @@
       "sha256": "09e429ffd187e4ea5266667eb3cbe8cc48945218927113da6a529f4b427eb0d7",
       "subject": "The exact final double cheeseburger on folded white paper, preserving whether the right-side bite is already present and its precise shape. Two beef patties and two melted cheese slices with onion between, lettuce, tomato, spread and plain bun. Keep crumbs and steam only where shown; no sesame, no plate and no different camera framing."
     }
+  ],
+  "motion_assets": [
+    {
+      "file": "griddle-empty.webp",
+      "sha256": "3f2f391b09edbd13d9812b426f47abda9598cccffac399efdb82b750586fbf4a",
+      "authoring": "Source-derived generate_image edit; fixed background or isolated intact clay sculpt. Native alpha retained for loose actors. No fingerprints or finger dents."
+    },
+    {
+      "file": "wheat-empty.webp",
+      "sha256": "33c2b8aed9f83b4d67d4878d9b69ac437d294014bda51b51b8898d4f3c8a41bd",
+      "authoring": "Source-derived generate_image edit; fixed background or isolated intact clay sculpt. Native alpha retained for loose actors. No fingerprints or finger dents."
+    },
+    {
+      "file": "assembly-empty.webp",
+      "sha256": "b78165c2565c1c863644cf568033dac3a753b96e72652813ff2be9c3d5db2b83",
+      "authoring": "Source-derived generate_image edit; fixed background or isolated intact clay sculpt. Native alpha retained for loose actors. No fingerprints or finger dents."
+    },
+    {
+      "file": "burger-actors.webp",
+      "sha256": "376f0ed8a9184f02efcdbb37fbbe073b185572504c7319dc63b5f213bef36e64",
+      "authoring": "Source-derived generate_image edit; fixed background or isolated intact clay sculpt. Native alpha retained for loose actors. No fingerprints or finger dents."
+    },
+    {
+      "file": "people-actors.webp",
+      "sha256": "3a7f04e17f2c5165644659f406e60caf56e06e1a34c2d4731756c2f64e8a092b",
+      "authoring": "Source-derived generate_image edit; fixed background or isolated intact clay sculpt. Native alpha retained for loose actors. No fingerprints or finger dents."
+    }
   ]
 }

@@ -309,6 +309,8 @@ def render(source, work, only_shot=None):
             asset_paths[key] = path
     output = work / ('motion-study.mp4' if only_shot is not None else 'kevin-burger-clay-ko-64s.mp4')
     raw = work / 'clay-picture.mp4'
+    for name in ('griddle-empty.webp','wheat-empty.webp','assembly-empty.webp','burger-actors.webp','people-actors.webp'):
+        assert (HERE/'reference-assets'/name).is_file(), f'Missing authored motion asset: {name}'
     process = subprocess.Popen(['ffmpeg', '-v', 'error', '-y', '-f', 'rawvideo',
         '-pixel_format', 'bgr24', '-video_size', f'{SIDE}x{SIDE}', '-framerate', str(FPS),
         '-i', 'pipe:0', '-an', '-c:v', 'libx264', '-pix_fmt', 'yuv420p', '-crf', '18',
@@ -319,6 +321,12 @@ def render(source, work, only_shot=None):
     spec = spec_from_file_location('korea_map', HERE/'korea-map.py')
     korea = module_from_spec(spec)
     spec.loader.exec_module(korea)
+    spec = spec_from_file_location('rigid_scenes', HERE/'rigid-scenes.py')
+    rigid = module_from_spec(spec)
+    spec.loader.exec_module(rigid)
+    # Whole-object trajectories do not transfer the source drawing's contours.
+    if only_shot is None or selected[0]['id'] in ('wheat-sowing','griddle-patties','griddle-buns-cheese'):
+        rigid.configure(frames)
     for shot in selected:
         keys = shot['anchors']
         styles = {}
@@ -331,8 +339,10 @@ def render(source, work, only_shot=None):
         schedule = exposure_schedule(frames, keys, start, end)
         for n in range(start, end):
             key = schedule[n-start]
-            painted = korea.render(n) if shot.get('labels') == 'map' else styles[key].copy()
-            exposures.append({'frame': n, 'exposure': 'korea-map' if shot.get('labels') == 'map' else key})
+            posed = rigid.render(n)
+            painted = korea.render(n) if shot.get('labels') == 'map' else posed if posed is not None else styles[key].copy()
+            mode='korea-road-map' if shot.get('labels') == 'map' else 'rigid-actor' if posed is not None else 'authored-pose'
+            exposures.append({'frame': n, 'exposure': key, 'motion': mode})
             painted = text_frame(painted, n, ink)
             process.stdin.write(painted.tobytes())
             if n == start+32:
@@ -357,7 +367,7 @@ def render(source, work, only_shot=None):
         'numbers': 'Original values except owner-approved Hanwoo age (~30 months) and matching totals',
         'localization': FILM['localization'],
         'font': 'Jua Regular, SIL Open Font License 1.1 (bundled)',
-        'motion': 'Intact clay stop-motion exposures, source-stage-matched in monotone order; no optical flow, registration, morphing or cross-fades. Rigid trucks on one Korean terrain sculpt.',
+        'motion': '24fps rigid clay actors for exploded burger, sowing, griddle, assembly, workers/bee, and road-following trucks. Other articulated/process shots retain authored exposures. No optical flow, contour registration, morphing or cross-fades; not a complete recreation of all source in-betweens.',
         'full_decode': 'passed', 'video': str(output), 'bytes': output.stat().st_size,
         'streams': details['streams']}
     (work / 'export-review.json').write_text(json.dumps(review, indent=2))
