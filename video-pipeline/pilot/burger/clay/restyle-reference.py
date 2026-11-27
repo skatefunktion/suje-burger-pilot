@@ -58,7 +58,7 @@ LABELS = {
     'flour': [('밀가루', (958, 967, 1057, 1009), 24)],
     'bakery': [('밀가루', (289, 850, 405, 902), 28)],
     'map': [],  # Native Korean geography/labels belong to korea-map.py.
-    'restaurant': [('수제버거', (170, 337, 646, 425), 60)],
+    'restaurant': [('BURGERS', (170, 337, 646, 425), 64)],
     'people': [
         ('목장주', (16, 809, 166, 856), 29),
         ('농부', (176, 809, 325, 856), 29),
@@ -244,6 +244,8 @@ def text_frame(bgr, frame, ink):
                 colour = '#adbad3' if patch.mean() < 110 else '#53728f'
             if shot.get('labels') == 'restaurant':
                 colour = '#fff4d9'
+                draw.rounded_rectangle((162,329,654,429),radius=8,
+                    outline=colour,width=3)
             width = lf.getlength(label)
             draw.text((x0+(x1-x0-width)/2, y0-2), label, font=lf, fill=colour)
     return cv2.cvtColor(np.asarray(image), cv2.COLOR_RGB2BGR)

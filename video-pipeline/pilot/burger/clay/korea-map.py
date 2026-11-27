@@ -118,9 +118,15 @@ def map_pose(step,night):
     draw.line(((444,381),(x-22,y-3)),fill=leader,width=2)
     draw.text((300,330),'서울',font=font(37),fill=ink)
     draw.text((255,377),'제빵소 / 패티 / 점심',font=font(25),fill=ink)
-    draw.line((90,935,90,870),fill=ink,width=3)
-    draw.polygon(((90,859),(84,874),(96,874)),fill=ink)
-    draw.text((79,825),'북',font=font(27),fill=ink)
+    # The original map has a small N arrow; retain that unobtrusive convention.
+    draw.line((90,905,90,867),fill=ink,width=2)
+    draw.polygon(((90,861),(86,870),(94,870)),fill=ink)
+    draw.text((83,832),'N',font=font(20),fill=ink)
+    # Natural Earth's eastern polygon spans 130.81–130.93E, 37.45–37.55N:
+    # Ulleungdo, not an invented offshore decoration.
+    island=project(130.872,37.501)
+    draw.line(((1011,441),(island[0],island[1]+8)),fill=leader,width=1)
+    draw.text((962,443),'울릉도',font=font(25),fill=ink)
     # Equirectangular projection: ~111.32 km/latitude degree, 150 px/degree.
     bar=100/111.32*150
     draw.line((75,987,75+bar,987),fill=ink,width=2)

@@ -140,7 +140,7 @@ class ReferenceClayChecks(unittest.TestCase):
         self.assertEqual(geo['license'],'Public domain')
         # All named map text, including separators, must exist in the video font.
         missing=bytes(korea.font(29).getmask(chr(0x10FFFF)))
-        labels=''.join(n[0] for n in korea.NODES)+'서울제빵소 / 패티 / 점심산지와 배송 경로 예시북100 km'
+        labels=''.join(n[0] for n in korea.NODES)+'서울제빵소 / 패티 / 점심산지와 배송 경로 예시울릉도N100 km'
         for char in set(labels):
             if not char.isspace():
                 self.assertNotEqual(bytes(korea.font(29).getmask(char)),missing,char)

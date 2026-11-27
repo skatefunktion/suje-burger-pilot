@@ -37,7 +37,9 @@
     "visual_context": {
       "approval": "Owner requested Korean map relief, removal of the sun/palm trees, a Korean burger shop and vehicles, and Korean-looking farmers/shopkeepers.",
       "map_relief": "Stylized connected Taebaek/Sobaek ridge meshes, not measured elevation. The sun was present in the original day map but is intentionally removed.",
-      "shop": "Seoul neighborhood storefront with native 수제버거 lettering; no palm trees or American diner decor.",
+      "shop": "Seoul neighborhood storefront with the original English BURGERS sign, retained by owner request; no palm trees or American diner decor.",
+      "compass_and_island": "Small N arrow retained after confirming it appears in the original map. The eastern Natural Earth island polygon is Ulleungdo and is now labelled 울릉도.",
+      "harvest_workers": "Two spaced Korean workers in the hand-harvest shot, reduced from seven at the owner's request.",
       "vehicles": "Ordinary Korean-style cab-over 1-ton grain truck and compact hatchbacks; red agricultural tractor. No brand logos.",
       "people": "Natural black/dark hair and practical Korean farm/shop workwear, without exaggerated facial features."
     }

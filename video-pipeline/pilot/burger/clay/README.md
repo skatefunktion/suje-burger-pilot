@@ -40,8 +40,10 @@ This remains a source-timed clay reinterpretation, **not** an exact reconstructi
 of every original articulated pose or 3D patty rotation. `frame-exposures.json`
 records each frame's authored stage and motion mode.
 
-All visible headings, diagram labels, map labels, worker labels and restaurant
-lettering are typeset in Korean. The rounded **Jua Regular** font is bundled in
+Visible headings, diagram labels, map labels and worker labels are typeset in
+Korean. The owner requested two source-style exceptions: the shop's **BURGERS**
+sign and the small **N** compass arrow, which also appears in the original map.
+The rounded **Jua Regular** font is bundled in
 `fonts/` under the [SIL Open Font License 1.1](fonts/OFL.txt), permitting use in
 published videos. Source: [Google Fonts](https://fonts.google.com/specimen/Jua).
 The native type-on follows measured source-ink timing; the red underlined markers
@@ -69,6 +71,8 @@ fixed-geometry render. No Blender dependency is needed to export the video.
 The eastern relief now uses connected, creased **Taebaek/Sobaek mountain ridges**,
 not oval mounds. This is stylized relief, not measured elevation. The original
 day-map sun decoration is deliberately removed at the owner's request.
+The eastern island polygon (130.81–130.93°E, 37.45–37.55°N) is **Ulleungdo**;
+its native **울릉도** label makes that explicit instead of leaving an unnamed dot.
 
 `korea-map.py` draws native Korean labels, road paths and intact truck
 glyphs moving at **24 poses per second**. Trucks advance by arc length, including
@@ -100,13 +104,14 @@ No claim is made that this particular burger or supplier uses domestic wheat.
 ### Approved Korean shop, vehicles and people
 
 The lunch scene now uses a **Seoul neighborhood burger storefront**, native
-`수제버거` lettering and compact Korean-style hatchbacks, without palm trees or
+**BURGERS** lettering like the original and compact Korean-style hatchbacks, without palm trees or
 American diner decor. The grain vehicle is a Korean-style cab-over **1-ton truck**.
 Korean farmers, drivers and shopkeepers use natural dark hair and practical local
 workwear, with no exaggerated facial features. All moving bodies/vehicles have
 their own alpha masks; they are not regenerated between frames. Legacy source
 anchors remain in the provenance archive, but these production shots use the new
 Korean sets and actors. Motion-asset hashes are checked **before encoding**.
+The hand-harvest field uses two spaced workers rather than the original seven.
 
 To rebuild only the fixed terrain (Blender 3.x):
 

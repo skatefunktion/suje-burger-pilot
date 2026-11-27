@@ -209,7 +209,9 @@ def feet_pose(sprite, angle):
 
 def picking(frame):
     canvas=plate('hand-harvest-empty.webp').copy()
-    for i,sprite in enumerate(workers()):
+    # Two spaced workers are enough to communicate hand harvesting.
+    for i in (3,6):
+        sprite=workers()[i]
         amplitude=2 if i<2 else 4
         angle=amplitude*np.sin((frame-704)*.12+i*1.7)
         R.place(canvas,feet_pose(sprite,angle),sprite[2])
